@@ -1,0 +1,7 @@
+    <event version="2" dev="LINUX#Admin" usr="MSL_SAIT NACIONAL" time="20230725174635" loc="1" ref="STD3581022M" type="MODART" src="sait">
+      <action cmd="write" tbl="arts">
+        <dbf fld="NUMART" val="         STD3581022M"/>
+        <keys numart="STD3581022M"/>
+        <flds desc="POSTE METALICO 3 5/3IN  X 10FT C-22 NACIONAL" idmarca="" marca="" modelo="" linea="16" familia="1603" categoria="" numdep="16" unidad="PIEZA" peso="0.000" cantxcj="0" largo="0.000" ancho="0.000" altura="0.000" statusweb="0" divisa="P" excento="0" impuesto1="8.00" impuesto2="0.00" ultcosto="93.39000" factor1="1.4000" precio1="130.74600" preciopub="141.21" obs="" foto="" fotos=""/>
+      </action>
+    </event>

@@ -1,0 +1,7 @@
+    <event version="2" dev="LINUX#Admin" usr="MSL_SAIT NACIONAL" time="20230823162614" loc="1" ref="16" type="MODDEPTO" src="sait">
+      <action cmd="write" tbl="deptos">
+        <dbf fld="VALDEP" val=" 16      "/>
+        <keys valdep=" 16      "/>
+        <flds numdep="16" nomdep="PERFILES"/>
+      </action>
+    </event>

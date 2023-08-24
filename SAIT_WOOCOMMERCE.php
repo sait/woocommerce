@@ -64,30 +64,113 @@ function procesEvents($request){
 			$res->set_data("OK");
 			return $res;
 		}
-		// Guardar producto
-		// TODO: Checar si ya existe y hacer update
-		// https://rudrastyh.com/woocommerce/create-product-programmatically.html
+
+		$clave = getClaves("arts",xml_attribute($oXml->action[0]->keys[0],"numart"),null);
+		$productflds = $oXml->action[0]->flds[0];
+		if (isset($clave->wcid)) {
+	 		// Actualizar producto
+			// https://www.websitebuilderinsider.com/how-do-i-change-product-pricing-programmatically-in-woocommerce/
+			$product = wc_get_product( $clave->wcid );
+			if (xml_attribute($productflds,"preciopub")) {
+				$product->set_regular_price( xml_attribute($productflds,"preciopub") );
+			}
+			$product->set_name( xml_attribute($productflds,"desc") );
+			$clavefam = getClaves("familia",xml_attribute($oXml->action[0]->flds[0],"familia"),null);
+			$product->set_category_ids(array( $clavefam->wcid));
+			$product->save();
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("ART UPD");
+			return $res;
+		}else{
+			// Registrar producto
+			// https://rudrastyh.com/woocommerce/create-product-programmatically.html
 			$product = new WC_Product_Simple();
 			$product->set_name( xml_attribute($oXml->action[0]->flds[0],"desc") ); // product title
 			$product->set_regular_price( xml_attribute($oXml->action[0]->flds[0],"preciopub")); // in current shop currency
+			$product->set_SKU(xml_attribute($oXml->action[0]->keys[0],"numart"));
+			$product->set_manage_stock(true);
+			$clavefam = getClaves("familia",xml_attribute($oXml->action[0]->flds[0],"familia"),null);
+			$product->set_category_ids(array( $clavefam->wcid));
 			$product_id = $product->save();
 			// Guardar en claves
 			insertClaves("arts",xml_attribute($oXml->action[0]->keys[0],"numart"),$product_id);
-		// Actualizar producto
-		// https://www.websitebuilderinsider.com/how-do-i-change-product-pricing-programmatically-in-woocommerce/
-		// $product = wc_get_product( $product_id );
-		// $product->set_price( 10 );
-		// $product->save();
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("ART ADD");
+			return $res;
+		}
+		
+	}
 
+	if ($type == "ACTEXISGBL"){
+		foreach ($oXml->action as $action) {
+			$clave = getClaves("arts",xml_attribute($action->keys[0],"numart"),null);
+			if (isset($clave->wcid)) {
+				$product = wc_get_product( $clave->wcid );
+				$product->set_stock_quantity(xml_attribute($action->flds[0],"existencia"));
+				$product->save();
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("STOCK UPD");
+				return $res;
+			}
+		}  
+	}
+
+	if ($type == "ACTPRECIO"){
+			$clave = getClaves("arts",xml_attribute($oXml->action[0]->keys[0],"numart"),null);
+			if (isset($clave->wcid)) {
+				$product = wc_get_product( $clave->wcid );
+				$product->set_regular_price(xml_attribute($oXml->action[0]->flds[0],"preciopub"));
+				$product->save();
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("PRICE UPD");
+				return $res;
+			}
+	}
+
+
+	// Agregar catecorias 
+	// https://stackoverflow.com/questions/53460487/add-new-product-categories-programmatically-in-woocommerce
+	// TODO: CEMCO Maneja los Deptos como padres de las familias
+	// el numfamilia tiene 4 digitos siendo los primeros 2 el DPTO
+	//  Se podria usar para agregar el padre automaticamente.
+	if ($type == "MODFAMILIA"){
+		$clave = getClaves("familia",xml_attribute($oXml->action[0]->keys[0],"numfam"),null);
+		if (!isset($clave->wcid)) {
+			$term_data = wp_insert_term(
+					xml_attribute($oXml->action[0]->flds[0],"nomfam"), 
+					'product_cat'
+			);
+			insertClaves("familia",xml_attribute($oXml->action[0]->keys[0],"numfam"),$term_data['term_id']);
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("ADD FAM");
+			return $res;
+		}
+	}
+
+	if ($type == "MODDEPTO"){
+		$clave = getClaves("deptos",xml_attribute($oXml->action[0]->flds[0],"numdep"),null);
+		if (!isset($clave->wcid)) {
+			$term_data = wp_insert_term(
+					xml_attribute($oXml->action[0]->flds[0],"nomdep"), 
+					'product_cat'
+			);
+			insertClaves("deptos",xml_attribute($oXml->action[0]->flds[0],"numdep"),$term_data['term_id']);
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("ADD DEPTO");
+			return $res;
+		}
 	}
 
 	$res = new WP_REST_Response();
 	$res->set_status(200);
-	$res->set_data(xml_attribute($oXml->action[0]->flds[0],"desc"));
+	$res->set_data("OK");
 	return $res;
-
-
-
 }
 
 
@@ -140,4 +223,10 @@ function insertClaves($tabla,$clave,$wcid){
 					'wcid'  => $wcid
 			)
 	);
+}
+
+
+function getClaves($tabla,$clave,$wcid){
+	global $wpdb;
+	return $wpdb->get_row("SELECT * FROM wp_sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
 }

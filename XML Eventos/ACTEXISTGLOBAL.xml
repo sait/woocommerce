@@ -1,0 +1,26 @@
+    <event dev="9584affd6a9f" usr="491_Fernanda Ramirez" time="20230823154450" loc="1" ref="N   JN90035" type="ACTEXISGBL" src="sait nube" version="2">
+      <action cmd="write" tbl="arts">
+        <dbf fld="NUMART" val="               STD3581022M">
+        </dbf>
+        <keys numart="STD3581022M">
+        </keys>
+        <flds existencia="150.000">
+        </flds>
+      </action>
+      <action cmd="write" tbl="arts">
+        <dbf fld="NUMART" val="                6930">
+        </dbf>
+        <keys numart="6930">
+        </keys>
+        <flds existencia="31.000">
+        </flds>
+      </action>
+      <action cmd="write" tbl="arts">
+        <dbf fld="NUMART" val="              210346">
+        </dbf>
+        <keys numart="210346">
+        </keys>
+        <flds existencia="19.000">
+        </flds>
+      </action>
+    </event>
