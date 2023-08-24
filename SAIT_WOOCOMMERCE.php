@@ -76,7 +76,9 @@ function procesEvents($request){
 			}
 			$product->set_name( xml_attribute($productflds,"desc") );
 			$clavefam = getClaves("familia",xml_attribute($oXml->action[0]->flds[0],"familia"),null);
-			$product->set_category_ids(array( $clavefam->wcid));
+			if (isset($clavefam->wcid)) {
+				$product->set_category_ids(array( $clavefam->wcid));
+			}
 			$product->save();
 			$res = new WP_REST_Response();
 			$res->set_status(200);
@@ -91,7 +93,9 @@ function procesEvents($request){
 			$product->set_SKU(xml_attribute($oXml->action[0]->keys[0],"numart"));
 			$product->set_manage_stock(true);
 			$clavefam = getClaves("familia",xml_attribute($oXml->action[0]->flds[0],"familia"),null);
+			if (isset($clavefam ->wcid)) {
 			$product->set_category_ids(array( $clavefam->wcid));
+			}
 			$product_id = $product->save();
 			// Guardar en claves
 			insertClaves("arts",xml_attribute($oXml->action[0]->keys[0],"numart"),$product_id);
@@ -144,6 +148,13 @@ function procesEvents($request){
 					xml_attribute($oXml->action[0]->flds[0],"nomfam"), 
 					'product_cat'
 			);
+			if( is_wp_error( $term_data ) ) {
+				echo $term_data->get_error_message();
+				$res = new WP_REST_Response();
+				$res->set_status(500);
+				$res->set_data($term_data->get_error_message());
+				return $res;
+			}
 			insertClaves("familia",xml_attribute($oXml->action[0]->keys[0],"numfam"),$term_data['term_id']);
 			$res = new WP_REST_Response();
 			$res->set_status(200);
@@ -159,6 +170,13 @@ function procesEvents($request){
 					xml_attribute($oXml->action[0]->flds[0],"nomdep"), 
 					'product_cat'
 			);
+			if( is_wp_error( $term_data ) ) {
+				echo $term_data->get_error_message();
+				$res = new WP_REST_Response();
+				$res->set_status(500);
+				$res->set_data($term_data->get_error_message());
+				return $res;
+			}
 			insertClaves("deptos",xml_attribute($oXml->action[0]->flds[0],"numdep"),$term_data['term_id']);
 			$res = new WP_REST_Response();
 			$res->set_status(200);
