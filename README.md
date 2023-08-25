@@ -1,8 +1,14 @@
 # woocommerce
 Plugin de comunicación SAIT con WooCommerce
 
-## Tienda de prueba
+# Empaquetar el plugin
 
+```
+Simplemente comprimirmos el archivo php en un ZIP y este lo instalaremos como archivo en la seccion de plugins de wordpress
+
+```
+
+## Tienda de prueba
 
 GET
 https://tiendaprovlimpieza.saitnube.com/wp-json/saitplugin/v1/hello
@@ -11,7 +17,6 @@ Return 200
 ```
 Hello world!
 ```
-
 
 POST
 https://tiendaprovlimpieza.saitnube.com/wp-json/saitplugin/v1/saitevents/
