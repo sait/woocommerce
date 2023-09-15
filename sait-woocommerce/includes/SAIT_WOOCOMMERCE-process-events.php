@@ -85,7 +85,7 @@
 			// https://rudrastyh.com/woocommerce/create-product-programmatically.html
 			$product = new WC_Product_Simple();
 			$product->set_name( self::xml_attribute($oXml->action[0]->flds[0],"desc") ); // product title
-			$product->set_regular_price( self::xml_attribute($oXml->action[0]->flds[0],"precio1")); // in current shop currency
+			$product->set_regular_price( self::xml_attribute($oXml->action[0]->flds[0],"preciopub")); // in current shop currency
 			$product->set_SKU(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
 			$product->set_manage_stock(true);
 			$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
