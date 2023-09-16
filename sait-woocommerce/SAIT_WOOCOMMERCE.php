@@ -22,7 +22,7 @@ add_action( 'rest_api_init', function () {
 
 function SAIT_helloworld(){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-hello.php';
-	return SAIT_WOOCOMMERCE_Hello::SAIT_helloworld($oXml);;
+	return SAIT_WOOCOMMERCE_Hello::SAIT_helloworld();;
 }
 
 add_action( 'rest_api_init', function () {
@@ -62,5 +62,11 @@ function activate_SAIT_WOOCOMMERCE() {
 register_activation_hook( __FILE__, 'activate_SAIT_WOOCOMMERCE' );
 
 
+add_action( 'woocommerce_new_order', 'sendPedidoSAIT', 10, 2 );
 
+
+function sendPedidoSAIT( $order_id, $order ){
+	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
+	SAIT_WOOCOMMERCE_Pedidos::SAIT_($order_id, $order );
+}
 
