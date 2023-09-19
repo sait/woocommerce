@@ -11,6 +11,18 @@ Version: 1.0.3
 Author URI: http://sait.mx
 */
 
+if ( !defined( 'SAIT_APIKEY' ) ) {
+    define( 'SAIT_APIKEY', 'blk31O714ygPYjs8APsar8IH8cxPx6ii3/K6OH+Q/AOOHo4Khv7/GpUvwP2YXa1S' );
+}
+if ( !defined( 'SAIT_NUBE_URL' ) ) {
+    define( 'SAIT_NUBE_URL', 'https://provlimpieza2.saitnube.com/api/v2/ventas/pedidos/' );
+}	
+
+if ( !defined( 'SAIT_NUBE_NUMALM' ) ) {
+	define( 'SAIT_NUBE_NUMALM', '1' );
+}	
+
+
 add_action( 'rest_api_init', function () {
 	register_rest_route( 'saitplugin/v1', '/hello',
 		array(
@@ -51,6 +63,22 @@ function SAIT_procesEvents($request){
 	return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($oXml);
 }
 
+add_action( 'rest_api_init', function () {
+	register_rest_route( 'saitplugin/v1', '/testpedido',
+		array(
+			'methods' => 'GET', 
+			'callback' => 'SAIT_testPedido'
+		)
+	);
+});
+
+function SAIT_testPedido(){
+	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
+	return SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedidoTest();;
+}
+
+
+
 /// Funciones Inicializacion
 
 function activate_SAIT_WOOCOMMERCE() {
@@ -67,6 +95,6 @@ add_action( 'woocommerce_new_order', 'sendPedidoSAIT', 10, 2 );
 
 function sendPedidoSAIT( $order_id, $order ){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
-	SAIT_WOOCOMMERCE_Pedidos::SAIT_($order_id, $order );
+	SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedido($order_id, $order );
 }
 
