@@ -12,7 +12,7 @@
 /**
  * Se ejecuta al procesar eventos
  *
- * En esta clase estan todas las funciones necesarias para procesar el XML
+ * En esta clase estan todas las funciones necesarias para procesar de una orden
  * @since      1.0.3
  * @package    SAIT_WOOCOMMERCE
  * @subpackage SAIT_WOOCOMMERCE/includes
@@ -69,15 +69,13 @@
 			'cookies' => array()
 		);
 		//echo json_encode($pedido);
-    	$request = wp_remote_post ($url, $args);
-
+    	return wp_remote_post ($url, $args);
 	}
 
 
 
 
 	public static function SAIT_sendPedidoTest(){
-	// https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 			$order = wc_get_order( 4526 );
 			return self::SAIT_sendPedido("",$order);
 		}
