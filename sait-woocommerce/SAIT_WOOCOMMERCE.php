@@ -12,10 +12,10 @@ Author URI: http://sait.mx
 */
 
 if ( !defined( 'SAIT_APIKEY' ) ) {
-    define( 'SAIT_APIKEY', 'blk31O714ygPYjs8APsar8IH8cxPx6ii3/K6OH+Q/AOOHo4Khv7/GpUvwP2YXa1S' );
+    define( 'SAIT_APIKEY', '' );
 }
 if ( !defined( 'SAIT_NUBE_URL' ) ) {
-    define( 'SAIT_NUBE_URL', 'https://provlimpieza2.saitnube.com/api/v2/ventas/pedidos/' );
+    define( 'SAIT_NUBE_URL', '' );
 }	
 
 if ( !defined( 'SAIT_NUBE_NUMALM' ) ) {
