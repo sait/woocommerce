@@ -25,11 +25,11 @@
 	// sendPedido()
 	//  Manda el pedido a sait
 	public static function SAIT_sendPedido($order_id, $order ){
-// https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
+    // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 
 
 			$pedido = new stdClass();
-			$pedido->numdoc = strval($order->get_id());
+			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
 			$date =	$order->get_date_created();
 			$pedido->fecha = $date->date_i18n();
 			$pedido->hora = date('H:i:s',$date->getTimestamp());
@@ -46,13 +46,13 @@
 					$product = $item->get_product();
 					$art->numart = $product->get_sku();
 					$art->unidad = "PZA";
-					$art->precio = (float)$product->get_regular_price();;
+					$art->precio = (float)$product->get_regular_price();
 					$art->preciopub = (float)$product->get_regular_price();
 					$pedido->items[] = $art;
 			}
 
 		$url = SAIT_NUBE_URL;
-
+     
 		$args = array(
 			'method' => 'POST',
 			'timeout' => 45,
@@ -68,8 +68,8 @@
 			'body' => json_encode($pedido),
 			'cookies' => array()
 		);
-		//echo json_encode($pedido);
-    	return wp_remote_post ($url, $args);
+		
+    	return wp_remote_post($url, $args);
 	}
 
 

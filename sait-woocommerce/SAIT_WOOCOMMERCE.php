@@ -19,9 +19,12 @@ if ( !defined( 'SAIT_NUBE_URL' ) ) {
 }	
 
 if ( !defined( 'SAIT_NUBE_NUMALM' ) ) {
-	define( 'SAIT_NUBE_NUMALM', '1' );
+    define( 'SAIT_NUBE_NUMALM', '1' );
 }	
 
+if ( !defined( 'SAIT_SERIE' ) ) {
+    define( 'SAIT_SERIE', 'WO' );
+}	
 
 add_action( 'rest_api_init', function () {
 	register_rest_route( 'saitplugin/v1', '/hello',
