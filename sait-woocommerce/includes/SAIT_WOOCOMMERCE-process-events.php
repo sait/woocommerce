@@ -29,8 +29,8 @@
 			case "MODART":
 				$res = self::MODART($oXml);
 				break;
-			case "ACTEXISTGBL":
-				$res = self::ACTEXISTGBL($oXml);
+			case "ACTEXISGBL":
+				$res = self::ACTEXISGBL($oXml);
 				break;
 			case "ACTPRECIO":
 				$res = self::ACTPRECIO($oXml);
@@ -102,7 +102,7 @@
 		}
 	}
 
-	public static function ACTEXISTGBL($oXml){
+	public static function ACTEXISGBL($oXml){
 		foreach ($oXml->action as $action) {
 			$clave = self::getClaves("arts",self::xml_attribute($action->keys[0],"numart"),null);
 			if (isset($clave->wcid)) {
