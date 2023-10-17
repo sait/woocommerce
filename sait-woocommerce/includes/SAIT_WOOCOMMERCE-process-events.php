@@ -109,12 +109,12 @@
 				$product = wc_get_product( $clave->wcid );
 				$product->set_stock_quantity(self::xml_attribute($action->flds[0],"existencia"));
 				$product->save();
-				$res = new WP_REST_Response();
-				$res->set_status(200);
-				$res->set_data("STOCK UPD");
-				return $res;
 			}
 		}
+		$res = new WP_REST_Response();
+		$res->set_status(200);
+		$res->set_data("STOCK UPD");
+		return $res;
 	}
 
 	public static function ACTPRECIO($oXml){
