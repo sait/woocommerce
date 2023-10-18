@@ -38,7 +38,7 @@
 			$pedido->formapago = "1";
 			$pedido->divisa = "P";
 			$pedido->tc = 1;
-			$pedido->mostrador = $order->get_formatted_shipping_full_name()."\r\n\r\n".$order->get_shipping_address_1()."\r\n".$order->get_shipping_city().", ".$order->get_shipping_state()."\r\n".$order->get_billing_phone();
+			$pedido->mostrador = $order->get_formatted_billing_full_name()."\r\n\r\n".$order->get_billing_address_1()."\r\n".$order->get_billing_city().", ".$order->get_billing_state()."\r\n".$order->get_billing_phone();
 			$pedido->items = [];
 			foreach ( $order->get_items() as $item_id => $item ) {
 					$art = new stdClass();
