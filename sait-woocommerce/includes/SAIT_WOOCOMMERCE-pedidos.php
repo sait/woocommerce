@@ -50,9 +50,9 @@
 					$art->preciopub = (float)$product->get_regular_price();
 					$pedido->items[] = $art;
 			}
-
-		$url = SAIT_NUBE_URL;
-     
+		$SAIT_options=get_option( 'opciones_sait' );
+		$url = $SAIT_options['SAITNube_URL']."/api/v2/ventas/pedidos/";
+		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'method' => 'POST',
 			'timeout' => 45,
@@ -61,7 +61,7 @@
 			'sslverify' => false,
 			'blocking' => false,
 			'headers' => array(
-				'X-Apikey' => SAIT_APIKEY,
+				'X-Apikey' => $apikey,
 				'Content-Type' => 'application/json',
 				'Accept' => 'application/json',
 			),
