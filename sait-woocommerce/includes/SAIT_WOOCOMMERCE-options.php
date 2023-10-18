@@ -23,7 +23,7 @@ class SAITSettingsPage
         // Las configuracion se mostrara en el submenu de opciones de administracion.
         add_options_page(
             'Settings Admin', 
-            'Configuracion SAIT', 
+            'Configuración SAIT', 
             'manage_options', 
             'opciones_sait_page', 
             array( $this, 'create_admin_page' )
@@ -39,7 +39,7 @@ class SAITSettingsPage
         $this->options = get_option( 'opciones_sait' );
         ?>
         <div class="wrap">
-            <h1>Configuracion SAIT</h1>
+            <h1>Configuración SAIT</h1>
             <form method="post" action="options.php">
             <?php
                 // Muestra los campos del grupo de opciones de SAIT
@@ -66,7 +66,7 @@ class SAITSettingsPage
         // Se define la seccion de configuracion de SAIT Nube
         add_settings_section(
             'SAITNube', // ID
-            'Configuracion SAITNube', // Title
+            'Configuración SAITNube', // Title
             array( $this, 'print_section_info' ), // Callback
             'opciones_sait_page' // Page
         );  
