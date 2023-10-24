@@ -121,7 +121,9 @@
 		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
 		if (isset($clave->wcid)) {
 			$product = wc_get_product( $clave->wcid );
-			$product->set_regular_price(self::xml_attribute($oXml->action[0]->flds[0],"preciopub"));
+			if (self::xml_attribute($oXml->action[0]->flds[0],"preciopub")) {
+				$product->set_regular_price(self::xml_attribute($oXml->action[0]->flds[0],"preciopub"));
+			}
 			$product->save();
 			$res = new WP_REST_Response();
 			$res->set_status(200);
