@@ -44,6 +44,7 @@
 					$art = new stdClass();
 					$art->cant = $item->get_quantity();
 					$product = $item->get_product();
+					$art->unidad = "PZA";
 					$art->numart = $product->get_sku();
 					$art->precio = (float)$product->get_regular_price();
 					$art->preciopub = (float)$product->get_regular_price();
