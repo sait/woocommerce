@@ -48,6 +48,7 @@
 					$art->numart = $product->get_sku();
 					$art->precio = (float)$product->get_regular_price();
 					$art->preciopub = (float)$product->get_regular_price();
+					$art->pjedesc = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->precio);
 					$pedido->items[] = $art;
 			}
 		$SAIT_options=get_option( 'opciones_sait' );
@@ -76,7 +77,11 @@
 
 
 	public static function SAIT_sendPedidoTest(){
-			$order = wc_get_order( 4929 );
+			$order = wc_get_order( 5385 );
 			return self::SAIT_sendPedido("",$order);
 		}
+
+	public static function SAIT_calcularPjeDescuentoItem($cantidad,$total,$precio){
+		return round((($precio-($total/$cantidad))/$precio)*100,2);
+	}
 }
