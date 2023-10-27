@@ -48,7 +48,7 @@
 					$art->numart = $product->get_sku();
 					$art->precio = (float)$product->get_regular_price();
 					$art->preciopub = (float)$product->get_regular_price();
-					$art->pjedesc = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->precio);
+					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->precio);
 					$pedido->items[] = $art;
 			}
 		$SAIT_options=get_option( 'opciones_sait' );
