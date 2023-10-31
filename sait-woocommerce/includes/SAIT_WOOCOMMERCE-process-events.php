@@ -71,9 +71,9 @@
 				$product->set_regular_price( self::xml_attribute($productflds,"preciopub") );
 			}
 			$product->set_name( self::xml_attribute($productflds,"desc") );
-			$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
-			if (isset($clavefam->wcid)) {
-				$product->set_category_ids(array( $clavefam->wcid));
+			$clavedep = self::getClaves("deptos",self::xml_attribute($oXml->action[0]->flds[0],"numdep"),null);
+			if (isset($clavedep->wcid)) {
+				$product->set_category_ids(array( $clavedep->wcid));
 			}
 			$product->save();
 			$res = new WP_REST_Response();
@@ -88,9 +88,9 @@
 			$product->set_regular_price( self::xml_attribute($oXml->action[0]->flds[0],"preciopub")); // in current shop currency
 			$product->set_SKU(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
 			$product->set_manage_stock(true);
-			$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
-			if (isset($clavefam ->wcid)) {
-			$product->set_category_ids(array( $clavefam->wcid));
+			$clavedep = self::getClaves("deptos",self::xml_attribute($oXml->action[0]->flds[0],"numdep"),null);
+			if (isset($clavedep->wcid)) {
+				$product->set_category_ids(array( $clavedep->wcid));
 			}
 			$product_id = $product->save();
 			// Guardar en claves
