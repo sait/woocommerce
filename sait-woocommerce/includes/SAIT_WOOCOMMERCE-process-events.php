@@ -154,6 +154,16 @@
 			$res->set_status(200);
 			$res->set_data("ADD FAM");
 			return $res;
+		}else{
+			$term_data = wp_update_term($clave->wcid,
+				'product_cat',
+				array(
+					'name' => self::xml_attribute($oXml->action[0]->flds[0],"nomfam")
+				) );
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("UPD FAM");
+				return $res;
 		}
 	}	
 
@@ -176,6 +186,16 @@
 			$res->set_status(200);
 			$res->set_data("ADD DEPTO");
 			return $res;
+		}else{
+			$term_data = wp_update_term($clave->wcid,
+				'product_cat',
+				array(
+					'name' => self::xml_attribute($oXml->action[0]->flds[0],"nomdep")
+				) );
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("UPD DEPTO");
+				return $res;
 		}
 	}
 
