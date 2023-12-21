@@ -46,10 +46,9 @@ add_action( 'rest_api_init', function () {
 
 
 function SAIT_procesEvents($request){
-	// Tomamos el request
-	$xml = $request->get_body();
-	// Carga el XML
-	libxml_use_internal_errors(true);
+
+  $xml = $request->get_body();
+  libxml_use_internal_errors(true);
   $oXml = simplexml_load_string((string)$xml);
   if (!$oXml){
 		$res = new WP_REST_Response();
@@ -88,11 +87,16 @@ function activate_SAIT_WOOCOMMERCE() {
 register_activation_hook( __FILE__, 'activate_SAIT_WOOCOMMERCE' );
 
 
-add_action( 'woocommerce_new_order', 'sendPedidoSAIT', 10, 2 );
-
+//add_action( 'woocommerce_new_order', 'sendPedidoSAIT', 10, 2 );
+add_action( 'woocommerce_thankyou', 'sendPedidoSAIT_thankyou', 10, 2 );
 
 function sendPedidoSAIT( $order_id, $order ){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
 	SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedido($order_id, $order );
+}
+
+function sendPedidoSAIT_thankyou( $order_id ){
+	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
+	SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedidoThankyou($order_id );
 }
 

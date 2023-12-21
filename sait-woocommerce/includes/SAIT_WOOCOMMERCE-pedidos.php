@@ -27,7 +27,6 @@
 	public static function SAIT_sendPedido($order_id, $order ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 
-
 			$pedido = new stdClass();
 			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
 			$date =	$order->get_date_created();
@@ -73,7 +72,10 @@
     	return wp_remote_post($url, $args);
 	}
 
-
+	public static function SAIT_sendPedidoThankyou($id_pedido){
+		$order = wc_get_order( $id_pedido );
+		return self::SAIT_sendPedido($id_pedido,$order);
+	}
 
 
 	public static function SAIT_sendPedidoTest(){
