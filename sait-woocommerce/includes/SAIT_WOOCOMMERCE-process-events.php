@@ -53,17 +53,20 @@
 	public static function MODART($oXml){
 		// Cuando sea MODART y no esta marcado para ecommerce no procesar
 		// Proceso de MODART
-		$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
-		if ($statusweb == "0") {
-			$res = new WP_REST_Response();
-			$res->set_status(200);
-			$res->set_data("OK");
-			return $res;
-		}
 
 		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
 		$productflds = $oXml->action[0]->flds[0];
 		if (isset($clave->wcid)) {
+
+			$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
+			if ($statusweb == "0") {
+				wp_trash_post($clave->wcid);
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("OK");
+				return $res;
+			}
+			wp_untrash_post($clave->wcid);
 			// Actualizar producto
 			// https://www.websitebuilderinsider.com/how-do-i-change-product-pricing-programmatically-in-woocommerce/
 			$product = wc_get_product( $clave->wcid );
@@ -81,6 +84,13 @@
 			$res->set_data("ART UPD");
 			return $res;
 		}else{
+			$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
+			if ($statusweb == "0") {
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("OK");
+				return $res;
+			}
 			// Registrar producto
 			// https://rudrastyh.com/woocommerce/create-product-programmatically.html
 			$product = new WC_Product_Simple();
@@ -107,6 +117,12 @@
 			$clave = self::getClaves("arts",self::xml_attribute($action->keys[0],"numart"),null);
 			if (isset($clave->wcid)) {
 				$product = wc_get_product( $clave->wcid );
+				if ($product===false) {
+					$res = new WP_REST_Response();
+					$res->set_status(200);
+					$res->set_data("ART NO EXISTE");
+					return $res;
+				}
 				$product->set_stock_quantity(self::xml_attribute($action->flds[0],"existencia"));
 				$product->save();
 			}
@@ -121,6 +137,12 @@
 		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
 		if (isset($clave->wcid)) {
 			$product = wc_get_product( $clave->wcid );
+			if ($product===false) {
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("ART NO EXISTE");
+				return $res;
+			}
 			if (self::xml_attribute($oXml->action[0]->flds[0],"preciopub")) {
 				$product->set_regular_price(self::xml_attribute($oXml->action[0]->flds[0],"preciopub"));
 			}
