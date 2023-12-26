@@ -51,13 +51,25 @@
 	}
 
 	public static function MODART($oXml){
-		// Cuando sea MODART y no esta marcado para ecommerce no procesar
 		// Proceso de MODART
+		// Si el Articulo fue borrado permanentemente borrarlo de la tabla custom
+		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
+		if (isset($clave->wcid)) {
+			$product = wc_get_product( $clave->wcid );
+			if ($product===false) {
+				// Producto ya no existe borrarlo de tabla custom
+				self::deleteClaves($clave->id);
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("ART NO EXISTE");
+				return $res;
+			}
+		}
 
 		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
 		$productflds = $oXml->action[0]->flds[0];
 		if (isset($clave->wcid)) {
-
+			// Cuando sea MODART y no esta marcado para ecommerce no procesar
 			$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
 			if ($statusweb == "0") {
 				wp_trash_post($clave->wcid);
@@ -83,7 +95,9 @@
 			$res->set_status(200);
 			$res->set_data("ART UPD");
 			return $res;
-		}else{
+		}
+
+
 			$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
 			if ($statusweb == "0") {
 				$res = new WP_REST_Response();
@@ -109,7 +123,7 @@
 			$res->set_status(200);
 			$res->set_data("ART ADD");
 			return $res;
-		}
+
 	}
 
 	public static function ACTEXISGBL($oXml){
@@ -233,6 +247,10 @@
 		);
 	}
 
+	public static function deleteClaves($id){
+		global $wpdb;
+		$wpdb->delete( 'wp_sait_claves', array( 'id' => $id ) );
+	}
 
 	public static function getClaves($tabla,$clave,$wcid){
 		global $wpdb;
