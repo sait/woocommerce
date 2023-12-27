@@ -1,13 +1,13 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 1.0.14
+ * @version 1.0.15
  */
 /*
 Plugin Name: SAIT WooCommerce
 Description: Este plugin agrega un endpoint a wordpress para procesar eventos enviados desde SAIT.
 Author: SAIT Software Administrativo
-Version: 1.0.14
+Version: 1.0.15
 Author URI: http://sait.mx
 */
 
@@ -70,11 +70,9 @@ add_action( 'rest_api_init', function () {
 });
 
 function SAIT_testPedido(){
-	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
+	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
 	return SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedidoTest();;
 }
-
-
 
 /// Funciones Inicializacion
 
@@ -86,17 +84,11 @@ function activate_SAIT_WOOCOMMERCE() {
 
 register_activation_hook( __FILE__, 'activate_SAIT_WOOCOMMERCE' );
 
+add_action( 'woocommerce_thankyou', 'sendOrderSAIT_thankyou', 10, 2 );
 
-//add_action( 'woocommerce_new_order', 'sendPedidoSAIT', 10, 2 );
-add_action( 'woocommerce_thankyou', 'sendPedidoSAIT_thankyou', 10, 2 );
 
-function sendPedidoSAIT( $order_id, $order ){
-	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
-	SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedido($order_id, $order );
-}
-
-function sendPedidoSAIT_thankyou( $order_id ){
-	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-pedidos.php';
-	SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedidoThankyou($order_id );
+function sendOrderSAIT_thankyou( $order_id ){
+	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
+	SAIT_WOOCOMMERCE_Orders::SAIT_sendOrderThankyou($order_id );
 }
 

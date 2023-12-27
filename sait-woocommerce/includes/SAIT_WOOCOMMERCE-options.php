@@ -85,7 +85,16 @@ class SAITSettingsPage
             array( $this, 'SAITNube_URL_callback' ), 
             'opciones_sait_page', 
             'SAITNube'
-        );      
+        );  
+        
+        // Campo TipoDoc
+        add_settings_field(
+            'SAITNube_TipoDoc', 
+            'TipoDoc', 
+            array( $this, 'SAITNube_TipoDoc_callback' ), 
+            'opciones_sait_page', 
+            'SAITNube'
+        ); 
     }
 
     /**
@@ -101,7 +110,9 @@ class SAITSettingsPage
 
         if( isset( $input['SAITNube_URL'] ) )
             $new_input['SAITNube_URL'] = sanitize_text_field( $input['SAITNube_URL'] );
-
+        
+        if( isset( $input['SAITNube_TipoDoc'] ) )
+            $new_input['SAITNube_TipoDoc'] = sanitize_text_field( $input['SAITNube_TipoDoc'] );
         return $new_input;
     }
 
@@ -132,6 +143,17 @@ class SAITSettingsPage
         printf(
             '<input type="text" id="SAITNube_URL" name="opciones_sait[SAITNube_URL]" value="%s" />',
             isset( $this->options['SAITNube_URL'] ) ? esc_attr( $this->options['SAITNube_URL']) : ''
+        );
+    }
+
+    /** 
+     * Obtiene el valor de la opcion y lo imprime
+     */
+    public function SAITNube_TipoDoc_callback()
+    {
+        printf(
+            '<input type="text" id="SAITNube_TipoDoc" name="opciones_sait[SAITNube_TipoDoc]" value="%s" />',
+            isset( $this->options['SAITNube_TipoDoc'] ) ? esc_attr( $this->options['SAITNube_TipoDoc']) : ''
         );
     }
 }
