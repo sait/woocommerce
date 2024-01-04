@@ -90,7 +90,7 @@ class SAITSettingsPage
         // Campo TipoDoc
         add_settings_field(
             'SAITNube_TipoDoc', 
-            'TipoDoc', 
+            'TipoDoc: P=pedidos Q=Cotizaciones', 
             array( $this, 'SAITNube_TipoDoc_callback' ), 
             'opciones_sait_page', 
             'SAITNube'

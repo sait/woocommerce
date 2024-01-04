@@ -238,7 +238,7 @@
 	public static function insertClaves($tabla,$clave,$wcid){
 		global $wpdb;
 		$wpdb->insert( 
-				'wp_sait_claves', 
+			$wpdb->prefix.'sait_claves', 
 				array( 
 						'tabla' => $tabla,
 						'clave' => $clave,
@@ -249,12 +249,12 @@
 
 	public static function deleteClaves($id){
 		global $wpdb;
-		$wpdb->delete( 'wp_sait_claves', array( 'id' => $id ) );
+		$wpdb->delete( $wpdb->prefix.'sait_claves', array( 'id' => $id ) );
 	}
 
 	public static function getClaves($tabla,$clave,$wcid){
 		global $wpdb;
-		return $wpdb->get_row("SELECT * FROM wp_sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
+		return $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
 	}
 
 	//
