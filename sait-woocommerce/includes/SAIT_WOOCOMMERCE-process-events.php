@@ -41,6 +41,9 @@
 			case "MODDEPTO":
 				$res = self::MODDEPTO($oXml);
 				break;
+			case "ACTTC":
+				$res = self::ACTTC($oXml);
+				break;
 			default:
 				$res = new WP_REST_Response();
 				$res->set_status(200);
@@ -230,6 +233,17 @@
 				$res->set_data("UPD DEPTO");
 				return $res;
 		}
+	}
+
+	public static function ACTTC($oXml){
+		$SAIT_options=get_option( 'opciones_sait' );
+		$OldTC = $SAIT_options['SAITNube_TipoCambio'];
+		$SAIT_options['SAITNube_TipoCambio']=self::xml_attribute($oXml->action[0]->flds[0],"tc");
+		update_option( 'opciones_sait', $SAIT_options );
+		$res = new WP_REST_Response();
+		$res->set_status(200);
+		$res->set_data("UPD TC");
+		return $res;
 	}
 
 	//
