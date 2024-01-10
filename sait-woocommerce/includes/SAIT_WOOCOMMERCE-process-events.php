@@ -52,35 +52,41 @@
 
 	public static function MODART($oXml){
 		// Proceso de MODART
-		// Si el Articulo fue borrado permanentemente borrarlo de la tabla custom
+
+		// Saco la clave del articulo
 		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
+
+		// Si viene con statusweb=0 salir
+		$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
+		if ($statusweb == "0") {
+			// Si existe lo manda a la papelera
+			wp_trash_post($clave->wcid);
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("OK");
+			return $res;
+		}
+		
+		// Toma los campos del articulo 
+		$productflds = $oXml->action[0]->flds[0];
+
+		// Si ya existe el articulo en la tabla de SAIT solo actualizar datos
 		if (isset($clave->wcid)) {
+			// Revisar si el articulo esta en WC o fue eliminado
 			$product = wc_get_product( $clave->wcid );
 			if ($product===false) {
-				// Producto ya no existe borrarlo de tabla custom
+				// Producto ya no existe borrarlo de tabla SAIT
+				// para evitar conflictos
 				self::deleteClaves($clave->id);
 				$res = new WP_REST_Response();
 				$res->set_status(200);
 				$res->set_data("ART NO EXISTE");
 				return $res;
 			}
-		}
-
-		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
-		$productflds = $oXml->action[0]->flds[0];
-		if (isset($clave->wcid)) {
-			// Cuando sea MODART y no esta marcado para ecommerce no procesar
-			$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
-			if ($statusweb == "0") {
-				wp_trash_post($clave->wcid);
-				$res = new WP_REST_Response();
-				$res->set_status(200);
-				$res->set_data("OK");
-				return $res;
-			}
+			// wp_untrash_post si el id esta en la papelera sacarlo
 			wp_untrash_post($clave->wcid);
+
 			// Actualizar producto
-			// https://www.websitebuilderinsider.com/how-do-i-change-product-pricing-programmatically-in-woocommerce/
 			$product = wc_get_product( $clave->wcid );
 			if (self::xml_attribute($productflds,"preciopub")) {
 				$product->set_regular_price( self::xml_attribute($productflds,"preciopub") );
@@ -97,32 +103,23 @@
 			return $res;
 		}
 
-
-			$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
-			if ($statusweb == "0") {
-				$res = new WP_REST_Response();
-				$res->set_status(200);
-				$res->set_data("OK");
-				return $res;
-			}
-			// Registrar producto
-			// https://rudrastyh.com/woocommerce/create-product-programmatically.html
-			$product = new WC_Product_Simple();
-			$product->set_name( self::xml_attribute($oXml->action[0]->flds[0],"desc") ); // product title
-			$product->set_regular_price( self::xml_attribute($oXml->action[0]->flds[0],"preciopub")); // in current shop currency
-			$product->set_SKU(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
-			$product->set_manage_stock(true);
-			$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
-			if (isset($clavefam ->wcid)) {
-			$product->set_category_ids(array( $clavefam->wcid));
-			}
-			$product_id = $product->save();
-			// Guardar en claves
-			self::insertClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),$product_id);
-			$res = new WP_REST_Response();
-			$res->set_status(200);
-			$res->set_data("ART ADD");
-			return $res;
+		// Registrar nuevo producto
+		$product = new WC_Product_Simple();
+		$product->set_name( self::xml_attribute($oXml->action[0]->flds[0],"desc") ); 
+		$product->set_regular_price( self::xml_attribute($oXml->action[0]->flds[0],"preciopub"));
+		$product->set_SKU(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
+		$product->set_manage_stock(true);
+		$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
+		if (isset($clavefam ->wcid)) {
+		$product->set_category_ids(array( $clavefam->wcid));
+		}
+		$product_id = $product->save();
+		// Guardar en claves
+		self::insertClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),$product_id);
+		$res = new WP_REST_Response();
+		$res->set_status(200);
+		$res->set_data("ART ADD");
+		return $res;
 
 	}
 
