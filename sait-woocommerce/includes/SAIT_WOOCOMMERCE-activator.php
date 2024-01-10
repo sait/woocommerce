@@ -31,6 +31,11 @@
  * 
  * @since    1.0.3
  */
+
+//
+// Crea la tabla sait_claves
+//
+//
 public static  function SAIT_create_db() {
 	global $wpdb;
 	$charset_collate = $wpdb->get_charset_collate();
@@ -45,6 +50,7 @@ public static  function SAIT_create_db() {
 	) $charset_collate;";
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	// dbDelta crea o actualiza la tabla si ya existe
 	dbDelta( $sql );
 }
 

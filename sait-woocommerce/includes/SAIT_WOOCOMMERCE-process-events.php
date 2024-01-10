@@ -232,6 +232,15 @@
 		}
 	}
 
+	//
+	// Funciones Claves SAIT
+	// Tabla sait_claves creada en SAIT_WOOCOMMERCE-activator.php
+	//
+	public static function getClaves($tabla,$clave,$wcid){
+		global $wpdb;
+		return $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
+	}
+	 
 	public static function insertClaves($tabla,$clave,$wcid){
 		global $wpdb;
 		$wpdb->insert( 
@@ -247,11 +256,6 @@
 	public static function deleteClaves($id){
 		global $wpdb;
 		$wpdb->delete( $wpdb->prefix.'sait_claves', array( 'id' => $id ) );
-	}
-
-	public static function getClaves($tabla,$clave,$wcid){
-		global $wpdb;
-		return $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
 	}
 
 	//
