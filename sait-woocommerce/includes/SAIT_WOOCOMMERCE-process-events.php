@@ -91,9 +91,6 @@
 
 			// Actualizar producto
 			$product = wc_get_product( $clave->wcid );
-			if (self::xml_attribute($productflds,"preciopub")) {
-				$product->set_regular_price( self::xml_attribute($productflds,"preciopub") );
-			}
 			$product->set_name( self::xml_attribute($productflds,"desc") );
 			$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
 			if (isset($clavefam->wcid)) {
@@ -109,7 +106,6 @@
 		// Registrar nuevo producto
 		$product = new WC_Product_Simple();
 		$product->set_name( self::xml_attribute($oXml->action[0]->flds[0],"desc") ); 
-		$product->set_regular_price( self::xml_attribute($oXml->action[0]->flds[0],"preciopub"));
 		$product->set_SKU(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
 		$product->set_manage_stock(true);
 		$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
@@ -148,7 +144,9 @@
 	}
 
 	public static function ACTPRECIO($oXml){
-		$clave = self::getClaves("arts",self::xml_attribute($oXml->action[0]->keys[0],"numart"),null);
+		$numart=self::xml_attribute($oXml->action[0]->keys[0],"numart");
+		$clave = self::getClaves("arts",$numart,null);
+		$productflds = $oXml->action[0]->flds[0];
 		if (isset($clave->wcid)) {
 			$product = wc_get_product( $clave->wcid );
 			if ($product===false) {
@@ -158,7 +156,32 @@
 				return $res;
 			}
 			if (self::xml_attribute($oXml->action[0]->flds[0],"preciopub")) {
-				$product->set_regular_price(self::xml_attribute($oXml->action[0]->flds[0],"preciopub"));
+				$divisa = self::xml_attribute($productflds,"divisa");
+				$preciopub = self::xml_attribute($productflds,"preciopub");
+				$product->set_regular_price( $preciopub);
+				
+				$SAIT_options=get_option( 'opciones_sait' );
+				$url = $SAIT_options['SAITNube_URL']."/api/v2/inventarios/articulos/".$numart;
+				$apikey = $SAIT_options['SAITNube_APIKey'];
+				$args = array(
+					'timeout' => 5,
+					'sslverify' => false,
+					'blocking' => true,
+					'headers' => array(
+						'X-Apikey' => $apikey,
+						'Content-Type' => 'application/json',
+						'Accept' => 'application/json',
+					)
+				);
+				
+				$resSAIT =  wp_remote_get($url, $args);
+				$api_response = json_decode(  $resSAIT["body"] , true );
+				if ($api_response["result"]["divisa"] == "D"){
+					$TC = $SAIT_options['SAITNube_TipoCambio'];
+					$precio = strval(round(floatval($preciopub)*floatval($TC),2));
+					$product->set_regular_price( $precio );
+				}
+
 			}
 			$product->save();
 			$res = new WP_REST_Response();
@@ -240,6 +263,10 @@
 		$OldTC = $SAIT_options['SAITNube_TipoCambio'];
 		$SAIT_options['SAITNube_TipoCambio']=self::xml_attribute($oXml->action[0]->flds[0],"tc");
 		update_option( 'opciones_sait', $SAIT_options );
+
+
+
+
 		$res = new WP_REST_Response();
 		$res->set_status(200);
 		$res->set_data("UPD TC");
