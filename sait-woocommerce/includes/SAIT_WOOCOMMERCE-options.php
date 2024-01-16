@@ -99,7 +99,7 @@ class SAITSettingsPage
         // Campo TipoCambio
         add_settings_field(
             'SAITNube_TipoCambio', 
-            'TipoCambio', 
+            '', 
             array( $this, 'SAITNube_TipoCambio_callback' ), 
             'opciones_sait_page', 
             'SAITNube'
@@ -174,10 +174,12 @@ class SAITSettingsPage
      */
     public function SAITNube_TipoCambio_callback()
     {
+        /*
         printf(
-            '<input type="text" id="SAITNube_TipoCambio" name="opciones_sait[SAITNube_TipoCambio]" value="%s" />',
+            '<input type="text" id="SAITNube_TipoCambio" name="opciones_sait[SAITNube_TipoCambio]" value="%s" disabled/>',
             isset( $this->options['SAITNube_TipoCambio'] ) ? esc_attr( $this->options['SAITNube_TipoCambio']) : ''
         );
+        */
     }
 }
 
