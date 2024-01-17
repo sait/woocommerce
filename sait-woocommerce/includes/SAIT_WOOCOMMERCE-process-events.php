@@ -301,13 +301,6 @@
 		return $res;
 	}
 
-
-		$res = new WP_REST_Response();
-		$res->set_status(200);
-		$res->set_data("UPD TC");
-		return $res;
-	}
-
 	//
 	// Funciones Claves SAIT
 	// Tabla sait_claves creada en SAIT_WOOCOMMERCE-activator.php
