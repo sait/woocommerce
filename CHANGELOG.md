@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.18] - 16/ENE/2024 
+## [1.0.19] - 16/ENE/2024 
 ### Fix
 - Precios en dolar: Se muestra tc en config, input deshabilitado
 - Eliminadas lineas duplicadas
