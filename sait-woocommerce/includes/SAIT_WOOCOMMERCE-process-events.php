@@ -41,6 +41,9 @@
 			case "MODDEPTO":
 				$res = self::MODDEPTO($oXml);
 				break;
+			case "MODLINEA":
+				$res = self::MODLINEA($oXml);
+				break;
 			case "ACTTC":
 				$res = self::ACTTC($oXml);
 				break;
@@ -92,9 +95,9 @@
 			// Actualizar producto
 			$product = wc_get_product( $clave->wcid );
 			$product->set_name( self::xml_attribute($productflds,"desc") );
-			$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
-			if (isset($clavefam->wcid)) {
-				$product->set_category_ids(array( $clavefam->wcid));
+			$clavelinea = self::getClaves("lineas",self::xml_attribute($oXml->action[0]->flds[0],"linea"),null);
+			if (isset($clavelinea->wcid)) {
+				$product->set_category_ids(array( $clavelinea->wcid));
 			}
 			$product->save();
 			$res = new WP_REST_Response();
@@ -108,9 +111,9 @@
 		$product->set_name( self::xml_attribute($oXml->action[0]->flds[0],"desc") ); 
 		$product->set_SKU(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
 		$product->set_manage_stock(true);
-		$clavefam = self::getClaves("familia",self::xml_attribute($oXml->action[0]->flds[0],"familia"),null);
-		if (isset($clavefam ->wcid)) {
-		$product->set_category_ids(array( $clavefam->wcid));
+		$clavelinea = self::getClaves("lineas",self::xml_attribute($oXml->action[0]->flds[0],"linea"),null);
+		if (isset($clavelinea->wcid)) {
+			$product->set_category_ids(array( $clavelinea->wcid));
 		}
 		$product_id = $product->save();
 		// Guardar en claves
@@ -254,6 +257,38 @@
 				$res = new WP_REST_Response();
 				$res->set_status(200);
 				$res->set_data("UPD DEPTO");
+				return $res;
+		}
+	}
+
+	public static function MODLINEA($oXml){
+		$clave = self::getClaves("lineas",self::xml_attribute($oXml->action[0]->flds[0],"numlin"),null);
+		if (!isset($clave->wcid)) {
+			$term_data = wp_insert_term(
+					self::xml_attribute($oXml->action[0]->flds[0],"nomlin"), 
+					'product_cat'
+			);
+			if( is_wp_error( $term_data ) ) {
+				echo $term_data->get_error_message();
+				$res = new WP_REST_Response();
+				$res->set_status(500);
+				$res->set_data($term_data->get_error_message());
+				return $res;
+			}
+			self::insertClaves("lineas",self::xml_attribute($oXml->action[0]->flds[0],"numlin"),$term_data['term_id']);
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("ADD Linea");
+			return $res;
+		}else{
+			$term_data = wp_update_term($clave->wcid,
+				'product_cat',
+				array(
+					'name' => self::xml_attribute($oXml->action[0]->flds[0],"nomlin")
+				) );
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("UPD linea");
 				return $res;
 		}
 	}
