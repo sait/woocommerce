@@ -262,25 +262,46 @@
 	}
 
 	public static function MODLINEA($oXml){
-		$clave = self::getClaves("lineas",self::xml_attribute($oXml->action[0]->flds[0],"numlin"),null);
+		$clave = self::getClaves("lineas",self::xml_attribute($oXml->action[0]->keys[0],"numlin"),null);
 		if (!isset($clave->wcid)) {
 			$term_data = wp_insert_term(
 					self::xml_attribute($oXml->action[0]->flds[0],"nomlin"), 
 					'product_cat'
 			);
 			if( is_wp_error( $term_data ) ) {
-				echo $term_data->get_error_message();
 				$res = new WP_REST_Response();
-				$res->set_status(500);
+				$res->set_status(200);
 				$res->set_data($term_data->get_error_message());
 				return $res;
 			}
-			self::insertClaves("lineas",self::xml_attribute($oXml->action[0]->flds[0],"numlin"),$term_data['term_id']);
+			self::insertClaves("lineas",self::xml_attribute($oXml->action[0]->keys[0],"numlin"),$term_data['term_id']);
 			$res = new WP_REST_Response();
 			$res->set_status(200);
 			$res->set_data("ADD Linea");
 			return $res;
 		}else{
+			$term = get_term($clave->wcid);
+			if (is_wp_error($term) ||  is_null($term) ){
+				// cat ya no existe borrarlo de tabla SAIT
+				// para evitar conflictos
+				$clave = self::getClaves("lineas",self::xml_attribute($oXml->action[0]->keys[0],"numlin"),null);
+				self::deleteClaves($clave->id);
+				$term_data = wp_insert_term(
+						self::xml_attribute($oXml->action[0]->flds[0],"nomlin"), 
+						'product_cat'
+				);
+				if( is_wp_error( $term_data ) ) {
+					$res = new WP_REST_Response();
+					$res->set_status(200);
+					$res->set_data($term_data->get_error_message());
+					return $res;
+				}
+				self::insertClaves("lineas",self::xml_attribute($oXml->action[0]->keys[0],"numlin"),$term_data['term_id']);
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("ADD Linea");
+				return $res;
+			}
 			$term_data = wp_update_term($clave->wcid,
 				'product_cat',
 				array(
