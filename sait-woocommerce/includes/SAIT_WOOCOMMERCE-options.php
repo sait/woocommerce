@@ -96,6 +96,15 @@ class SAITSettingsPage
             'SAITNube'
         ); 
 
+        // Campo NumAlm
+        add_settings_field(
+            'SAITNube_NumAlm', 
+            'NumAlm', 
+            array( $this, 'SAITNube_NumAlm_callback' ), 
+            'opciones_sait_page', 
+            'SAITNube'
+        ); 
+
         // Campo TipoCambio
         add_settings_field(
             'SAITNube_TipoCambio', 
@@ -123,8 +132,12 @@ class SAITSettingsPage
         if( isset( $input['SAITNube_TipoDoc'] ) )
             $new_input['SAITNube_TipoDoc'] = sanitize_text_field( $input['SAITNube_TipoDoc'] );
 
+        if( isset( $input['SAITNube_NumAlm'] ) )
+            $new_input['SAITNube_NumAlm'] = sanitize_text_field( $input['SAITNube_NumAlm'] );
+        
         if( isset( $input['SAITNube_TipoCambio'] ) )
             $new_input['SAITNube_TipoCambio'] = sanitize_text_field( $input['SAITNube_TipoCambio'] );
+        
         return $new_input;
     }
 
@@ -181,6 +194,18 @@ class SAITSettingsPage
         );
         
     }
+
+    /** 
+     * Obtiene el valor de la opcion y lo imprime
+     */
+    public function SAITNube_NumAlm_callback()
+    {
+        printf(
+            '<input type="text" id="SAITNube_NumAlm" name="opciones_sait[SAITNube_NumAlm]" value="%s" />',
+            isset( $this->options['SAITNube_NumAlm'] ) ? esc_attr( $this->options['SAITNube_NumAlm']) : ''
+        );
+    }
+
 }
 
 if( is_admin() )

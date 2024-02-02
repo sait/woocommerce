@@ -44,6 +44,9 @@
 			case "MODLINEA":
 				$res = self::MODLINEA($oXml);
 				break;
+			case "ACTEXIST":
+					$res = self::ACTEXIST($oXml);
+					break;
 			case "ACTTC":
 				$res = self::ACTTC($oXml);
 				break;
@@ -126,6 +129,14 @@
 	}
 
 	public static function ACTEXISGBL($oXml){
+		$SAIT_options=get_option( 'opciones_sait' );
+		$NumAlm = $SAIT_options['SAITNube_NumAlm'];
+		if (isset($NumAlm) && !is_null($NumAlm)) {
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("STOCK ERR ACTEXISGBL");
+			return $res;
+		}
 		foreach ($oXml->action as $action) {
 			$clave = self::getClaves("arts",self::xml_attribute($action->keys[0],"numart"),null);
 			if (isset($clave->wcid)) {
@@ -143,6 +154,43 @@
 		$res = new WP_REST_Response();
 		$res->set_status(200);
 		$res->set_data("STOCK UPD");
+		return $res;
+	}
+
+	public static function ACTEXIST($oXml){
+		$SAIT_options=get_option( 'opciones_sait' );
+		$NumAlm = $SAIT_options['SAITNube_NumAlm'];
+		if (!isset($NumAlm) && is_null($NumAlm)) {
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("STOCK ERR ACTEXIST Not set");
+			return $res;
+		}
+		foreach ($oXml->action as $action) {
+			$NumAlmEvent = self::xml_attribute($action->keys[0],"numalm");
+			if ($NumAlm!=$NumAlmEvent){
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("STOCK ERR ACTEXIST");
+			return $res;
+			}
+
+			$clave = self::getClaves("arts",self::xml_attribute($action->keys[0],"numart"),null);
+			if (isset($clave->wcid)) {
+				$product = wc_get_product( $clave->wcid );
+				if ($product===false) {
+					$res = new WP_REST_Response();
+					$res->set_status(200);
+					$res->set_data("ART NO EXISTE");
+					return $res;
+				}
+				$product->set_stock_quantity(self::xml_attribute($action->flds[0],"existencia"));
+				$product->save();
+			}
+		}
+		$res = new WP_REST_Response();
+		$res->set_status(200);
+		$res->set_data("STOCK UPD ACTEXIST");
 		return $res;
 	}
 
