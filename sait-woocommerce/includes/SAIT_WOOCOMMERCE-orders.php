@@ -26,14 +26,19 @@
 	//  Manda el pedido a sait
 	public static function SAIT_sendPedido($order_id, $order ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
-
-		  $pedido = new stdClass();
+			$SAIT_options=get_option( 'opciones_sait' );
+			$pedido = new stdClass();
 			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
 			$date =	$order->get_date_created();
 			$pedido->fecha = $date->date_i18n();
 			$pedido->hora = date('H:i:s',$date->getTimestamp());
 			$pedido->numcli = "0";
 			$pedido->numalm = SAIT_NUBE_NUMALM;
+			// Si vamos a usar numalm especifico
+			// $NumAlm = $SAIT_options['SAITNube_NumAlm'];
+			// if (isset($NumAlm) && !is_null($NumAlm)) {
+			// 	$pedido->numalm = $NumAlm;
+			// }
 			$pedido->formapago = "1";
 			$pedido->divisa = "P";
 			$pedido->tc = 1;
@@ -53,7 +58,25 @@
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->precio);
 					$pedido->items[] = $art;
 			}
-		$SAIT_options=get_option( 'opciones_sait' );
+		
+		// Consultar si el cliente existe en SAIT
+		// $url = $SAIT_options['SAITNube_URL']."/api/v2/ventas/clientesweb/".$order->get_billing_email();
+		// $apikey = $SAIT_options['SAITNube_APIKey'];
+		// $args = array(
+		// 	'timeout' => 5,
+		// 	'sslverify' => false,
+		// 	'blocking' => true,
+		// 	'headers' => array(
+		// 		'X-Apikey' => $apikey,
+		// 		'Content-Type' => 'application/json',
+		// 		'Accept' => 'application/json',
+		// 	)
+		// );
+		// if (array_key_exists("numcli",$api_response["result"])){
+		// 	$pedido->numcli =$api_response["result"]["numcli"];
+		// 	$pedido->mostrador = "";
+		// }
+
 		$url = $SAIT_options['SAITNube_URL']."/api/v2/ventas/pedidos/";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
@@ -78,13 +101,18 @@
 	public static function SAIT_sendCotizacion($order_id, $order ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 
-		  $pedido = new stdClass();
+			$SAIT_options=get_option( 'opciones_sait' );
+			$pedido = new stdClass();
 			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
 			$date =	$order->get_date_created();
 			$pedido->fecha = $date->date_i18n();
 			$pedido->hora = date('H:i:s',$date->getTimestamp());
 			$pedido->numcli = "0";
 			$pedido->numalm = SAIT_NUBE_NUMALM;
+			// $NumAlm = $SAIT_options['SAITNube_NumAlm'];
+			// if (isset($NumAlm) && !is_null($NumAlm)) {
+			// 	$pedido->numalm = $NumAlm;
+			// }
 			$pedido->formapago = "1";
 			$pedido->divisa = "P";
 			$pedido->tc = 1;
