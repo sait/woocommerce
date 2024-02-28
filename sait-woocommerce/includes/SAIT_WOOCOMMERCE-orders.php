@@ -60,14 +60,14 @@
 			}
 		
 		// Consultar si el cliente existe en SAIT
-		// $url = $SAIT_options['SAITNube_URL']."/api/v2/ventas/clientesweb/".$order->get_billing_email();
+		// $url = $SAIT_options['SAITNube_URL']."/api/v3/ventas/clientesweb/".$order->get_billing_email();
 		// $apikey = $SAIT_options['SAITNube_APIKey'];
 		// $args = array(
 		// 	'timeout' => 5,
 		// 	'sslverify' => false,
 		// 	'blocking' => true,
 		// 	'headers' => array(
-		// 		'X-Apikey' => $apikey,
+		// 		'X-sait-api-key' => $apikey,
 		// 		'Content-Type' => 'application/json',
 		// 		'Accept' => 'application/json',
 		// 	)
@@ -77,7 +77,7 @@
 		// 	$pedido->mostrador = "";
 		// }
 
-		$url = $SAIT_options['SAITNube_URL']."/api/v2/ventas/pedidos/";
+		$url = $SAIT_options['SAITNube_URL']."/api/v3/ventas/pedidos/";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'method' => 'POST',
@@ -87,7 +87,7 @@
 			'sslverify' => false,
 			'blocking' => false,
 			'headers' => array(
-				'X-Apikey' => $apikey,
+				'X-sait-api-key' => $apikey,
 				'Content-Type' => 'application/json',
 				'Accept' => 'application/json',
 			),
@@ -133,7 +133,7 @@
 					$pedido->items[] = $art;
 			}
 		$SAIT_options=get_option( 'opciones_sait' );
-		$url = $SAIT_options['SAITNube_URL']."/api/v2/ventas/cotizaciones/";
+		$url = $SAIT_options['SAITNube_URL']."/api/v3/ventas/cotizaciones/";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'method' => 'POST',
@@ -143,7 +143,7 @@
 			'sslverify' => false,
 			'blocking' => false,
 			'headers' => array(
-				'X-Apikey' => $apikey,
+				'X-sait-api-key' => $apikey,
 				'Content-Type' => 'application/json',
 				'Accept' => 'application/json',
 			),
