@@ -212,7 +212,7 @@
 				$product->set_regular_price( $preciopub);
 				
 				$SAIT_options=get_option( 'opciones_sait' );
-				$url = $SAIT_options['SAITNube_URL']."/api/v3/inventarios/articulos/".$numart;
+				$url = $SAIT_options['SAITNube_URL']."/api/v3/articulos/".$numart;
 				$apikey = $SAIT_options['SAITNube_APIKey'];
 				$args = array(
 					'timeout' => 5,
@@ -375,7 +375,7 @@
 		$SAIT_options['SAITNube_TipoCambio']=$NewTC;
 		update_option( 'opciones_sait', $SAIT_options );
 		
-		$url = $SAIT_options['SAITNube_URL']."/api/v3/inventarios/articulos?divisa=D&statusweb=1";
+		$url = $SAIT_options['SAITNube_URL']."/api/v3/articulos?divisa=D&statusweb=1";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'timeout' => 5,
