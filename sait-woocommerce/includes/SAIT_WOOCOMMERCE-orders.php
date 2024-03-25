@@ -34,11 +34,11 @@
 			$pedido->hora = date('H:i:s',$date->getTimestamp());
 			$pedido->numcli = "0";
 			$pedido->numalm = SAIT_NUBE_NUMALM;
-			// Si vamos a usar numalm especifico
-			// $NumAlm = $SAIT_options['SAITNube_NumAlm'];
-			// if (isset($NumAlm) && !is_null($NumAlm)) {
-			// 	$pedido->numalm = $NumAlm;
-			// }
+			// Si tiene NumAlm configurado usar ese.
+			$NumAlm = $SAIT_options['SAITNube_NumAlm'];
+			if (isset($NumAlm) && !is_null($NumAlm)) {
+				$pedido->numalm = $NumAlm;
+			}
 			$pedido->formapago = "1";
 			$pedido->divisa = "P";
 			$pedido->tc = 1;
@@ -51,9 +51,7 @@
 					$art = new stdClass();
 					$art->cant = $item->get_quantity();
 					$product = $item->get_product();
-					$art->unidad = "PZA";
 					$art->numart = $product->get_sku();
-					$art->precio = (float)$product->get_regular_price();
 					$art->preciopub = (float)$product->get_regular_price();
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->precio);
 					$pedido->items[] = $art;
@@ -77,7 +75,7 @@
 		// 	$pedido->mostrador = "";
 		// }
 
-		$url = $SAIT_options['SAITNube_URL']."/api/v3/ventas/pedidos/";
+		$url = $SAIT_options['SAITNube_URL']."/api/v3/pedidos/";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'method' => 'POST',
@@ -125,15 +123,13 @@
 					$art = new stdClass();
 					$art->cant = $item->get_quantity();
 					$product = $item->get_product();
-					$art->unidad = "PZA";
 					$art->numart = $product->get_sku();
-					$art->precio = (float)$product->get_regular_price();
 					$art->preciopub = (float)$product->get_regular_price();
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->precio);
 					$pedido->items[] = $art;
 			}
 		$SAIT_options=get_option( 'opciones_sait' );
-		$url = $SAIT_options['SAITNube_URL']."/api/v3/ventas/cotizaciones/";
+		$url = $SAIT_options['SAITNube_URL']."/api/v3/cotizaciones/";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'method' => 'POST',
