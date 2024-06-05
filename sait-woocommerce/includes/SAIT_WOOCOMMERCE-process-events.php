@@ -113,6 +113,7 @@
 		$product = new WC_Product_Simple();
 		$product->set_name( trim(self::xml_attribute($oXml->action[0]->flds[0],"desc")) ); 
 		$product->set_SKU(trim(self::xml_attribute($oXml->action[0]->keys[0],"numart")));
+		$product->set_status("draft");
 		$product->set_manage_stock(true);
 		$clavelinea = self::getClaves("lineas",trim(self::xml_attribute($oXml->action[0]->flds[0],"linea")),null);
 		if (isset($clavelinea->wcid)) {
