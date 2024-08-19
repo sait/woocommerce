@@ -45,10 +45,13 @@
 				$res = self::MODLINEA($oXml);
 				break;
 			case "ACTEXIST":
-					$res = self::ACTEXIST($oXml);
-					break;
+				$res = self::ACTEXIST($oXml);
+				break;
 			case "ACTTC":
 				$res = self::ACTTC($oXml);
+				break;
+			case "MODCLI":
+				$res = self::MODCLI($oXml);
 				break;
 			default:
 				$res = new WP_REST_Response();
@@ -69,7 +72,9 @@
 		$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
 		if ($statusweb == "0") {
 			// Si existe lo manda a la papelera
-			wp_trash_post($clave->wcid);
+			if (isset($clave->wcid)){
+				wp_trash_post($clave->wcid);
+			}
 			$res = new WP_REST_Response();
 			$res->set_status(200);
 			$res->set_data("OK");
@@ -98,7 +103,7 @@
 			// Actualizar producto
 			$product = wc_get_product( $clave->wcid );
 			$product->set_name( trim(self::xml_attribute($productflds,"desc")) );
-			$clavelinea = self::getClaves("lineas",trim(self::xml_attribute($oXml->action[0]->flds[0],"linea")),null);
+			$clavelinea = self::getClaves("familia",trim(self::xml_attribute($oXml->action[0]->flds[0],"familia")),null);
 			if (isset($clavelinea->wcid)) {
 				$product->set_category_ids(array( $clavelinea->wcid));
 			}
@@ -115,7 +120,7 @@
 		$product->set_SKU(trim(self::xml_attribute($oXml->action[0]->keys[0],"numart")));
 		$product->set_status("draft");
 		$product->set_manage_stock(true);
-		$clavelinea = self::getClaves("lineas",trim(self::xml_attribute($oXml->action[0]->flds[0],"linea")),null);
+		$clavelinea = self::getClaves("familia",trim(self::xml_attribute($oXml->action[0]->flds[0],"familia")),null);
 		if (isset($clavelinea->wcid)) {
 			$product->set_category_ids(array( $clavelinea->wcid));
 		}
@@ -406,6 +411,42 @@
 		return $res;
 	}
 
+	public static function MODCLI($oXml){
+		// Proceso de MODCLI
+
+		// Saco la clave del cliente
+		$clave = self::getClaves("clientes",trim(self::xml_attribute($oXml->action[0]->keys[0],"numcli")),null);
+
+		$emailtw = trim(self::xml_attribute($oXml->action[0]->flds[0],"emailtw"));
+
+		if ($emailtw==""){
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("no es cliente web");
+			return $res;
+			return;
+		}
+		// Si ya existe el cliente regresar y no hacer nada
+		if (isset($clave->wcid)) {
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("cliente ya existe ".$clave->clave." ".$clave->wcid);
+			return $res;
+			return;
+		}
+
+		// Registrar nuevo cliente
+		$user_id = wc_create_new_customer( $emailtw  );
+		// Guardar en claves
+		self::insertClaves("clientes",trim(self::xml_attribute($oXml->action[0]->keys[0],"numcli")),$user_id);
+		$res = new WP_REST_Response();
+		$res->set_status(200);
+		$res->set_data("CLI ADD ");
+		return $res;
+
+	}	 
+	 
+	 
 	//
 	// Funciones Claves SAIT
 	// Tabla sait_claves creada en SAIT_WOOCOMMERCE-activator.php
