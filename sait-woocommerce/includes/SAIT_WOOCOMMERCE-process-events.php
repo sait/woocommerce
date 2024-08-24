@@ -204,48 +204,58 @@
 		$numart=trim(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
 		$clave = self::getClaves("arts",$numart,null);
 		$productflds = $oXml->action[0]->flds[0];
-		if (isset($clave->wcid)) {
-			$product = wc_get_product( $clave->wcid );
-			if ($product===false) {
-				$res = new WP_REST_Response();
-				$res->set_status(200);
-				$res->set_data("ART NO EXISTE");
-				return $res;
-			}
-			if (self::xml_attribute($oXml->action[0]->flds[0],"preciopub")) {
-				$divisa = self::xml_attribute($productflds,"divisa");
-				$preciopub = self::xml_attribute($productflds,"preciopub");
-				$product->set_regular_price( $preciopub);
-				
-				$SAIT_options=get_option( 'opciones_sait' );
-				$url = $SAIT_options['SAITNube_URL']."/api/v3/articulos/".$numart;
-				$apikey = $SAIT_options['SAITNube_APIKey'];
-				$args = array(
-					'timeout' => 5,
-					'sslverify' => false,
-					'blocking' => true,
-					'headers' => array(
-						'X-sait-api-key' => $apikey,
-						'Content-Type' => 'application/json',
-						'Accept' => 'application/json',
-					)
-				);
-				
-				$resSAIT =  wp_remote_get($url, $args);
-				$api_response = json_decode(  $resSAIT["body"] , true );
-				if ($api_response["result"]["divisa"] == "D"){
-					$TC = $SAIT_options['SAITNube_TipoCambio'];
-					$precio = strval(round(floatval($preciopub)*floatval($TC),2));
-					$product->set_regular_price( $precio );
-				}
-
-			}
-			$product->save();
+		if (!isset($clave->wcid) or !wc_get_product( $clave->wcid)) {
 			$res = new WP_REST_Response();
 			$res->set_status(200);
-			$res->set_data("PRICE UPD");
+			$res->set_data("ART NO EXISTE");
 			return $res;
 		}
+		$product = wc_get_product( $clave->wcid );
+		if (self::xml_attribute($oXml->action[0]->flds[0],"preciopub")!="") {
+			$preciopub = self::xml_attribute($productflds,"preciopub");
+			$product->set_regular_price( $preciopub);
+			$product->save();
+		}
+		$SAIT_options=get_option( 'opciones_sait' );
+		$preciolista=$SAIT_options['SAITNube_PrecioLista'];
+		if ($preciolista != "") {
+			$url = $SAIT_options['SAITNube_URL']."/api/v3/articulos/".$numart;
+			$apikey = $SAIT_options['SAITNube_APIKey'];
+			$args = array(
+				'timeout' => 5,
+				'sslverify' => false,
+				'blocking' => true,
+				'headers' => array(
+					'X-sait-api-key' => $apikey,
+					'Content-Type' => 'application/json',
+					'Accept' => 'application/json',
+				)
+			);
+			$resSAIT =  wp_remote_get($url, $args);
+			$api_response = json_decode(  $resSAIT["body"] , true );
+			$precio = $api_response["result"]["precio".$preciolista];
+			if (floatval($precio)!=0.00){
+				$impuesto1 = $api_response["result"]["impuesto1"];
+				$impuesto2 = $api_response["result"]["impuesto2"];
+				$preciopub = strval(round(floatval($precio)*(1+(floatval($impuesto1)+floatval($impuesto2))/100),2));
+				$product->set_regular_price( $preciopub );
+				$product->save();
+			}
+
+
+		}
+		// TODO: Retomar los precios en dolar
+		// if ($api_response["result"]["divisa"] == "D"){
+		// 	$TC = $SAIT_options['SAITNube_TipoCambio'];
+		// 	$precio = strval(round(floatval($preciopub)*floatval($TC),2));
+		// 	$product->set_regular_price( $precio );
+		// }
+
+		$res = new WP_REST_Response();
+		$res->set_status(200);
+		$res->set_data("PRICE UPD");
+		return $res;
+		
 	}
 
 	public static function MODFAMILIA($oXml){
@@ -414,7 +424,7 @@
 	public static function MODCLI($oXml){
 		// Proceso de MODCLI
 
-		// Saco la clave del cliente
+		// Saco la clave del articulo
 		$clave = self::getClaves("clientes",trim(self::xml_attribute($oXml->action[0]->keys[0],"numcli")),null);
 
 		$emailtw = trim(self::xml_attribute($oXml->action[0]->flds[0],"emailtw"));
@@ -426,7 +436,7 @@
 			return $res;
 			return;
 		}
-		// Si ya existe el cliente regresar y no hacer nada
+		// Si ya existe el cliente no hacer nada
 		if (isset($clave->wcid)) {
 			$res = new WP_REST_Response();
 			$res->set_status(200);

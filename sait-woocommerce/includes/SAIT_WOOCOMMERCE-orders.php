@@ -32,7 +32,7 @@
 			$date =	$order->get_date_created();
 			$pedido->fecha = $date->date_i18n();
 			$pedido->hora = date('H:i:s',$date->getTimestamp());
-			$pedido->numcli = "     0";
+			$pedido->numcli = str_pad("0",5, " ", STR_PAD_LEFT);
 			$pedido->numalm =  str_pad(SAIT_NUBE_NUMALM,2, " ", STR_PAD_LEFT);
 			// Si tiene NumAlm configurado usar ese.
 			$NumAlm = $SAIT_options['SAITNube_NumAlm'];
@@ -92,7 +92,7 @@
 			$date =	$order->get_date_created();
 			$pedido->fecha = $date->date_i18n();
 			$pedido->hora = date('H:i:s',$date->getTimestamp());
-			$pedido->numcli = "     0";
+			$pedido->numcli = str_pad("0",5, " ", STR_PAD_LEFT);
 			$pedido->numalm = SAIT_NUBE_NUMALM;
 			// $NumAlm = $SAIT_options['SAITNube_NumAlm'];
 			// if (isset($NumAlm) && !is_null($NumAlm)) {

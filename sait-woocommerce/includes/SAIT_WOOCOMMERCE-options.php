@@ -104,12 +104,20 @@ class SAITSettingsPage
             'opciones_sait_page', 
             'SAITNube'
         ); 
-
         // Campo TipoCambio
         add_settings_field(
             'SAITNube_TipoCambio', 
             'TipoCambio', 
             array( $this, 'SAITNube_TipoCambio_callback' ), 
+            'opciones_sait_page', 
+            'SAITNube'
+        ); 
+		
+        // Campo PrecioLista
+        add_settings_field(
+            'SAITNube_PrecioLista', 
+            'PrecioLista: vacio=preciopub', 
+            array( $this, 'SAITNube_PrecioLista_callback' ), 
             'opciones_sait_page', 
             'SAITNube'
         ); 
@@ -138,6 +146,8 @@ class SAITSettingsPage
         if( isset( $input['SAITNube_TipoCambio'] ) )
             $new_input['SAITNube_TipoCambio'] = sanitize_text_field( $input['SAITNube_TipoCambio'] );
         
+		if( isset( $input['SAITNube_PrecioLista'] ) )
+            $new_input['SAITNube_PrecioLista'] = sanitize_text_field( $input['SAITNube_PrecioLista'] );
         return $new_input;
     }
 
@@ -203,6 +213,17 @@ class SAITSettingsPage
         printf(
             '<input type="text" id="SAITNube_NumAlm" name="opciones_sait[SAITNube_NumAlm]" value="%s" />',
             isset( $this->options['SAITNube_NumAlm'] ) ? esc_attr( $this->options['SAITNube_NumAlm']) : ''
+        );
+    }
+	
+    /** 
+     * Obtiene el valor de la opcion y lo imprime
+     */
+    public function SAITNube_PrecioLista_callback()
+    {
+        printf(
+            '<input type="text" id="SAITNube_PrecioLista" name="opciones_sait[SAITNube_PrecioLista]" value="%s" />',
+            isset( $this->options['SAITNube_PrecioLista'] ) ? esc_attr( $this->options['SAITNube_PrecioLista']) : ''
         );
     }
 
