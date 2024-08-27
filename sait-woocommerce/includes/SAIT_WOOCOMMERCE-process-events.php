@@ -47,9 +47,9 @@
 			case "ACTEXIST":
 				$res = self::ACTEXIST($oXml);
 				break;
-			case "ACTTC":
-				$res = self::ACTTC($oXml);
-				break;
+			// case "ACTTC":
+			// 	$res = self::ACTTC($oXml);
+			// 	break;
 			case "MODCLI":
 				$res = self::MODCLI($oXml);
 				break;
