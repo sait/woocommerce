@@ -69,7 +69,9 @@
 		$statusweb = self::xml_attribute($oXml->action[0]->flds[0],"statusweb");
 		if ($statusweb == "0") {
 			// Si existe lo manda a la papelera
-			wp_trash_post($clave->wcid);
+			if (isset($clave->wcid)) {
+			 wp_trash_post($clave->wcid);
+		    }
 			$res = new WP_REST_Response();
 			$res->set_status(200);
 			$res->set_data("OK");
@@ -113,6 +115,7 @@
 		$product = new WC_Product_Simple();
 		$product->set_name( self::xml_attribute($oXml->action[0]->flds[0],"desc") ); 
 		$product->set_SKU(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
+		$product->set_status("draft");
 		$product->set_manage_stock(true);
 		$clavelinea = self::getClaves("lineas",self::xml_attribute($oXml->action[0]->flds[0],"linea"),null);
 		if (isset($clavelinea->wcid)) {
@@ -375,7 +378,7 @@
 		$SAIT_options['SAITNube_TipoCambio']=$NewTC;
 		update_option( 'opciones_sait', $SAIT_options );
 		
-		$url = $SAIT_options['SAITNube_URL']."/api/v2/inventarios/articulos?divisa=D&statusweb=1";
+		$url = $SAIT_options['SAITNube_URL']."/api/v2/inventarios/articulos?divisa=D&statusweb=1&limit=10000";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'timeout' => 5,
