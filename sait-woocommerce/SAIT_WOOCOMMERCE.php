@@ -1,13 +1,13 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 1.0.25
+ * @version 1.0.26
  */
 /*
 Plugin Name: SAIT WooCommerce
 Description: Este plugin agrega un endpoint a wordpress para procesar eventos enviados desde SAIT.
 Author: SAIT Software Administrativo
-Version: 1.0.25
+Version: 1.0.26
 Author URI: http://sait.mx
 */
 
@@ -46,7 +46,15 @@ add_action( 'rest_api_init', function () {
 
 
 function SAIT_procesEvents($request){
-
+	$AccessToken = $request->get_header('x-AccessToken');
+	$SAIT_options=get_option( 'opciones_sait' );
+	$SAITAccessToken = $SAIT_options['SAITNube_AccessToken'];
+	if ($AccessToken != $SAITAccessToken ){
+		$res = new WP_REST_Response();
+		$res->set_status(401);
+		$res->set_data("Bad token");
+		return $res;
+	}
   $xml = $request->get_body();
   libxml_use_internal_errors(true);
   $oXml = simplexml_load_string((string)$xml);

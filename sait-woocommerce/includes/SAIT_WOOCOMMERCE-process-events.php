@@ -391,7 +391,7 @@
 		$SAIT_options['SAITNube_TipoCambio']=$NewTC;
 		update_option( 'opciones_sait', $SAIT_options );
 		
-		$url = $SAIT_options['SAITNube_URL']."/api/v3/articulos?divisa=D&statusweb=1";
+		$url = $SAIT_options['SAITNube_URL']."/api/v3/articulos?divisa=D&statusweb=1&limit=10000";
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
 			'timeout' => 5,

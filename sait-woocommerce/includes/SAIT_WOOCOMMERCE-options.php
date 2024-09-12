@@ -87,6 +87,14 @@ class SAITSettingsPage
             'SAITNube'
         );  
         
+        // Campo PrecioLista
+        add_settings_field(
+            'SAITNube_AccessToken', 
+            'Token de acceso a plugin', 
+            array( $this, 'SAITNube_AccessToken_callback' ), 
+            'opciones_sait_page', 
+            'SAITNube'
+        ); 
         // Campo TipoDoc
         add_settings_field(
             'SAITNube_TipoDoc', 
@@ -146,8 +154,11 @@ class SAITSettingsPage
         if( isset( $input['SAITNube_TipoCambio'] ) )
             $new_input['SAITNube_TipoCambio'] = sanitize_text_field( $input['SAITNube_TipoCambio'] );
         
-		if( isset( $input['SAITNube_PrecioLista'] ) )
+        if( isset( $input['SAITNube_PrecioLista'] ) )
             $new_input['SAITNube_PrecioLista'] = sanitize_text_field( $input['SAITNube_PrecioLista'] );
+        
+        if( isset( $input['SAITNube_AccessToken'] ) )
+            $new_input['SAITNube_AccessToken'] = sanitize_text_field( $input['SAITNube_AccessToken'] );
         return $new_input;
     }
 
@@ -178,6 +189,17 @@ class SAITSettingsPage
         printf(
             '<input type="text" id="SAITNube_URL" name="opciones_sait[SAITNube_URL]" value="%s" />',
             isset( $this->options['SAITNube_URL'] ) ? esc_attr( $this->options['SAITNube_URL']) : ''
+        );
+    }
+
+    /** 
+     * Obtiene el valor de la opcion y lo imprime
+     */
+    public function SAITNube_AccessToken_callback()
+    {
+        printf(
+            '<input type="text" id="SAITNube_AccessToken" name="opciones_sait[SAITNube_AccessToken]" value="%s" />',
+            isset( $this->options['SAITNube_AccessToken'] ) ? esc_attr( $this->options['SAITNube_AccessToken']) : ''
         );
     }
 
