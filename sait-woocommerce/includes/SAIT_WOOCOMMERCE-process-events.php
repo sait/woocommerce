@@ -47,9 +47,9 @@
 			case "ACTEXIST":
 				$res = self::ACTEXIST($oXml);
 				break;
-			// case "ACTTC":
-			// 	$res = self::ACTTC($oXml);
-			// 	break;
+			case "ACTTC":
+			 	$res = self::ACTTC($oXml);
+			 	break;
 			case "MODCLI":
 				$res = self::MODCLI($oXml);
 				break;
@@ -218,7 +218,9 @@
 		}
 		$SAIT_options=get_option( 'opciones_sait' );
 		$preciolista=$SAIT_options['SAITNube_PrecioLista'];
-		if ($preciolista != "") {
+		$TC = $SAIT_options['SAITNube_TipoCambio'];
+		
+		if ($preciolista != "" || $TC !="" ) {
 			$url = $SAIT_options['SAITNube_URL']."/api/v3/articulos/".$numart;
 			$apikey = $SAIT_options['SAITNube_APIKey'];
 			$args = array(
@@ -233,23 +235,23 @@
 			);
 			$resSAIT =  wp_remote_get($url, $args);
 			$api_response = json_decode(  $resSAIT["body"] , true );
-			$precio = $api_response["result"]["precio".$preciolista];
-			if (floatval($precio)!=0.00){
-				$impuesto1 = $api_response["result"]["impuesto1"];
-				$impuesto2 = $api_response["result"]["impuesto2"];
-				$preciopub = strval(round(floatval($precio)*(1+(floatval($impuesto1)+floatval($impuesto2))/100),2));
-				$product->set_regular_price( $preciopub );
-				$product->save();
+			if ($preciolista!=""){
+				$precio = $api_response["result"]["precio".$preciolista];
+				if (floatval($precio)!=0.00){
+					$impuesto1 = $api_response["result"]["impuesto1"];
+					$impuesto2 = $api_response["result"]["impuesto2"];
+					$preciopub = strval(round(floatval($precio)*(1+(floatval($impuesto1)+floatval($impuesto2))/100),2));
+					$product->set_regular_price( $preciopub );
+					$product->save();
+				}
 			}
-
-
+			if ($api_response["result"]["divisa"] == "D" && $TC !=""){
+		 		$precio = strval(round(floatval($preciopub)*floatval($TC),2));
+		 		$product->set_regular_price( $precio );
+				$product->save();
+		 	}
+				
 		}
-		// TODO: Retomar los precios en dolar
-		// if ($api_response["result"]["divisa"] == "D"){
-		// 	$TC = $SAIT_options['SAITNube_TipoCambio'];
-		// 	$precio = strval(round(floatval($preciopub)*floatval($TC),2));
-		// 	$product->set_regular_price( $precio );
-		// }
 
 		$res = new WP_REST_Response();
 		$res->set_status(200);
@@ -405,9 +407,11 @@
 		);
 		$resSAIT =  wp_remote_get($url, $args);
 		$api_response = json_decode(  $resSAIT["body"] , true );
-		foreach ($api_response["result"]["rows"] as $row) {
-			$clave = self::getClaves("arts",$row["numart"],null);
+	
+		foreach ($api_response["result"] as $row) {
+			$clave = self::getClaves("arts",trim($row["numart"]),null);
 			$product = wc_get_product( $clave->wcid );
+	
 			if ($product===false) {
 				continue;
 			}
