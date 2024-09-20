@@ -1,0 +1,6 @@
+<event id="150" dev="ISAI#isais" usr="    1" time="2024-09-12 16:32:09" loc="1" ref="                    " type="ACTTC" src="0" version="2">
+	<action cmd="write" tbl="cia">
+		<keys id="1"></keys>
+		<flds tc="19.0000" tccompra="19.5000" tccredito="19.5000"></flds>
+	</action>
+</event>

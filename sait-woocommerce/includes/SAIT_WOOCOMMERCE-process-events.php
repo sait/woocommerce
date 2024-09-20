@@ -250,6 +250,10 @@
 		 		$product->set_regular_price( $precio );
 				$product->save();
 		 	}
+			$res = new WP_REST_Response();
+			$res->set_status(200);
+			$res->set_data("PRICE UPD API");
+			return $res;
 				
 		}
 

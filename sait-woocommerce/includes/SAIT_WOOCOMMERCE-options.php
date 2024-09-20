@@ -221,7 +221,7 @@ class SAITSettingsPage
     {
         
         printf(
-            '<input type="text" id="SAITNube_TipoCambio" name="opciones_sait[SAITNube_TipoCambio]" value="%s" disabled/>',
+            '<input type="text" id="SAITNube_TipoCambio" name="opciones_sait[SAITNube_TipoCambio]" value="%s" readonly/>',
             isset( $this->options['SAITNube_TipoCambio'] ) ? esc_attr( $this->options['SAITNube_TipoCambio']) : ''
         );
         
