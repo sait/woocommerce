@@ -455,6 +455,12 @@
 
 		// Registrar nuevo cliente
 		$user_id = wc_create_new_customer( $emailtw  );
+		if (!is_int($user_id)) {
+			$res = new WP_REST_Response();
+		 	$res->set_status(200);
+		 	$res->set_data("Ya hay una cuenta registrada con ese correo");
+			return $res;
+    	}
 		// Guardar en claves
 		self::insertClaves("clientes",trim(self::xml_attribute($oXml->action[0]->keys[0],"numcli")),$user_id);
 		$res = new WP_REST_Response();
@@ -471,7 +477,7 @@
 	//
 	public static function getClaves($tabla,$clave,$wcid){
 		global $wpdb;
-		return $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
+		return $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."sait_claves WHERE tabla = '".$tabla."' and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
 	}
 	 
 	public static function insertClaves($tabla,$clave,$wcid){
