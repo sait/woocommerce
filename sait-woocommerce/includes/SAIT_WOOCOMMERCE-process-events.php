@@ -446,11 +446,23 @@
 		}
 		// Si ya existe el cliente no hacer nada
 		if (isset($clave->wcid)) {
+
+			// Buscar el cliente si el email es distinto cambiarlo
+			$customer = new WC_Customer( $clave->wcid );
+			$customer->get_email();
+			if ($emailtw != $customer->get_email()){			
+				$customer->set_email( $emailtw );
+				$customer->save();
+				$res = new WP_REST_Response();
+				$res->set_status(200);
+				$res->set_data("cliente actualizado ");
+				return $res;
+			}
+
 			$res = new WP_REST_Response();
 			$res->set_status(200);
-			$res->set_data("cliente ya existe ".$clave->clave." ".$clave->wcid);
+			$res->set_data("cliente ya existe ");
 			return $res;
-			return;
 		}
 
 		// Registrar nuevo cliente
