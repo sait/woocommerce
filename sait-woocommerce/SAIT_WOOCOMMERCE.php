@@ -1,13 +1,13 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 99.0.23
+ * @version 99.0.24
  */
 /*
 Plugin Name: SAIT WooCommerce
 Description: Este plugin agrega un endpoint a wordpress para procesar eventos enviados desde SAIT.
 Author: SAIT Software Administrativo
-Version: 99.0.23
+Version: 99.0.24
 Author URI: http://sait.mx
 */
 
@@ -84,6 +84,10 @@ function activate_SAIT_WOOCOMMERCE() {
 
 register_activation_hook( __FILE__, 'activate_SAIT_WOOCOMMERCE' );
 
+
+// Acccion que se ejecuta al hacer pagos con tarjeta o paypal
+add_action( 'woocommerce_payment_complete', 'sendOrderSAIT_thankyou', 10, 2 );
+// Acccion que se ejecuta al hacer pedidos sin pago
 add_action( 'woocommerce_thankyou', 'sendOrderSAIT_thankyou', 10, 2 );
 
 
