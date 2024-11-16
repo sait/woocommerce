@@ -79,7 +79,7 @@ add_action( 'rest_api_init', function () {
 
 function SAIT_testPedido(){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
-	return SAIT_WOOCOMMERCE_Pedidos::SAIT_sendPedidoTest();;
+	return SAIT_WOOCOMMERCE_Orders::SAIT_sendPedidoTest();;
 }
 
 /// Funciones Inicializacion
@@ -92,12 +92,19 @@ function activate_SAIT_WOOCOMMERCE() {
 
 register_activation_hook( __FILE__, 'activate_SAIT_WOOCOMMERCE' );
 
+// Acccion que se ejecuta al hacer pagos con tarjeta o paypal
+add_action( 'woocommerce_payment_complete', 'sendOrderSAIT_payment', 10, 2 );
+// Acccion que se ejecuta al hacer pedidos sin pago
 add_action( 'woocommerce_thankyou', 'sendOrderSAIT_thankyou', 10, 2 );
 
+function sendOrderSAIT_payment( $order_id ){
+	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
+	SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($order_id,"1");
+}
 
 function sendOrderSAIT_thankyou( $order_id ){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
-	SAIT_WOOCOMMERCE_Orders::SAIT_sendOrderThankyou($order_id );
+	SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($order_id,"2");
 }
 
 
