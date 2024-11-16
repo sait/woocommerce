@@ -24,12 +24,12 @@
 		//Consultar si el cliente existe en SAIT
 		$api_response = self::SAIT_GetNube("/api/v3/clientes?emailtw=".$email);
 		//return $api_response;
-		if (array_key_exists("numcli",$api_response["result"][0])){
+		if ($api_response["result"]!=null){
 			return  str_pad($api_response["result"][0]["numcli"],5, " ", STR_PAD_LEFT);
 		}else{
 			//Consultar clientes eventuales
 			$api_response = self::SAIT_GetNube("/api/v3/clienteseventuales?email=".$email);
-			if (array_key_exists("numcli",$api_response["result"][0])){
+			if ($api_response["result"]!=null){
 				return str_pad($api_response["result"][0]["numcliev"],5, " ", STR_PAD_LEFT);
 			}
 		}

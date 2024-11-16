@@ -30,6 +30,7 @@
 			$pedido = new stdClass();
 			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
 			$pedido->numcli = "";
+			$pedido->numcliev = "";
 			$pedido->numalm =  str_pad(SAIT_NUBE_NUMALM,2, " ", STR_PAD_LEFT);
 			// Si tiene NumAlm configurado usar ese.
 			$NumAlm = $SAIT_options['SAITNube_NumAlm'];
@@ -69,8 +70,9 @@
 				$clienteeventual->estado = $order->get_billing_state();
 				$clienteeventual->telefono = $order->get_billing_phone();
 				$clienteeventual->email = $order->get_billing_email();
-				$pedido->clienteeventual = $clienteeventual;
+				$pedido->clievent = $clienteeventual;
 		}
+		
 		return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido);
 	}
 
@@ -106,6 +108,7 @@
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
 					$pedido->items[] = $art;
 			}
+			
 			return SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$pedido);
 	}
 
@@ -126,7 +129,7 @@
 
 	 
 	public static function SAIT_sendPedidoTest(){
-			$order = wc_get_order( 5385 );
+			$order = wc_get_order( 11823   );
 			return self::SAIT_sendPedido($order,"1");
 		}
 
