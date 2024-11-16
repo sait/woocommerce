@@ -12,6 +12,8 @@ Author URI: http://sait.mx
 */
 
 include plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-options.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_UTILS.php';
+
 
 if ( !defined( 'SAIT_NUBE_NUMALM' ) ) {
     define( 'SAIT_NUBE_NUMALM', '1' );
