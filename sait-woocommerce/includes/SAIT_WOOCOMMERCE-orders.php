@@ -24,25 +24,21 @@
 
 	// sendPedido()
 	//  Manda el pedido a sait
-	public static function SAIT_sendPedido($order_id, $order ){
+	public static function SAIT_sendPedido( $order,$formapago ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 			$SAIT_options=get_option( 'opciones_sait' );
 			$pedido = new stdClass();
 			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
-			$date =	$order->get_date_created();
-			$pedido->fecha = $date->date_i18n();
-			$pedido->hora = date('H:i:s',$date->getTimestamp());
-			$pedido->numcli = str_pad("0",5, " ", STR_PAD_LEFT);
+			$pedido->numcli = "";
 			$pedido->numalm =  str_pad(SAIT_NUBE_NUMALM,2, " ", STR_PAD_LEFT);
 			// Si tiene NumAlm configurado usar ese.
 			$NumAlm = $SAIT_options['SAITNube_NumAlm'];
 			if (isset($NumAlm) && !is_null($NumAlm)) {
 				$pedido->numalm =  str_pad($NumAlm,2, " ", STR_PAD_LEFT);
 			}
-			$pedido->formapago = "1";
+			$pedido->formapago = $formapago;
 			$pedido->divisa = "P";
 			$pedido->tc = 1;
-			$pedido->mostrador = $order->get_formatted_billing_full_name()."\r\n\r\n".$order->get_billing_address_1()."\r\n".$order->get_billing_city().", ".$order->get_billing_state()."\r\n".$order->get_billing_phone();
 			$pedido->items = [];
 			$order_items_data = array_map( function($item){ return $item->get_data(); }, $order->get_items() );
     		$logger = wc_get_logger();
@@ -56,34 +52,29 @@
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
 					$pedido->items[] = $art;
 			}
-		$clave = self::getClaves("clientes",null,$order->get_user_id());		
+		$clave = SAIT_UTILS::SAIT_getClaves("clientes",null,$order->get_user_id());		
 		if (isset($clave->clave)){
 		 	$pedido->numcli =  str_pad($clave->clave,5, " ", STR_PAD_LEFT);
-		 	$pedido->mostrador = "";
+		}else{
+			$pedido->numcli = SAIT_UTILS::SAIT_getClientebyemail($order->get_billing_email());
 		}
 
-		$url = $SAIT_options['SAITNube_URL']."/api/v3/pedidos";
-		$apikey = $SAIT_options['SAITNube_APIKey'];
-		$args = array(
-			'method' => 'POST',
-			'timeout' => 45,
-			'redirection' => 5,
-			'httpversion' => '1.0',
-			'sslverify' => false,
-			'blocking' => false,
-			'headers' => array(
-				'X-sait-api-key' => $apikey,
-				'Content-Type' => 'application/json',
-				'Accept' => 'application/json',
-			),
-			'body' => json_encode($pedido),
-			'cookies' => array()
-		);
-		
-    	return wp_remote_post($url, $args);
+		// no se encontro ningun cliente
+		if ($pedido->numcli == "") {
+				// aqui agregar el objeto clienteventual a pedido.
+				$clienteeventual =  new stdClass();
+				$clienteeventual->nomcliev  = $order->get_formatted_billing_full_name();
+				$clienteeventual->calle = $order->get_billing_address_1();
+				$clienteeventual->ciudad = $order->get_billing_city();
+				$clienteeventual->estado = $order->get_billing_state();
+				$clienteeventual->telefono = $order->get_billing_phone();
+				$clienteeventual->email = $order->get_billing_email();
+				$pedido->clienteeventual = $clienteeventual;
+		}
+		return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido);
 	}
 
-	public static function SAIT_sendCotizacion($order_id, $order ){
+	public static function SAIT_sendCotizacion( $order ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 
 			$SAIT_options=get_option( 'opciones_sait' );
@@ -115,59 +106,28 @@
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
 					$pedido->items[] = $art;
 			}
-		$SAIT_options=get_option( 'opciones_sait' );
-		$url = $SAIT_options['SAITNube_URL']."/api/v3/cotizaciones/";
-		$apikey = $SAIT_options['SAITNube_APIKey'];
-		$args = array(
-			'method' => 'POST',
-			'timeout' => 45,
-			'redirection' => 5,
-			'httpversion' => '1.0',
-			'sslverify' => false,
-			'blocking' => false,
-			'headers' => array(
-				'X-sait-api-key' => $apikey,
-				'Content-Type' => 'application/json',
-				'Accept' => 'application/json',
-			),
-			'body' => json_encode($pedido),
-			'cookies' => array()
-		);
-		
-    	return wp_remote_post($url, $args);
+			return SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$pedido);
 	}
 
 
-	public static function SAIT_sendOrderThankyou($id_pedido){
+
+	// funcion para cuando los pedidos no fueron pagados.
+	public static function SAIT_sendOrder($id_pedido,$formapago){
 		
 		$order = wc_get_order( $id_pedido );
 		$SAIT_options=get_option( 'opciones_sait' );
 		$tipo = $SAIT_options['SAITNube_TipoDoc'];
 		if ($tipo==="P"){
-			return self::SAIT_sendPedido($id_pedido,$order);
+			return self::SAIT_sendPedido($order,$formapago);
 		}else{
-			return self::SAIT_sendCotizacion($id_pedido,$order);
+			return self::SAIT_sendCotizacion($order);
 		}
 	}
-	public static function getClaves($tabla,$clave,$wcid){
-		global $wpdb;
-		return $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
-	}
-	public static function insertClaves($tabla,$clave,$wcid){
-		global $wpdb;
-		$wpdb->insert( 
-			$wpdb->prefix.'sait_claves', 
-				array( 
-						'tabla' => $tabla,
-						'clave' => $clave,
-						'wcid'  => $wcid
-				)
-		);
-	}
+
 	 
 	public static function SAIT_sendPedidoTest(){
 			$order = wc_get_order( 5385 );
-			return self::SAIT_sendPedido("",$order);
+			return self::SAIT_sendPedido($order,"1");
 		}
 
 	public static function SAIT_calcularPjeDescuentoItem($cantidad,$total,$precio){
