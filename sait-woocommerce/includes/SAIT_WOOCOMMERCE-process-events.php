@@ -203,6 +203,7 @@
 				}
 			}
 			if ($api_response["result"]["divisa"] == "D" && $TC !=""){
+				$preciopub = self::xml_attribute($productflds,"preciopub");
 		 		$precio = strval(round(floatval($preciopub)*floatval($TC),2));
 		 		$product->set_regular_price( $precio );
 				$product->save();
