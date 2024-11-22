@@ -103,6 +103,10 @@
 			if (isset($clavelinea->wcid)) {
 				$product->set_category_ids(array( $clavelinea->wcid));
 			}
+			$modelo=self::xml_attribute($oFlds,"modelo");
+			if ($modelo!=""){
+				$product->set_short_description("Modelo: ".$modelo);
+			}
 			$product->save();
 			
 			return SAIT_UTILS::SAIT_response(200,"ART UPD");
@@ -117,6 +121,10 @@
 		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia",trim(self::xml_attribute($oFlds,"familia")),null);
 		if (isset($clavelinea->wcid)) {
 			$product->set_category_ids(array( $clavelinea->wcid));
+		}
+		$modelo=self::xml_attribute($oFlds,"modelo");
+		if ($modelo!=""){
+			$product->set_short_description("Modelo: ".$modelo);
 		}
 		$product_id = $product->save();
 		// Guardar en claves
