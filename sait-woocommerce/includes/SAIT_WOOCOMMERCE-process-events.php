@@ -44,6 +44,9 @@
 			case "MODLINEA":
 				$res = self::MODLINEA($oXml);
 				break;
+			case "MODCATEGO":
+				$res = self::MODCATEGO($oXml);
+				break;
 			case "ACTEXIST":
 				$res = self::ACTEXIST($oXml);
 				break;
@@ -280,6 +283,10 @@
 
 	public static function MODLINEA($oXml){
 		return self::MODCATEGORIAWC($oXml,"lineas","numlin","nomlin");
+	}
+
+	public static function MODCATEGO($oXml){
+		return self::MODCATEGORIAWC($oXml,"catego","numcat","nomcat");
 	}
 
 	public static function ACTTC($oXml){
