@@ -73,7 +73,7 @@
 
 		// Si viene con statusweb=0 salir
 		$statusweb = self::xml_attribute($oFlds,"statusweb");
-		if ($statusweb == "0") {
+		if ($statusweb == "0" || $statusweb == "" || $statusweb == null) {
 			// Si existe lo manda a la papelera
 			if (isset($clave->wcid)){
 				wp_trash_post($clave->wcid);
