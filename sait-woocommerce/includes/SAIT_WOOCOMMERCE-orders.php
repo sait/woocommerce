@@ -57,11 +57,15 @@
 		if (isset($clave->clave)){
 		 	$pedido->numcli =  str_pad($clave->clave,5, " ", STR_PAD_LEFT);
 		}else{
+			// buscar Cliente o Cliente Eventual en SAIT
 			$pedido->numcli = SAIT_UTILS::SAIT_getClientebyemail($order->get_billing_email());
+			if ($pedido->numcli == ""  ) {
+				$pedido->numcliev = SAIT_UTILS::SAIT_getClienteEventualbyemail($order->get_billing_email());
+			}
 		}
 
 		// no se encontro ningun cliente
-		if ($pedido->numcli == "") {
+		if ($pedido->numcli == "" && $pedido->numcliev == "" ) {
 				// aqui agregar el objeto clienteventual a pedido.
 				$clienteeventual =  new stdClass();
 				$clienteeventual->nomcliev  = $order->get_formatted_billing_full_name();

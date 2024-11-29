@@ -26,12 +26,15 @@
 		//return $api_response;
 		if ($api_response["result"]!=null){
 			return  str_pad($api_response["result"][0]["numcli"],5, " ", STR_PAD_LEFT);
-		}else{
-			//Consultar clientes eventuales
-			$api_response = self::SAIT_GetNube("/api/v3/clienteseventuales?email=".$email);
-			if ($api_response["result"]!=null){
-				return str_pad($api_response["result"][0]["numcliev"],5, " ", STR_PAD_LEFT);
-			}
+		}
+		return "";
+	}
+
+	public static function SAIT_getClienteEventualbyemail($email){
+		//Consultar si el cliente evebntual existe en SAIT
+		$api_response = self::SAIT_GetNube("/api/v3/clienteseventuales?email=".$email);
+		if ($api_response["result"]!=null){
+			return str_pad($api_response["result"][0]["numcliev"],5, " ", STR_PAD_LEFT);
 		}
 		return "";
 	}
