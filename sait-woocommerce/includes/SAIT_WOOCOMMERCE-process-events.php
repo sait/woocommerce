@@ -203,6 +203,9 @@
 		
 		if ($preciolista != "" || $TC !="" ) {
 			$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
+			if ($api_response["result"]==null){
+				return SAIT_UTILS::SAIT_response(200,"PRICE UPD");
+			}
 			if ($preciolista!=""){
 				$precio = $api_response["result"]["precio".$preciolista];
 				if (floatval($precio)!=0.00){
@@ -299,7 +302,9 @@
 		$SAIT_options['SAITNube_TipoCambio']=$NewTC;
 		update_option( 'opciones_sait', $SAIT_options );
 		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos?divisa=D&statusweb=1&limit=10000");
-
+		if ($api_response["result"]==null){
+			return SAIT_UTILS::SAIT_response(200,"Upd TC");
+		}
 		foreach ($api_response["result"] as $row) {
 			$clave = SAIT_UTILS::SAIT_getClaves("arts",trim($row["numart"]),null);
 			$product = wc_get_product( $clave->wcid );
