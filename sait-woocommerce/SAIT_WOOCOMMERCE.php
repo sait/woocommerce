@@ -14,6 +14,8 @@ Author URI: http://sait.mx
 include plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-options.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_UTILS.php';
 
+// Incluir archivos necesarios
+require_once plugin_dir_path(__FILE__) . 'includes/SAIT_WOOCOMMERCE-cart.php';
 
 
 // Variables globales del plugin
