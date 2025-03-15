@@ -4,19 +4,23 @@ jQuery(document).ready(function($) {
 			
 			if (sucursal_id) {
 					$.ajax({
-							url: mi_plugin_ajax.ajax_url,
+							url: sait_woocommerce_ajax.ajax_url,
 							type: 'POST',
+							dataType: 'json', // Importante para manejar JSON correctamente
 							data: {
 									action: 'guardar_sucursal',
 									sucursal_id: sucursal_id,
-									nonce: mi_plugin_ajax.nonce
+									nonce: sait_woocommerce_ajax.nonce
 							},
 							success: function(response) {
-									if (response === 'success') {
-											alert('Sucursal guardada correctamente.');
+									if (response.success) { // "success" es un booleano en la respuesta JSON
+											//alert(response.data); // "data" contiene el mensaje
 									} else {
-											alert('Error al guardar la sucursal.');
+											//alert('Error: ' + response.data);
 									}
+							},
+							error: function() {
+									//alert('Hubo un problema con la solicitud AJAX.');
 							}
 					});
 			}

@@ -122,7 +122,7 @@
  }
 
 // Agregar select de almacen al menu principal.
- function agregar_droplist_al_menu($items, $args) {
+function agregar_droplist_al_menu($items, $args) {
 	if ($args->theme_location == 'primary' && is_user_logged_in()) {
 			$response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
 
@@ -131,17 +131,23 @@
 					$response = json_decode($response, true);
 			}
 
+			// Iniciar sesión para recuperar la sucursal seleccionada
+			if (!session_id()) {
+					session_start();
+			}
+			$sucursal_seleccionada = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+
 			// Verificar si existe "result" y es un array
 			if (isset($response['result']) && is_array($response['result']) && !is_wp_error($response)) {
 					$select_html = '<li class="menu-item custom-menu-dropdown">';
-					//$select_html .= '<select id="sucursal-select" onchange="cambiarSucursal(this)">';
-				$select_html .= '<select id="sucursal-select" >';
+					$select_html .= '<select id="sucursal-select">';
 					$select_html .= '<option value="">Selecciona una sucursal</option>';
 
 					foreach ($response['result'] as $item) {
 							if (isset($item['numalm'], $item['nomalm'])) {
 									$numalm = trim($item['numalm']); // Eliminar espacios extra en numalm
-									$select_html .= '<option value="' . esc_attr($numalm) . '">' . esc_html($item['nomalm']) . '</option>';
+									$selected = ($numalm == $sucursal_seleccionada) ? ' selected="selected"' : ''; // Marcar si coincide
+									$select_html .= '<option value="' . esc_attr($numalm) . '"' . $selected . '>' . esc_html($item['nomalm']) . '</option>';
 							}
 					}
 
@@ -157,16 +163,22 @@ add_filter('wp_nav_menu_items', 'agregar_droplist_al_menu', 10, 2);
 
 // Función para manejar la solicitud AJAX
 function guardar_sucursal() {
-	check_ajax_referer('sait-woocomerce_nonce', 'nonce'); // Verificar nonce para seguridad
+check_ajax_referer('sait-woocommerce_nonce', 'nonce'); // Verificar nonce para seguridad
 
-	if (isset($_POST['sucursal_id'])) {
-			session_start();
-			$_SESSION['sucursal_seleccionada'] = intval($_POST['sucursal_id']);
-			echo 'success';
-	} else {
-			echo 'error';
-	}
-	wp_die();
+if (isset($_POST['sucursal_id'])) {
+		$sucursal_id = intval($_POST['sucursal_id']);
+		
+		// Guardar en los metadatos del usuario (requiere que el usuario esté logueado)
+		update_user_meta(get_current_user_id(), 'sucursal_seleccionada', $sucursal_id);
+		// recuperarlo en alguna funcion
+		$sucursal_id = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+
+		wp_send_json_success($sucursal_id);
+} else {
+		wp_send_json_error('Error al guardar la sucursal.');
 }
+wp_die();
+}
+
 add_action('wp_ajax_guardar_sucursal', 'guardar_sucursal');
 add_action('wp_ajax_nopriv_guardar_sucursal', 'guardar_sucursal');
