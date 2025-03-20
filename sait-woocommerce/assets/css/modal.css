@@ -1,0 +1,108 @@
+/* modal.css */
+/* Estilos para el modal */
+#sucursal-modal {
+	display: none; /* Ocultar por defecto */
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+	z-index: 10000; /* Asegurar que esté por encima de otros elementos */
+	justify-content: center; /* Centrar horizontalmente */
+	align-items: center; /* Centrar verticalmente */
+}
+
+.modal-content {
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	width: 80%;
+	max-width: 500px;
+	text-align: center;
+	position: relative;
+	z-index: 10001;
+	margin-top: 20px; /* Asegura que el modal no esté pegado al borde superior */
+}
+
+
+/* Estilos para el botón de cerrar */
+#cerrar-modal {
+	margin-top: 20px;
+	padding: 10px 20px;
+	background-color: #0073aa;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+#cerrar-modal:hover {
+	background-color: #005a87;
+}
+
+
+
+/* Estilos para cada cuadrito de sucursal */
+.lista-sucursales {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.sucursal-opcion {
+	display: block;
+	padding: 15px;
+	margin: 10px 0;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	text-align: left;
+	cursor: pointer;
+	background-color: #f9f9f9;
+	transition: background-color 0.3s ease;
+}
+
+.sucursal-opcion:hover {
+	background-color: #e9e9e9;
+}
+
+.sucursal-opcion strong {
+	display: block;
+	font-size: 16px;
+	margin-bottom: 5px;
+}
+
+.sucursal-opcion small {
+	display: block;
+	font-size: 14px;
+	color: #666;
+}
+
+/* Estilos para el botón de selección de sucursal */
+#sucursal-button {
+	background-color: #0073aa; /* Color de fondo */
+	color: white; /* Color del texto */
+	padding: 10px 20px; /* Espaciado interno */
+	border-radius: 25px; /* Bordes redondeados */
+	font-size: 14px; /* Tamaño de fuente */
+	font-weight: bold; /* Texto en negrita */
+	text-transform: uppercase; /* Texto en mayúsculas */
+	display: inline-flex; /* Para alinear el ícono y el texto */
+	align-items: center; /* Centrar verticalmente el contenido */
+	gap: 8px; /* Espacio entre el ícono y el texto */
+	transition: background-color 0.3s ease; /* Transición suave */
+	border: 2px solid transparent; /* Borde transparente */
+}
+
+/* Efecto hover para el botón */
+#sucursal-button:hover {
+	background-color: #005a87; /* Cambiar color de fondo al pasar el mouse */
+	border-color: #004d73; /* Cambiar color del borde al pasar el mouse */
+}
+
+/* Estilo para el ícono */
+#sucursal-button i {
+	font-size: 16px; /* Tamaño del ícono */
+	color: white; /* Color del ícono */
+}
