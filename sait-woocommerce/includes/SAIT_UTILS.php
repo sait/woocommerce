@@ -123,64 +123,67 @@
 
 // Agregar select de almacen al menu principal.
 function agregar_boton_al_menu($items, $args) {
-    if ($args->theme_location == 'primary' && is_user_logged_in()) {
-        $numalm = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
-        $nombre_sucursal = 'Seleccionar Sucursal';
-		// Si no hay sucursal seleccionada, tomar la sucursal por defecto
-        if (empty($numalm)) {
-            $SAIT_options = get_option('opciones_sait');
-            $numalm = isset($SAIT_options['SAITNube_NumAlm']) ? $SAIT_options['SAITNube_NumAlm'] : '';
-        }
-        if ($numalm) {
-            // Obtener el nombre de la sucursal desde la lista de sucursales
-            $response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
-            if (is_string($response)) {
-                $response = json_decode($response, true);
-            }
-            $sucursales = isset($response['result']) && is_array($response['result']) ? $response['result'] : [];
+	// Solo para el menú principal 
+	if ($args->theme_location == 'primary' ) {
+			$numalm = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+			$texto_boton = 'Seleccionar Sucursal'; // Texto por defecto
+			
+			// Si hay sucursal seleccionada, obtener su nombre
+			if (!empty($numalm)) {
+					$SAIT_options = get_option('opciones_sait');
+					$almacen_default = $SAIT_options['SAITNube_NumAlm'] ?? '';
+					$numalm = !empty($numalm) ? $numalm : $almacen_default;
+					
+					if (!empty($numalm)) {
+							$response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
+							$sucursales = is_string($response) ? json_decode($response, true)['result'] ?? [] : $response['result'] ?? [];
+							
+							foreach ($sucursales as $sucursal) {
+									if (trim($sucursal['numalm']) == $numalm) {
+											$texto_boton = $sucursal['nomalm'];
+											break;
+									}
+							}
+					}
+			}
 
-            foreach ($sucursales as $sucursal) {
-                if (trim($sucursal['numalm']) == $numalm) {
-                    $nombre_sucursal = $sucursal['nomalm'];
-                    break;
-                }
-            }
-        }
-
-        $items .= '<li class="menu-item"><a href="#" id="sucursal-button"><i class="fas fa-map-pin"></i> ' . esc_html($nombre_sucursal) . '</a></li>';
-    }
-    return $items;
+			// Agregar el botón al menú
+			$items .= '<li class="menu-item menu-item-sucursal">';
+			$items .= '<a href="#" id="sucursal-button" class="sait-sucursal-btn">';
+			$items .= '<i class="fa-solid fa-location-dot"></i> ';
+			$items .= esc_html($texto_boton);
+			$items .= '</a></li>';
+	}
+	return $items;
 }
 add_filter('wp_nav_menu_items', 'agregar_boton_al_menu', 10, 2);
 
 /* Agregar el modal al footer */
 function agregar_modal_sucursal() {
-	if (!is_user_logged_in()) return;
-	
-	$response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
-	if (is_string($response)) {
-			$response = json_decode($response, true);
-	}
-	
-	$sucursales = isset($response['result']) && is_array($response['result']) ? $response['result'] : [];
-	?>
-	<div id="sucursal-modal" class="modal-overlay">
-    <div class="modal-content">
-        <h2>Selecciona una Sucursal</h2>
-        <ul class="lista-sucursales">
-            <?php foreach ($sucursales as $item): ?>
-                <li>
-                    <div class="sucursal-opcion" data-id="<?php echo esc_attr(trim($item['numalm'])); ?>">
-                        <strong><?php echo esc_html($item['nomalm']); ?></strong>
-                        <small><?php echo esc_html($item['calle'] . ' ' . $item['numext'] . ', ' . $item['ciudad'] . ', ' . $item['Estado'] . ' ' . $item['cp']); ?></small>
-                    </div>
-                </li>
-            <?php endforeach; ?>
-        </ul>
-        <button id="cerrar-modal">Cerrar</button>
+    $response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
+    $sucursales = isset($response['result']) ? $response['result'] : [];
+    ?>
+    <div id="sucursal-modal">
+        <div class="modal-content">
+            <h2 style="margin-top: 0; color: #2c3e50; text-align: center;">Selecciona tu Sucursal</h2>
+            <ul class="lista-sucursales">
+                <?php foreach ($sucursales as $item): ?>
+                    <li>
+                        <div class="sucursal-opcion" data-id="<?php echo esc_attr(trim($item['numalm'])); ?>">
+                            <strong><?php echo esc_html($item['nomalm']); ?></strong>
+                            <small>
+                                <?php echo esc_html($item['calle'] . ' ' . $item['numext']); ?><br>
+                                <?php echo esc_html($item['colonia'] . ', ' . $item['ciudad']); ?> <br>
+																<?php echo esc_html($item['estado'] . ', ' . $item['cp']); ?> <br>
+                            </small>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+            <button id="cerrar-modal" class="button">Cerrar</button>
+        </div>
     </div>
-</div>
-	<?php
+    <?php
 }
 add_action('wp_footer', 'agregar_modal_sucursal');
 
@@ -189,14 +192,14 @@ function guardar_sucursal() {
 check_ajax_referer('sait-woocommerce_nonce', 'nonce'); // Verificar nonce para seguridad
 
 if (isset($_POST['sucursal_id'])) {
-		$numalm = intval($_POST['sucursal_id']);
+		$sucursal_id = intval($_POST['sucursal_id']);
 		
 		// Guardar en los metadatos del usuario (requiere que el usuario esté logueado)
-		update_user_meta(get_current_user_id(), 'sucursal_seleccionada', $numalm);
+		update_user_meta(get_current_user_id(), 'sucursal_seleccionada', $sucursal_id);
 		// recuperarlo en alguna funcion
-		$numalm = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+		$sucursal_id = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
 
-		wp_send_json_success($numalm);
+		wp_send_json_success($sucursal_id);
 } else {
 		wp_send_json_error('Error al guardar la sucursal.');
 }

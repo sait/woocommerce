@@ -71,71 +71,81 @@
 		// Proceso de MODART
 		$oKeys = $oXml->action[0]->keys[0];
 		$oFlds = $oXml->action[0]->flds[0];
-		// Saco la clave del articulo
-		$clave = SAIT_UTILS::SAIT_getClaves("arts",trim(self::xml_attribute($oKeys,"numart")),null);
-
-		// Si viene con statusweb=0 salir
-		$statusweb = self::xml_attribute($oFlds,"statusweb");
-		if ($statusweb == "0" || $statusweb == "" || $statusweb == null) {
-			// Si existe lo manda a la papelera
-			if (isset($clave->wcid)){
-				wp_trash_post($clave->wcid);
-			}
-			return SAIT_UTILS::SAIT_response(200,"OK");
+	  // pasar atributos a variables
+		$numart = trim(self::xml_attribute($oKeys, "numart"));
+		$desc = trim(self::xml_attribute($oKeys, "desc"));
+		$familia = trim(self::xml_attribute($oKeys, "familia"));
+		$modelo = trim(self::xml_attribute($oKeys, "modelo"));
+		$statusweb = trim(self::xml_attribute($oKeys, "statusweb"));
+		
+		// Obtener la categoría una sola vez
+		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia", $familia, null);
+		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
+		
+		// Si statusweb = 0, vacío o null → eliminar el producto
+		if ($statusweb === "0" || $statusweb === "" || $statusweb === null) {
+				if (isset($clave->wcid)) {
+						wp_trash_post($clave->wcid);
+				}
+				return SAIT_UTILS::SAIT_response(200, "OK");
 		}
 		
-
-		// Si ya existe el articulo en la tabla de SAIT solo actualizar datos
+		// Si ya existe el artículo → actualizar
 		if (isset($clave->wcid)) {
-			// Revisar si el articulo esta en WC o fue eliminado
-			$product = wc_get_product( $clave->wcid );
-			if ($product===false) {
-				// Producto ya no existe borrarlo de tabla SAIT
-				// para evitar conflictos
-				SAIT_UTILS::SAIT_deleteClaves($clave->id);
-				return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
-			}
-			// wp_untrash_post si el id esta en la papelera sacarlo
-			wp_untrash_post($clave->wcid);
-
-			// Actualizar producto
-			$product = wc_get_product( $clave->wcid );
-			$product->set_name( trim(self::xml_attribute($oFlds,"desc")) );
-			// TODO: Tomar de config que tabla usaran para categorizar
-			$clavelinea = SAIT_UTILS::SAIT_getClaves("familia",trim(self::xml_attribute($oFlds,"familia")),null);
-			if (isset($clavelinea->wcid)) {
-				$product->set_category_ids(array( $clavelinea->wcid));
-			}
-			$modelo=self::xml_attribute($oFlds,"modelo");
-			if ($modelo!=""){
-				$product->set_short_description("Modelo: ".$modelo);
-			}
-			$product->save();
-			
-			return SAIT_UTILS::SAIT_response(200,"ART UPD");
+				$product = wc_get_product($clave->wcid);
+		
+				// Si no existe el producto → eliminar la clave y salir
+				if (!$product) {
+						SAIT_UTILS::SAIT_deleteClaves($clave->id);
+						return SAIT_UTILS::SAIT_response(200, "ART NO EXISTE");
+				}
+		
+				// Si estaba en papelera → restaurar y volver a cargar el producto
+				wp_untrash_post($clave->wcid);
+				$product = wc_get_product($clave->wcid);
+		
+				// Actualizar producto
+				$product->set_name($desc);
+				$product->set_sku($numart);
+		
+				if (!empty($category_id)) {
+						$product->set_category_ids($category_id);
+				}
+		
+				if (!empty($modelo)) {
+						$product->set_short_description("Modelo: " . $modelo);
+				}
+		
+				$product->save();
+		
+				return SAIT_UTILS::SAIT_response(200, "ART UPD");
 		}
-
-		// Registrar nuevo producto
+		
+		// Si no existe el artículo → crear uno nuevo
 		$product = new WC_Product_Simple();
-		$product->set_name( trim(self::xml_attribute($oFlds,"desc")) ); 
-		$product->set_SKU(trim(self::xml_attribute($oKeys,"numart")));
+		$product->set_name($desc);
+		$product->set_sku($numart);
 		$product->set_status("draft");
 		$product->set_manage_stock(true);
-		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia",trim(self::xml_attribute($oFlds,"familia")),null);
-		if (isset($clavelinea->wcid)) {
-			$product->set_category_ids(array( $clavelinea->wcid));
+		if (!empty($category_id)) {
+				$product->set_category_ids($category_id);
 		}
-		$modelo=self::xml_attribute($oFlds,"modelo");
-		if ($modelo!=""){
-			$product->set_short_description("Modelo: ".$modelo);
+		
+		if (!empty($modelo)) {
+				$product->set_short_description("Modelo: " . $modelo);
 		}
+		
 		$product_id = $product->save();
-		// Guardar en claves
-		SAIT_UTILS::SAIT_insertClaves("arts",trim(self::xml_attribute($oKeys,"numart")),$product_id);
-
-		return SAIT_UTILS::SAIT_response(200,"ART ADD");
-
+		
+		// Guardar la nueva clave si se creó el producto
+		if ($product_id) {
+				SAIT_UTILS::SAIT_insertClaves($numart, "articulo", $product_id, $familia);
+				return SAIT_UTILS::SAIT_response(200, "ART ADD");
+		}
+		
+		return SAIT_UTILS::SAIT_response(200, "ART NO CREADO");
 	}
+	
 
 	public static function ACTEXISGBL($oXml){
 		$SAIT_options=get_option( 'opciones_sait' );

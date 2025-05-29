@@ -138,20 +138,32 @@ function sendOrderSAIT_thankyou( $order_id ){
 // Registrar scripts y estilos
 /* Agregar estilos y scripts */
 function registrar_estilos_scripts() {
-	wp_enqueue_style('modal-style', plugin_dir_url(__FILE__) . 'assets/css/modal.css');
-	wp_enqueue_script('modal-script', plugin_dir_url(__FILE__) . 'assets/js/modal.js', array('jquery'), '1.0', true);
-	wp_localize_script('modal-script', 'sait_woocommerce_ajax', array(
-			'ajax_url' => admin_url('admin-ajax.php'),
-			'nonce'    => wp_create_nonce('sait-woocommerce_nonce')
-	));
+    // Cargar solo si es frontend y no en admin
+    if (!is_admin()) {
+		wp_enqueue_style(
+			'font-awesome',
+			'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+			array(),
+			'6.4.0'
+		);
+        wp_enqueue_style('modal-style', plugin_dir_url(__FILE__) . 'assets/css/modal.css');
+        
+        // Cargar el script en el footer con alta prioridad
+        wp_enqueue_script(
+            'modal-script', 
+            plugin_dir_url(__FILE__) . 'assets/js/modal.js', 
+            array('jquery'), 
+            '1.0', 
+            true
+        );
+        
+        wp_localize_script('modal-script', 'sait_woocommerce_ajax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('sait-woocommerce_nonce')
+        ));
+    }
 }
-add_action('wp_enqueue_scripts', 'registrar_estilos_scripts');
-
-
-// Agrego fontawesome para usar iconos
-function agregar_fontawesome() {
-    wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
-}
-add_action('wp_enqueue_scripts', 'agregar_fontawesome');
+// Usar wp_enqueue_scripts con prioridad alta (20)
+add_action('wp_enqueue_scripts', 'registrar_estilos_scripts', 20);
 
 
