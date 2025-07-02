@@ -73,6 +73,7 @@
 		$oFlds = $oXml->action[0]->flds[0];
 	  // pasar atributos a variables
 		$numart = trim(self::xml_attribute($oKeys, "numart"));
+		$codigo = trim(self::xml_attribute($oKeys, "codigo"));
 		$desc = trim(self::xml_attribute($oKeys, "desc"));
 		$familia = trim(self::xml_attribute($oKeys, "familia"));
 		$modelo = trim(self::xml_attribute($oKeys, "modelo"));
@@ -82,6 +83,18 @@
 		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia", $familia, null);
 		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
 		
+		// Obtener id producto por codigo y numart
+		$product_id_by_codigo = get_product_id_by_global_unique_id( $codigo );
+		$clave             = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
+		
+		// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
+		if ( $product_id_by_codigo && !$clave ) {
+			SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
+			$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
+		}
+
+
+
 		// Si statusweb = 0, vacío o null → eliminar el producto
 		if ($statusweb === "0" || $statusweb === "" || $statusweb === null) {
 				if (isset($clave->wcid)) {
@@ -248,6 +261,10 @@
 	//  $nomcat: campo con el nombre de la categoria
 	public static function MODCATEGORIAWC($oXml,$tabla,$numcat,$nomcat){
 		$clave = SAIT_UTILS::SAIT_getClaves($tabla,trim(self::xml_attribute($oXml->action[0]->keys[0],$numcat)),null);
+		$nombre = trim(self::xml_attribute($oXml->action[0]->flds[0],$nomcat));
+		if (empty($nombre)) {
+			return SAIT_UTILS::SAIT_response(200,"linea vacia");
+		}
 		if (!isset($clave->wcid)) {
 			$term_data = wp_insert_term(
 					trim(self::xml_attribute($oXml->action[0]->flds[0],$nomcat)), 
@@ -261,9 +278,18 @@
 		}else{
 			$term = get_term($clave->wcid);
 			if (is_wp_error($term) ||  is_null($term) ){
+				// no existe una categoria con ese ID
+				// buscar por nombre para evitar conflictos
+				$term = get_term_by('name', trim(self::xml_attribute($oXml->action[0]->flds[0],$nomcat)), 'product_cat');
+				if (isset($term->term_id)) {
+                    // si existe cambio de id
+                    SAIT_UTILS::SAIT_deleteClaves($clave->id);
+					SAIT_UTILS::SAIT_insertClaves($tabla,trim(self::xml_attribute($oXml->action[0]->keys[0],$numcat)),$term->term_id);
+					return SAIT_UTILS::SAIT_response(200,"UPD ".$tabla);
+				} 
 				// cat ya no existe borrarlo de tabla SAIT
 				// para evitar conflictos
-				$clave = SAIT_UTILS::SAIT_getClaves($tabla,trim(self::xml_attribute($oXml->action[0]->keys[0]),$numcat),null);
+				$clave = SAIT_UTILS::SAIT_getClaves($tabla,trim(self::xml_attribute($oXml->action[0]->keys[0],$numcat)),null);
 				SAIT_UTILS::SAIT_deleteClaves($clave->id);
 				$term_data = wp_insert_term(
 						trim(self::xml_attribute($oXml->action[0]->flds[0],$nomcat)), 
