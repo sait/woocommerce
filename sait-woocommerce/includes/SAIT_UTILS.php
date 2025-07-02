@@ -208,3 +208,67 @@ wp_die();
 
 add_action('wp_ajax_guardar_sucursal', 'guardar_sucursal');
 add_action('wp_ajax_nopriv_guardar_sucursal', 'guardar_sucursal');
+
+
+add_action('woocommerce_single_product_summary', 'mostrar_tabla_almacenes', 25);
+
+function mostrar_tabla_almacenes_prueba() {
+    echo '<p style="color: red;">Hook funcionando: tabla de almacenes aparecería aquí.</p>';
+}
+
+function mostrar_tabla_almacenes() {
+    global $product;
+    $numart = $product->get_sku();
+
+    $ruta_api = "/api/v3/existencias/" . trim($numart);
+
+    // Llamada a tu función que consulta la API
+    $respuesta = SAIT_UTILS::SAIT_GetNube($ruta_api);
+    
+	if (is_wp_error($respuesta)) {
+		$error_message = $respuesta->get_error_message();
+		echo '<p>Error al obtener existencias: ' . esc_html($error_message) . '</p>';
+		return;
+	}
+
+	if (empty($respuesta) || !isset($respuesta['result']) || empty($respuesta['result'])) {
+		echo '<p>No hay información de existencias (respuesta vacía o sin resultados).</p>';
+		return;
+	}
+
+	if (!empty($respuesta['error'])) {
+		echo '<p>Error en la respuesta de la API: ' . esc_html($respuesta['error']) . '</p>';
+		return;
+	}
+	$almacenes = $respuesta['result'];
+
+	echo '<h3>Existencias por sucursal</h3>';
+
+	echo '<style>
+	.tabla-almacenes {
+		width: auto;
+		border-collapse: collapse;
+		margin-top: 10px;
+	}
+	.tabla-almacenes th, .tabla-almacenes td {
+		border: 1px solid #ccc;
+		padding: 4px 8px;
+		text-align: left;
+	}
+	.tabla-almacenes th {
+		background-color: #f0f0f0;
+	}
+	</style>';
+
+	echo '<table class="tabla-almacenes">';
+	echo '<tr><th>Sucursal</th><th>Existencia</th></tr>';
+
+	foreach ($almacenes as $almacen) {
+		echo '<tr>';
+		echo '<td>' . esc_html(trim($almacen['nomalm'])) . '</td>';
+		echo '<td>' . esc_html($almacen['existencia']) . '</td>';
+		echo '</tr>';
+	}
+
+	echo '</table>';
+}
