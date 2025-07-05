@@ -123,6 +123,12 @@
 
 // Agregar select de almacen al menu principal.
 function agregar_boton_al_menu($items, $args) {
+    $SAIT_options = get_option('opciones_sait');
+	$Sucursal_activo = isset($SAIT_options['SAITNube_Sucursal_enabled']) && $SAIT_options['SAITNube_Sucursal_enabled'] === '1';
+
+	if (!$Sucursal_activo) {
+		return $items;
+	}
 	// Solo para el menú principal 
 	if ($args->theme_location == 'primary' ) {
 			$numalm = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
@@ -160,6 +166,12 @@ add_filter('wp_nav_menu_items', 'agregar_boton_al_menu', 10, 2);
 
 /* Agregar el modal al footer */
 function agregar_modal_sucursal() {
+    $SAIT_options = get_option('opciones_sait');
+	$Sucursal_activo = isset($SAIT_options['SAITNube_Sucursal_enabled']) && $SAIT_options['SAITNube_Sucursal_enabled'] === '1';
+
+	if (!$Sucursal_activo) {
+		return $items;
+	}
     $response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
     $sucursales = isset($response['result']) ? $response['result'] : [];
     ?>
@@ -217,6 +229,12 @@ function mostrar_tabla_almacenes_prueba() {
 }
 
 function mostrar_tabla_almacenes() {
+    $SAIT_options = get_option('opciones_sait');
+	$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) && $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
+
+	if (!$ExistAlm) {
+		return ;
+	}
     global $product;
     $numart = $product->get_sku();
 
@@ -263,11 +281,15 @@ function mostrar_tabla_almacenes() {
 	echo '<table class="tabla-almacenes">';
 	echo '<tr><th>Sucursal</th><th>Existencia</th></tr>';
 
+	$almacenes_a_mostrar = array_map('trim', explode(',', $SAIT_options['SAITNube_ExistAlm']));
+
 	foreach ($almacenes as $almacen) {
-		echo '<tr>';
-		echo '<td>' . esc_html(trim($almacen['nomalm'])) . '</td>';
-		echo '<td>' . esc_html($almacen['existencia']) . '</td>';
-		echo '</tr>';
+		if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
+			echo '<tr>';
+			echo '<td>' . esc_html(trim($almacen['nomalm'])) . '</td>';
+			echo '<td>' . esc_html($almacen['existencia']) . '</td>';
+			echo '</tr>';
+		}
 	}
 
 	echo '</table>';

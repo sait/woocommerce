@@ -104,6 +104,15 @@ class SAITSettingsPage
             'SAITNube'
         ); 
 
+		// Campo para activar o desactivar el modal de Sucursal
+		add_settings_field(
+			'SAITNube_Sucursal_enabled',
+			'¿Seleccionar sucursal?',
+			array( $this, 'SAITNube_Sucursal_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+		
         // Campo NumAlm
         add_settings_field(
             'SAITNube_NumAlm', 
@@ -112,6 +121,25 @@ class SAITSettingsPage
             'opciones_sait_page', 
             'SAITNube'
         ); 
+		
+		// Campo para activar o desactivar la opción ExistAlm
+		add_settings_field(
+			'SAITNube_ExistAlm_enabled',
+			'¿Mostrar existencia de multiples almacenes?',
+			array( $this, 'SAITNube_ExistAlm_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+		
+		// Campo ExistAlm
+        add_settings_field(
+            'SAITNube_ExistAlm', 
+            'Mostrar existencia de estos almacenes', 
+            array( $this, 'SAITNube_ExistAlm_callback' ), 
+            'opciones_sait_page', 
+            'SAITNube'
+        ); 
+				
         // Campo TipoCambio
         add_settings_field(
             'SAITNube_TipoCambio', 
@@ -150,7 +178,17 @@ class SAITSettingsPage
 
         if( isset( $input['SAITNube_NumAlm'] ) )
             $new_input['SAITNube_NumAlm'] = sanitize_text_field( $input['SAITNube_NumAlm'] );
-        
+		
+		if (isset($input['SAITNube_Sucursal_enabled'])) {
+			$new_input['SAITNube_Sucursal_enabled'] = sanitize_text_field($input['SAITNube_Sucursal_enabled']);
+		}
+		
+        if (isset($input['SAITNube_ExistAlm_enabled'])) {
+			$new_input['SAITNube_ExistAlm_enabled'] = sanitize_text_field($input['SAITNube_ExistAlm_enabled']);
+		}
+		if( isset( $input['SAITNube_ExistAlm'] ) )
+            $new_input['SAITNube_ExistAlm'] = sanitize_text_field( $input['SAITNube_ExistAlm'] );	
+		
         if( isset( $input['SAITNube_TipoCambio'] ) )
             $new_input['SAITNube_TipoCambio'] = sanitize_text_field( $input['SAITNube_TipoCambio'] );
         
@@ -161,6 +199,7 @@ class SAITSettingsPage
             $new_input['SAITNube_AccessToken'] = sanitize_text_field( $input['SAITNube_AccessToken'] );
         return $new_input;
     }
+	
 
     /** 
      * Imprime el texto de la seccion
@@ -246,6 +285,49 @@ class SAITSettingsPage
         printf(
             '<input type="text" id="SAITNube_PrecioLista" name="opciones_sait[SAITNube_PrecioLista]" value="%s" />',
             isset( $this->options['SAITNube_PrecioLista'] ) ? esc_attr( $this->options['SAITNube_PrecioLista']) : ''
+        );
+    }
+	
+	public function SAITNube_Sucursal_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_Sucursal_enabled']) ? $this->options['SAITNube_Sucursal_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_Sucursal_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_Sucursal_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+		//$existAlm_activo = !empty($options['SAITNube_ExistAlm_enabled']) && $options['SAITNube_ExistAlm_enabled'] === '1';
+	}
+	
+	public function SAITNube_ExistAlm_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_ExistAlm_enabled']) ? $this->options['SAITNube_ExistAlm_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_ExistAlm_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_ExistAlm_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+		//$existAlm_activo = !empty($options['SAITNube_ExistAlm_enabled']) && $options['SAITNube_ExistAlm_enabled'] === '1';
+	}
+	
+	 /** 
+     * Obtiene el valor de la opcion y lo imprime
+     */
+    public function SAITNube_ExistAlm_callback()
+    {
+        printf(
+            '<input type="text" id="SAITNube_ExistAlm" name="opciones_sait[SAITNube_ExistAlm]" value="%s" />',
+            isset( $this->options['SAITNube_ExistAlm'] ) ? esc_attr( $this->options['SAITNube_ExistAlm']) : ''
         );
     }
 
