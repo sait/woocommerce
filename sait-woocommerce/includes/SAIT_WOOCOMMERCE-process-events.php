@@ -84,7 +84,7 @@
 		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
 		
 		// Obtener id producto por codigo y numart
-		$product_id_by_codigo = get_product_id_by_global_unique_id( $codigo );
+		$product_id_by_codigo = wc_get_product_id_by_global_unique_id( $codigo );
 		$clave             = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
 		
 		// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
