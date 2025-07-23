@@ -373,6 +373,9 @@
 			if ($emailtw != $customer->get_email()){			
 				$customer->set_email( $emailtw );
 				$customer->save();
+				$mailer = WC()->mailer();
+				$email = $mailer->emails['WC_Email_Customer_New_Account'];
+				$email->trigger($clave->wcid,null,true);
 				return SAIT_UTILS::SAIT_response(200,"Cliente actualizado");
 			}
 
