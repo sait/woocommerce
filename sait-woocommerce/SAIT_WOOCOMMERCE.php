@@ -1,13 +1,13 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 1.1.1
+ * @version 1.1.5
  */
 /*
 Plugin Name: SAIT WooCommerce
 Description: Este plugin agrega un endpoint a wordpress para procesar eventos enviados desde SAIT.
 Author: SAIT Software Administrativo
-Version: 1.1.1
+Version: 1.1.4
 Author URI: http://sait.mx
 */
 
@@ -134,5 +134,36 @@ function sendOrderSAIT_thankyou( $order_id ){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
 	SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($order_id,"2");
 }
+
+// Registrar scripts y estilos
+/* Agregar estilos y scripts */
+function registrar_estilos_scripts() {
+    // Cargar solo si es frontend y no en admin
+    if (!is_admin()) {
+		wp_enqueue_style(
+			'font-awesome',
+			'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+			array(),
+			'6.4.0'
+		);
+        wp_enqueue_style('modal-style', plugin_dir_url(__FILE__) . 'assets/css/modal.css');
+        
+        // Cargar el script en el footer con alta prioridad
+        wp_enqueue_script(
+            'modal-script', 
+            plugin_dir_url(__FILE__) . 'assets/js/modal.js', 
+            array('jquery'), 
+            '1.0', 
+            true
+        );
+        
+        wp_localize_script('modal-script', 'sait_woocommerce_ajax', array(
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('sait-woocommerce_nonce')
+        ));
+    }
+}
+// Usar wp_enqueue_scripts con prioridad alta (20)
+add_action('wp_enqueue_scripts', 'registrar_estilos_scripts', 20);
 
 

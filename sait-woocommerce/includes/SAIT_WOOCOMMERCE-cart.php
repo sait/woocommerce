@@ -30,7 +30,14 @@ function calcularpreciosCarrito($cart) {
 			$numcli = "    0";
 		} 
 		$cantidad = $cart_item['quantity'];
-		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/calcularprecios?numart=".$numart."&unidad=".$unidad."&cant=".$cantidad."&divisadoc=P&numalm= 1&formapago=1&numcli=".$numcli);
+		$sucursal_id = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+		// Si no hay sucursal seleccionada, tomar la sucursal por defecto
+        if (empty($sucursal_id)) {
+            $SAIT_options = get_option('opciones_sait');
+            $sucursal_id = isset($SAIT_options['SAITNube_NumAlm']) ? $SAIT_options['SAITNube_NumAlm'] : '';
+        }
+		$sucursal_id =  str_pad( $sucursal_id,2, " ", STR_PAD_LEFT);
+		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/calcularprecios?numart=".$numart."&unidad=".$unidad."&cant=".$cantidad."&divisadoc=P&numalm=".$sucursal_id."&formapago=1&numcli=".$numcli);
 		$preciopub = $api_response["result"]["preciopub"];
 		$pjedesc = $api_response["result"]["pjedesc"];
 		

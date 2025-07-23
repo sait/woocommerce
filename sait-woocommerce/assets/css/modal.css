@@ -1,0 +1,117 @@
+/* modal.css */
+/* Estilos para el modal */
+#sucursal-modal {
+	display: none; /* Oculto por defecto */
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	z-index: 9999;
+	overflow: auto;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	justify-content: center;
+	align-items: center;
+}
+
+/* Cuando el modal está visible */
+#sucursal-modal.active {
+	display: flex;
+	opacity: 1;
+}
+
+/* Contenido del modal - Tamaño adecuado y centrado */
+#sucursal-modal .modal-content {
+	background: white;
+	border-radius: 10px;
+	width: 90%;
+	max-width: 500px; /* Ancho máximo adecuado */
+	max-height: 80vh;
+	overflow-y: auto;
+	padding: 25px;
+	box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+	position: relative;
+	margin: 20px;
+	animation: modalFadeIn 0.4s ease-out;
+}
+
+/* Animación de entrada */
+@keyframes modalFadeIn {
+	from {
+			transform: translateY(-30px);
+			opacity: 0;
+	}
+	to {
+			transform: translateY(0);
+			opacity: 1;
+	}
+}
+
+
+
+/* Estilos para cada cuadrito de sucursal */
+.lista-sucursales {
+	list-style: none;
+	padding: 0;
+	margin: 20px 0;
+}
+
+.sucursal-opcion {
+	padding: 12px 15px;
+	border-bottom: 1px solid #eee;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.sucursal-opcion:hover {
+	background-color: #f8f8f8;
+}
+
+.sucursal-opcion strong {
+	display: block;
+	font-size: 16px;
+	margin-bottom: 5px;
+	color: #2c3e50;
+}
+
+.sucursal-opcion small {
+	display: block;
+	font-size: 13px;
+	color: #7f8c8d;
+	line-height: 1.4;
+}
+
+/* Botón de cerrar */
+#cerrar-modal {
+	display: block;
+	width: 100%;
+	max-width: 150px;
+	margin: 20px auto 0;
+	padding: 10px 15px;
+	background-color: #e74c3c;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 15px;
+	transition: background-color 0.2s;
+}
+
+#cerrar-modal:hover {
+	background-color: #c0392b;
+}
+
+/* Responsive para móviles */
+@media (max-width: 600px) {
+	#sucursal-modal .modal-content {
+			width: 95%;
+			padding: 15px;
+			max-height: 85vh;
+	}
+	
+	.sucursal-opcion {
+			padding: 10px 12px;
+	}
+}
