@@ -1,7 +1,7 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 1.1.4
+ * @version 1.1.5
  */
 /*
 Plugin Name: SAIT WooCommerce

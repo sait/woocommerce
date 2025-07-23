@@ -317,7 +317,7 @@
 	}	
 
 	public static function MODDEPTO($oXml){
-		return self::MODCATEGORIAWC($oXml,"deptos","numdep","nomdep");
+		return self::MODCATEGORIAWC($oXml,"deptos","valdep","nomdep");
 	}
 
 	public static function MODLINEA($oXml){
