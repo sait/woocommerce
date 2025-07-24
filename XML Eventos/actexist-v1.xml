@@ -1,0 +1,56 @@
+<oPlainobject>
+	<aActions>
+		<oPlainobject.Actions>
+			<cAction>AddReg</cAction>
+			<oPlainobject.Fields>
+				<nCostopro>29.80000</nCostopro>
+				<nExistencia>0.000</nExistencia>
+				<cNumalm> 3</cNumalm>
+				<cNumart>       7501054526131</cNumart>
+				<nVentanoqty>0.00</nVentanoqty>
+			</oPlainobject.Fields>
+			<cIndex>ARTALM</cIndex>
+			<cKey>       7501054526131 3</cKey>
+			<oPlainobject.Keys>
+				<cNumalm> 3</cNumalm>
+				<cNumart>       7501054526131</cNumart>
+			</oPlainobject.Keys>
+			<cTable>MULTIALM</cTable>
+		</oPlainobject.Actions>
+		<oPlainobject.Actions>
+			<cAction>AddReg</cAction>
+			<oPlainobject.Fields>
+				<nCostopro>19.19000</nCostopro>
+				<nExistencia>1.000</nExistencia>
+				<cNumalm> 3</cNumalm>
+				<cNumart>       7501022150818</cNumart>
+				<nVentanoqty>0.00</nVentanoqty>
+			</oPlainobject.Fields>
+			<cIndex>ARTALM</cIndex>
+			<cKey>       7501022150818 3</cKey>
+			<oPlainobject.Keys>
+				<cNumalm> 3</cNumalm>
+				<cNumart>       7501022150818</cNumart>
+			</oPlainobject.Keys>
+			<cTable>MULTIALM</cTable>
+		</oPlainobject.Actions>
+		<oPlainobject.Actions>
+			<cAction>AddReg</cAction>
+			<oPlainobject.Fields>
+				<nCostopro>21.87000</nCostopro>
+				<nExistencia>0.000</nExistencia>
+				<cNumalm> 3</cNumalm>
+				<cNumart>        641018313746</cNumart>
+				<nVentanoqty>0.00</nVentanoqty>
+			</oPlainobject.Fields>
+			<cIndex>ARTALM</cIndex>
+			<cKey>        641018313746 3</cKey>
+			<oPlainobject.Keys>
+				<cNumalm> 3</cNumalm>
+				<cNumart>        641018313746</cNumart>
+			</oPlainobject.Keys>
+			<cTable>MULTIALM</cTable>
+		</oPlainobject.Actions>
+	</aActions>
+	<nCount>3</nCount>
+</oPlainobject>
