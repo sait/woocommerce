@@ -78,7 +78,10 @@
 		$familia = trim(self::xml_attribute($oFlds, "familia"));
 		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
 		$statusweb = trim(self::xml_attribute($oFlds, "statusweb"));
-		
+		// Si statusweb vaio no es modart completo
+		if ( $statusweb === "")  {
+					return SAIT_UTILS::SAIT_response(200, "statusweb null");
+			}
 		// Obtener la categoría una sola vez
 		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia", $familia, null);
 		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
