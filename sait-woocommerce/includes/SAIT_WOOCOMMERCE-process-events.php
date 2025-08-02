@@ -73,11 +73,11 @@
 		$oFlds = $oXml->action[0]->flds[0];
 	  // pasar atributos a variables
 		$numart = trim(self::xml_attribute($oKeys, "numart"));
-		$codigo = trim(self::xml_attribute($oKeys, "codigo"));
-		$desc = trim(self::xml_attribute($oKeys, "desc"));
-		$familia = trim(self::xml_attribute($oKeys, "familia"));
-		$modelo = trim(self::xml_attribute($oKeys, "modelo"));
-		$statusweb = trim(self::xml_attribute($oKeys, "statusweb"));
+		$codigo = trim(self::xml_attribute($oFlds, "codigo"));
+		$desc = trim(self::xml_attribute($oFlds, "desc"));
+		$familia = trim(self::xml_attribute($oFlds, "familia"));
+		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
+		$statusweb = trim(self::xml_attribute($oFlds, "statusweb"));
 		
 		// Obtener la categoría una sola vez
 		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia", $familia, null);
@@ -86,7 +86,7 @@
 		// Obtener id producto por codigo y numart
 		$product_id_by_codigo = wc_get_product_id_by_global_unique_id( $codigo );
 		$clave             = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
-		
+
 		// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
 		if ( $product_id_by_codigo && !$clave ) {
 			SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
@@ -120,6 +120,7 @@
 				// Actualizar producto
 				$product->set_name($desc);
 				$product->set_sku($numart);
+				$product->set_global_unique_id( $codigo );
 		
 				if (!empty($category_id)) {
 						$product->set_category_ids($category_id);
@@ -138,8 +139,10 @@
 		$product = new WC_Product_Simple();
 		$product->set_name($desc);
 		$product->set_sku($numart);
+		$product->set_global_unique_id( $codigo );
 		$product->set_status("draft");
 		$product->set_manage_stock(true);
+		$product->set_regular_price( 0);
 		if (!empty($category_id)) {
 				$product->set_category_ids($category_id);
 		}
@@ -152,7 +155,7 @@
 		
 		// Guardar la nueva clave si se creó el producto
 		if ($product_id) {
-				SAIT_UTILS::SAIT_insertClaves($numart, "articulo", $product_id, $familia);
+				SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id);
 				return SAIT_UTILS::SAIT_response(200, "ART ADD");
 		}
 		
