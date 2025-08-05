@@ -232,7 +232,7 @@ function mostrar_tabla_almacenes() {
     $SAIT_options = get_option('opciones_sait');
 	$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) && $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
 
-	if (!$ExistAlm) {
+	if (!$ExistAlm_activo) {
 		return ;
 	}
     global $product;

@@ -148,7 +148,14 @@ class SAITSettingsPage
             'opciones_sait_page', 
             'SAITNube'
         ); 
-		
+		// Campo para activar o desactivar las Promociones en el carrito
+		add_settings_field(
+			'SAITNube_Promo_enabled',
+			'¿Calcular promociones en el carrito?',
+			array( $this, 'SAITNube_Promo_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
         // Campo PrecioLista
         add_settings_field(
             'SAITNube_PrecioLista', 
@@ -192,6 +199,10 @@ class SAITSettingsPage
         if( isset( $input['SAITNube_TipoCambio'] ) )
             $new_input['SAITNube_TipoCambio'] = sanitize_text_field( $input['SAITNube_TipoCambio'] );
         
+		if (isset($input['SAITNube_Promo_enabled'])) {
+			$new_input['SAITNube_Promo_enabled'] = sanitize_text_field($input['SAITNube_Promo_enabled']);
+		}
+		
         if( isset( $input['SAITNube_PrecioLista'] ) )
             $new_input['SAITNube_PrecioLista'] = sanitize_text_field( $input['SAITNube_PrecioLista'] );
         
@@ -287,6 +298,21 @@ class SAITSettingsPage
             isset( $this->options['SAITNube_PrecioLista'] ) ? esc_attr( $this->options['SAITNube_PrecioLista']) : ''
         );
     }
+	
+	public function SAITNube_Promo_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_Promo_enabled']) ? $this->options['SAITNube_Promo_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_Promo_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_Promo_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+	}
 	
 	public function SAITNube_Sucursal_enabled_callback()
 	{

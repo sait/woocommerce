@@ -6,7 +6,12 @@ function calcularpreciosCarrito($cart) {
     if (is_admin() && !defined('DOING_AJAX')) {
         return;
     }
+    $SAIT_options = get_option('opciones_sait');
+	$Promo_activo = isset($SAIT_options['SAITNube_Promo_enabled']) && $SAIT_options['SAITNube_Promo_enabled'] === '1';
 
+	if (!$Promo_activo) {
+		return ;
+	}
     // Recorrer cada artículo en el carrito
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
         // Obtener el producto
