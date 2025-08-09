@@ -1,6 +1,11 @@
 # Changelog
 
 
+## [1.1.7] - 09/AGO/2025 
+### fix
+- correcciones a MODART
+
+
 ## [1.1.6] - 05/AGO/2025 
 ## add
 - Se agregaron opcion al menu
