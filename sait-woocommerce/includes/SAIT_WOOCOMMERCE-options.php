@@ -148,10 +148,10 @@ class SAITSettingsPage
             'opciones_sait_page', 
             'SAITNube'
         ); 
-		// Campo para activar o desactivar las Promociones en el carrito
+		// Campo para activar o desactivar las promociones en el carrito
 		add_settings_field(
 			'SAITNube_Promo_enabled',
-			'¿Calcular promociones en el carrito?',
+			'Calculo de precios y promociones en el carrito',
 			array( $this, 'SAITNube_Promo_enabled_callback' ),
 			'opciones_sait_page',
 			'SAITNube'

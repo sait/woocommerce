@@ -86,14 +86,17 @@
 		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia", $familia, null);
 		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
 		
-		// Obtener id producto por codigo y numart
-		$product_id_by_codigo = wc_get_product_id_by_global_unique_id( $codigo );
-		$clave             = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
+		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
+		$product_id_by_codigo = "";
+		if ($codigo != "") {
+			// Obtener id producto por codigo y numart
+			$product_id_by_codigo = wc_get_product_id_by_global_unique_id( $codigo );
 
-		// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
-		if ( $product_id_by_codigo && !$clave ) {
-			SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
-			$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
+			// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
+			if ( $product_id_by_codigo && !$clave ) {
+				SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
+				$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
+			}	
 		}
 
 
