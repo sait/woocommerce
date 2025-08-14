@@ -12,13 +12,12 @@
 -  Activar/Desactivar promociones en carrito
 ### fix
 - correcciones a MODART
-
-
+- Se corrigio busqueda de articulo por codigo de barra en MODART 
 
 ## [1.1.5] - 22/JUL/2025 
 ### fix
 - fix evento moddepto
-- fix buscar por codigo
+- fix Se corrigo la busqueda de articulo por codigo de barras en claves sait.
 
 ## [1.1.4] - 05/JUL/2025 
 ### add
@@ -41,8 +40,8 @@
 - Se agrego modal para seleccionar sucursal en menu principal
 - Al seleccionar sucursal se usa para revisar promociones
 - Se agrega tabla para mostrar existencias por sucursal en descripcion de articulo
-### upd
-- al registrar articulo se busca si ya esta registrado por codigo de barras en la tienda
+- Se agrega funcionalidad al recibir un evento MODART, si el articulo tiene codigo de barras se registra en campo UPC
+- Si el articulo tiene codigo de barras, se busca ese codigo de barrras en woocommerce para actualizarlo y vincularlo.
 
 
 ## [1.1.2] - 12/MAR/2025 
