@@ -92,16 +92,17 @@
 		if ($codigo != "") {
 			$product_id_by_codigo = wc_get_product_id_by_global_unique_id($codigo);
 	
-			if ($product_id_by_codigo) {
-					$product = wc_get_product($product_id_by_codigo);
-	
-					// Verificar que el SKU coincida con $numart
-					if ($product && $product->get_sku() !== $numart) {
-							// Conflicto detectado: otro producto ya usa este código con distinto SKU
-							error_log("Conflicto: El código $codigo ya está asignado a otro producto con SKU {$product->get_sku()}");
-							$product_id_by_codigo = ""; // invalidar para no ligarlo mal
-					}
-			}
+		if ($product_id_by_codigo) {
+				$product = wc_get_product($product_id_by_codigo);
+
+				// Verificar que el SKU coincida con $numart
+				if ($product && $product->get_sku() !== $numart) {
+						// Conflicto detectado: otro producto ya usa este código con distinto SKU
+						error_log("Conflicto: El código $codigo ya está asignado a otro producto con SKU {$product->get_sku()}");
+						$product_id_by_codigo = ""; // invalidar para no ligarlo mal
+						$codigo = ""; // invalidar el código global para que no se use en este producto
+				}
+		}
 	
 			// Si existe producto y no teníamos clave registrada aún
 			if ($product_id_by_codigo && !$clave) {
