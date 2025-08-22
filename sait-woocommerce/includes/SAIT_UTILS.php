@@ -119,6 +119,22 @@
 		return $res;
 	}
 
+	public static function SAIT_codigo_valido($codigo) {
+		$codigo = trim($codigo);
+
+		// Debe contener solo dígitos
+		if (!preg_match('/^\d+$/', $codigo)) {
+		 return "";
+		}
+		// Longitudes válidas para GTIN/UPC/EAN/ISBN
+		$longitudes_validas = [8, 10, 12, 13, 14];
+		$len = strlen($codigo);
+		if (in_array($len, $longitudes_validas, true)) {
+			return $codigo;
+		}
+		return "";
+	}
+
  }
 
 // Agregar select de almacen al menu principal.

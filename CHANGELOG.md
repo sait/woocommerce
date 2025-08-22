@@ -1,9 +1,14 @@
 # Changelog
 
 
+## [1.1.8] - 22/AGO/2025 
+### fix
+- Se valida codigo de barras antes de asignarlo a la variable
+- Evitamos ligar codigo a un sku existente
+
 ## [1.1.7] - 09/AGO/2025 
 ### fix
-- correcciones a MODART
+- Se hizo correccion en busqueda por codigo de barras en MODART
 
 
 ## [1.1.6] - 05/AGO/2025 

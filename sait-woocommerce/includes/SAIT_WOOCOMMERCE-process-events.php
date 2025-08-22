@@ -73,7 +73,8 @@
 		$oFlds = $oXml->action[0]->flds[0];
 	  // pasar atributos a variables
 		$numart = trim(self::xml_attribute($oKeys, "numart"));
-		$codigo = trim(self::xml_attribute($oFlds, "codigo"));
+		// TODO: si son codigos internos con letra agregar al articulo de otra forma
+		$codigo = SAIT_UTILS::SAIT_codigo_valido(trim(self::xml_attribute($oFlds, "codigo")));
 		$desc = trim(self::xml_attribute($oFlds, "desc"));
 		$familia = trim(self::xml_attribute($oFlds, "familia"));
 		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
@@ -89,15 +90,25 @@
 		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
 		$product_id_by_codigo = "";
 		if ($codigo != "") {
-			// Obtener id producto por codigo y numart
-			$product_id_by_codigo = wc_get_product_id_by_global_unique_id( $codigo );
-
-			// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
-			if ( $product_id_by_codigo && !$clave ) {
-				SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
-				$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
-			}	
-		}
+			$product_id_by_codigo = wc_get_product_id_by_global_unique_id($codigo);
+	
+			if ($product_id_by_codigo) {
+					$product = wc_get_product($product_id_by_codigo);
+	
+					// Verificar que el SKU coincida con $numart
+					if ($product && $product->get_sku() !== $numart) {
+							// Conflicto detectado: otro producto ya usa este código con distinto SKU
+							error_log("Conflicto: El código $codigo ya está asignado a otro producto con SKU {$product->get_sku()}");
+							$product_id_by_codigo = ""; // invalidar para no ligarlo mal
+					}
+			}
+	
+			// Si existe producto y no teníamos clave registrada aún
+			if ($product_id_by_codigo && !$clave) {
+					SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
+					$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
+			}
+	}
 
 
 
