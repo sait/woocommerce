@@ -79,6 +79,7 @@
 		$familia = trim(self::xml_attribute($oFlds, "familia"));
 		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
 		$statusweb = trim(self::xml_attribute($oFlds, "statusweb"));
+		$obs = trim(self::xml_attribute($oFlds, "obs"));
 		// Si statusweb vaio no es modart completo
 		if ( $statusweb === "")  {
 					return SAIT_UTILS::SAIT_response(200, "statusweb null");
@@ -88,7 +89,7 @@
 		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
 		
 		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
-		$product_id_by_codigo = "";
+/* 		$product_id_by_codigo = "";
 		if ($codigo != "") {
 			$product_id_by_codigo = wc_get_product_id_by_global_unique_id($codigo);
 	
@@ -109,7 +110,7 @@
 					SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
 					$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
 			}
-	}
+	} */
 
 
 
@@ -121,6 +122,21 @@
 				return SAIT_UTILS::SAIT_response(200, "OK");
 		}
 		
+
+		$product_id_by_sku = wc_get_product_id_by_sku($numart);
+
+		if ($product_id_by_sku) {
+				$product = wc_get_product($product_id_by_sku);
+
+				// Si existe producto y no teníamos clave registrada aún
+				if ($product && !$clave) {
+						// Registrar o actualizar la clave ligando el numart al producto por SKU
+						SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_sku);
+						$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
+				}
+		}
+
+
 		// Si ya existe el artículo → actualizar
 		if (isset($clave->wcid)) {
 				$product = wc_get_product($clave->wcid);
@@ -147,6 +163,10 @@
 				if (!empty($modelo)) {
 						$product->set_short_description("Modelo: " . $modelo);
 				}
+
+				if (!empty($obs)) {
+					$product->set_description($obs);
+				}
 		
 				$product->save();
 		
@@ -168,7 +188,10 @@
 		if (!empty($modelo)) {
 				$product->set_short_description("Modelo: " . $modelo);
 		}
-		
+
+		if (!empty($obs)) {
+			$product->set_description($obs);
+		}
 		$product_id = $product->save();
 		
 		// Guardar la nueva clave si se creó el producto

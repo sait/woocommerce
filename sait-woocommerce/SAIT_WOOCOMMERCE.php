@@ -47,7 +47,8 @@ add_action( 'rest_api_init', function () {
 	register_rest_route( 'saitplugin/v1', '/hello',
 		array(
 			'methods' => 'GET', 
-			'callback' => 'SAIT_helloworld'
+			'callback' => 'SAIT_helloworld',
+			'permission_callback' => '__return_true', 
 		)
 	);
 });
@@ -58,7 +59,8 @@ add_action( 'rest_api_init', function () {
 	register_rest_route( 'saitplugin/v1', '/saitevents',
 		array(
 			'methods' => 'POST', 
-			'callback' => 'SAIT_procesEvents'
+			'callback' => 'SAIT_procesEvents',
+			'permission_callback' => '__return_true', 
 		)
 	);
 });
@@ -69,7 +71,8 @@ add_action( 'rest_api_init', function () {
 	register_rest_route( 'saitplugin/v1', '/testpedido',
 		array(
 			'methods' => 'GET', 
-			'callback' => 'SAIT_testPedido'
+			'callback' => 'SAIT_testPedido',
+			'permission_callback' => '__return_true', 
 		)
 	);
 });
