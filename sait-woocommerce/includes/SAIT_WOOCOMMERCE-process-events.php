@@ -73,10 +73,9 @@
 		$oFlds = $oXml->action[0]->flds[0];
 	  // pasar atributos a variables
 		$numart = trim(self::xml_attribute($oKeys, "numart"));
-		// TODO: si son codigos internos con letra agregar al articulo de otra forma
 		$codigo = SAIT_UTILS::SAIT_codigo_valido(trim(self::xml_attribute($oFlds, "codigo")));
 		$desc = trim(self::xml_attribute($oFlds, "desc"));
-		$familia = trim(self::xml_attribute($oFlds, "familia"));
+		$depto = trim(self::xml_attribute($oFlds, "numdep"));
 		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
 		$statusweb = trim(self::xml_attribute($oFlds, "statusweb"));
 		$obs = trim(self::xml_attribute($oFlds, "obs"));
@@ -85,35 +84,58 @@
 					return SAIT_UTILS::SAIT_response(200, "statusweb null");
 			}
 		// Obtener la categoría una sola vez
-		$clavelinea = SAIT_UTILS::SAIT_getClaves("familia", $familia, null);
-		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
+		$clavedepto = SAIT_UTILS::SAIT_getClaves("deptos", $depto, null);
+		$category_id = isset($clavedepto->wcid) ? array($clavedepto->wcid) : array();
 		
 		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
-/* 		$product_id_by_codigo = "";
-		if ($codigo != "") {
-			$product_id_by_codigo = wc_get_product_id_by_global_unique_id($codigo);
 	
-		if ($product_id_by_codigo) {
-				$product = wc_get_product($product_id_by_codigo);
+		/*
+ 	   $product_id_by_sku = wc_get_product_id_by_sku($numart);
+		if ($product_id_by_sku) {
+				$product = wc_get_product($product_id_by_sku);
 
-				// Verificar que el SKU coincida con $numart
-				if ($product && $product->get_sku() !== $numart) {
-						// Conflicto detectado: otro producto ya usa este código con distinto SKU
-						error_log("Conflicto: El código $codigo ya está asignado a otro producto con SKU {$product->get_sku()}");
-						$product_id_by_codigo = ""; // invalidar para no ligarlo mal
-						$codigo = ""; // invalidar el código global para que no se use en este producto
+				// Si existe producto y no teníamos clave registrada aún
+				if ($product && !$clave) {
+						// Registrar o actualizar la clave ligando el numart al producto por SKU
+						//SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_sku);
+						//	$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
+						
+						//	ES PRODUCTO PREVIAMENTE REGISTRADO DE FYSON HACER UPDATE
+			
+						// Actualizar producto
+						//$product->set_name($desc);
+						//$product->set_sku($numart);
+						//$product->set_global_unique_id( $codigo );
+
+						if (!empty($category_id)) {
+								$product->set_category_ids($category_id);
+						}
+
+						if (!empty($obs)) {
+								 $product->set_description($obs);
+						}
+
+						$product->save();
+
+						return SAIT_UTILS::SAIT_response(200, "ART UPD");
 				}
 		}
-	
-			// Si existe producto y no teníamos clave registrada aún
-			if ($product_id_by_codigo && !$clave) {
-					SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
-					$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
-			}
-	} */
+		
+		
+		
+		//$product_id_by_codigo = "";
+		//if ($codigo != "") {
+			// Obtener id producto por codigo y numart
+			//$product_id_by_codigo = wc_get_product_id_by_global_unique_id( $codigo );
 
+			// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
+			//if ( $product_id_by_codigo && !$clave ) {
+				//SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
+				//$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
+			//}	
+		//}
 
-
+*/
 		// Si statusweb = 0, vacío o null → eliminar el producto
 		if ($statusweb === "0" || $statusweb === "" || $statusweb === null) {
 				if (isset($clave->wcid)) {
@@ -122,7 +144,7 @@
 				return SAIT_UTILS::SAIT_response(200, "OK");
 		}
 		
-
+/*
 		$product_id_by_sku = wc_get_product_id_by_sku($numart);
 
 		if ($product_id_by_sku) {
@@ -135,7 +157,7 @@
 						$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
 				}
 		}
-
+		*/
 
 		// Si ya existe el artículo → actualizar
 		if (isset($clave->wcid)) {
@@ -238,63 +260,121 @@
 			}
 
 			$clave = SAIT_UTILS::SAIT_getClaves("arts",trim(self::xml_attribute($action->keys[0],"numart")),null);
-			if (isset($clave->wcid)) {
-				$product = wc_get_product( $clave->wcid );
-				if ($product===false) {
-					return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
-				}
-				$product->set_stock_quantity(self::xml_attribute($action->flds[0],"existencia"));
-				$product->save();
+			$product_id = null;
+
+			// Primero intenta con $clave->wcid
+			if (!empty($clave->wcid)) {
+				$product_id = $clave->wcid;
+			} else {
+				// Si no hay wcid, intenta buscar por sku
+				$product_id = wc_get_product_id_by_sku(trim(self::xml_attribute($action->keys[0],"numart")));
 			}
+
+			// Si no hay producto, salte
+			if (empty($product_id)) {
+				return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
+			}
+
+			// Obtén el producto
+			$product = wc_get_product($product_id);
+
+			// Si tampoco existe como producto válido, salte
+			if (!$product) {
+				return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
+			}
+
+			// Cambia el stock y guarda
+			$product->set_stock_quantity(self::xml_attribute($action->flds[0], "existencia"));
+			$product->save();
 		}
 		
 		return SAIT_UTILS::SAIT_response(200,"STOCK UPD ACTEXIST");
 	}
 
 	public static function ACTPRECIO($oXml){
-		$numart=trim(self::xml_attribute($oXml->action[0]->keys[0],"numart"));
-		$clave = SAIT_UTILS::SAIT_getClaves("arts",$numart,null);
-		$productflds = $oXml->action[0]->flds[0];
-		if (!isset($clave->wcid) or !wc_get_product( $clave->wcid)) {
-			return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
-		}
-		$product = wc_get_product( $clave->wcid );
-		if (self::xml_attribute($oXml->action[0]->flds[0],"preciopub")!="") {
-			$preciopub = self::xml_attribute($productflds,"preciopub");
-			$product->set_regular_price( $preciopub);
-			$product->save();
-		}
-		$SAIT_options=get_option( 'opciones_sait' );
-		$preciolista=$SAIT_options['SAITNube_PrecioLista'];
-		$TC = $SAIT_options['SAITNube_TipoCambio'];
+		$numart = trim(self::xml_attribute($oXml->action[0]->keys[0], "numart"));
 		
-		if ($preciolista != "" || $TC !="" ) {
-			$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
-			if ($api_response["result"]==null){
-				return SAIT_UTILS::SAIT_response(200,"PRICE UPD");
-			}
-			if ($preciolista!=""){
-				$precio = $api_response["result"]["precio".$preciolista];
-				if (floatval($precio)!=0.00){
-					$impuesto1 = $api_response["result"]["impuesto1"];
-					$impuesto2 = $api_response["result"]["impuesto2"];
-					$preciopub = strval(round(floatval($precio)*(1+(floatval($impuesto1)+floatval($impuesto2))/100),2));
-					$product->set_regular_price( $preciopub );
-					$product->save();
-				}
-			}
-			if ($api_response["result"]["divisa"] == "D" && $TC !=""){
-				$preciopub = self::xml_attribute($productflds,"preciopub");
-		 		$precio = strval(round(floatval($preciopub)*floatval($TC),2));
-		 		$product->set_regular_price( $precio );
-				$product->save();
-		 	}
-			return SAIT_UTILS::SAIT_response(200,"PRICE UPD API");
-				
+
+		$productflds = $oXml->action[0]->flds[0];
+
+		// Verificar si hay precios normales
+		$tiene_precios_normales = (
+			self::xml_attribute($productflds, "preciopub") !== "" ||
+			self::xml_attribute($productflds, "precio1")   !== "" ||
+			self::xml_attribute($productflds, "precio2")   !== "" ||
+			self::xml_attribute($productflds, "precio3")   !== "" ||
+			self::xml_attribute($productflds, "precio4")   !== "" ||
+			self::xml_attribute($productflds, "precio5")   !== ""
+		);
+
+		if (!$tiene_precios_normales) {
+			return SAIT_UTILS::SAIT_response(200, "IGNORADO (ppubv*)");
 		}
 
-		return SAIT_UTILS::SAIT_response(200,"PRICE UPD");
-		
+
+
+        $clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
+
+		if (!isset($clave->wcid)) {
+			return SAIT_UTILS::SAIT_response(200, "ART NO EXISTE");
+		}
+
+		$product = wc_get_product($clave->wcid);
+		if (!$product) {
+			return SAIT_UTILS::SAIT_response(200, "ART NO EXISTE");
+		}
+
+
+		$cambios = false;
+		$SAIT_options = get_option('opciones_sait');
+		$preciolista = isset($SAIT_options['SAITNube_PrecioLista']) ? $SAIT_options['SAITNube_PrecioLista'] : "";
+		$TC = isset($SAIT_options['SAITNube_TipoCambio']) ? $SAIT_options['SAITNube_TipoCambio'] : "";
+
+		// Precio desde XML
+		if (($preciopub = self::xml_attribute($productflds, "preciopub")) !== "") {
+			if (floatval($product->get_regular_price()) != floatval($preciopub)) {
+				$product->set_regular_price($preciopub);
+				$cambios = true;
+			}
+		}
+
+		// Precio desde API solo si es necesario
+		if ($preciolista != "" || $TC != "") {
+			$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
+			$api_result = isset($api_response["result"]) ? $api_response["result"] : null;
+
+			if ($api_result !== null) {
+				// Precio lista
+				if ($preciolista != "") {
+					$precio = floatval($api_result["precio".$preciolista]);
+					if ($precio != 0.0) {
+						$impuesto1 = floatval($api_result["impuesto1"]);
+						$impuesto2 = floatval($api_result["impuesto2"]);
+						$preciopub_api = round($precio * (1 + ($impuesto1 + $impuesto2)/100), 2);
+						if (floatval($product->get_regular_price()) != $preciopub_api) {
+							$product->set_regular_price($preciopub_api);
+							$cambios = true;
+						}
+					}
+				}
+
+				// Tipo de cambio
+				if ($api_result["divisa"] === "D" && $TC != "") {
+					$precio = round(floatval(self::xml_attribute($productflds, "preciopub")) * floatval($TC), 2);
+					if (floatval($product->get_regular_price()) != $precio) {
+						$product->set_regular_price($precio);
+						$cambios = true;
+					}
+				}
+			}
+		}
+
+		if ($cambios) {
+			$product->save();
+			return SAIT_UTILS::SAIT_response(200, "PRICE UPD");
+		}
+
+		return SAIT_UTILS::SAIT_response(200, "NO CAMBIO");
 	}
 
 	// MODCATEGORIAWC()

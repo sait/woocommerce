@@ -139,6 +139,22 @@ class SAITSettingsPage
             'opciones_sait_page', 
             'SAITNube'
         ); 
+		// Campo para activar el monto minimo de compra
+		add_settings_field(
+			'SAITNube_MinimoCarrito_enabled',
+			'Activar Monto minimo de compra',
+			array( $this, 'SAITNube_MinimoCarrito_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+		// Campo MinimoCarrito
+        add_settings_field(
+            'SAITNube_MinimoCarrito', 
+            'Monto minimo de compra', 
+            array( $this, 'SAITNube_MinimoCarrito_callback' ), 
+            'opciones_sait_page', 
+            'SAITNube'
+        ); 
 				
         // Campo TipoCambio
         add_settings_field(
@@ -164,6 +180,32 @@ class SAITSettingsPage
             'opciones_sait_page', 
             'SAITNube'
         ); 
+		// Campo para activar o desactivar las promociones en el carrito
+		add_settings_field(
+			'SAITNube_PedidoObs_enabled',
+			'Enviar a SAIT las observaciones del pedido',
+			array( $this, 'SAITNube_PedidoObs_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+		
+		// Campo para activar o desactivar las promociones en el carrito
+		add_settings_field(
+			'SAITNube_PedidoDirenvio_enabled',
+			'Enviar a SAIT la direccion de envio',
+			array( $this, 'SAITNube_PedidoDirenvio_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+		
+		// Campo para activar o desactivar las promociones en el carrito
+		add_settings_field(
+			'SAITNube_PedidoOtrosDatos_enabled',
+			'Enviar a SAIT campos OtrosDatos',
+			array( $this, 'SAITNube_PedidoOtrosDatos_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
     }
 
     /**
@@ -196,11 +238,29 @@ class SAITSettingsPage
 		if( isset( $input['SAITNube_ExistAlm'] ) )
             $new_input['SAITNube_ExistAlm'] = sanitize_text_field( $input['SAITNube_ExistAlm'] );	
 		
+        if (isset($input['SAITNube_MinimoCarrito_enabled'])) {
+			$new_input['SAITNube_MinimoCarrito_enabled'] = sanitize_text_field($input['SAITNube_MinimoCarrito_enabled']);
+		}
+		if( isset( $input['SAITNube_MinimoCarrito'] ) )
+            $new_input['SAITNube_MinimoCarrito'] = sanitize_text_field( $input['SAITNube_MinimoCarrito'] );	
+		
         if( isset( $input['SAITNube_TipoCambio'] ) )
             $new_input['SAITNube_TipoCambio'] = sanitize_text_field( $input['SAITNube_TipoCambio'] );
         
 		if (isset($input['SAITNube_Promo_enabled'])) {
 			$new_input['SAITNube_Promo_enabled'] = sanitize_text_field($input['SAITNube_Promo_enabled']);
+		}
+		
+		if (isset($input['SAITNube_PedidoObs_enabled'])) {
+			$new_input['SAITNube_PedidoObs_enabled'] = sanitize_text_field($input['SAITNube_PedidoObs_enabled']);
+		}
+		
+		if (isset($input['SAITNube_PedidoDirenvio_enabled'])) {
+			$new_input['SAITNube_PedidoDirenvio_enabled'] = sanitize_text_field($input['SAITNube_PedidoDirenvio_enabled']);
+		}
+		
+		if (isset($input['SAITNube_PedidoOtrosDatos_enabled'])) {
+			$new_input['SAITNube_PedidoOtrosDatos_enabled'] = sanitize_text_field($input['SAITNube_PedidoOtrosDatos_enabled']);
 		}
 		
         if( isset( $input['SAITNube_PrecioLista'] ) )
@@ -356,6 +416,78 @@ class SAITSettingsPage
             isset( $this->options['SAITNube_ExistAlm'] ) ? esc_attr( $this->options['SAITNube_ExistAlm']) : ''
         );
     }
+	
+	public function SAITNube_MinimoCarrito_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_MinimoCarrito_enabled']) ? $this->options['SAITNube_MinimoCarrito_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_MinimoCarrito_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_MinimoCarrito_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+	}
+	
+	 /** 
+     * Obtiene el valor de la opcion y lo imprime
+     */
+    public function SAITNube_MinimoCarrito_callback()
+    {
+        printf(
+            '<input type="text" id="SAITNube_MinimoCarrito" name="opciones_sait[SAITNube_MinimoCarrito]" value="%s" />',
+            isset( $this->options['SAITNube_MinimoCarrito'] ) ? esc_attr( $this->options['SAITNube_MinimoCarrito']) : ''
+        );
+    }
+	
+	public function SAITNube_PedidoObs_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_PedidoObs_enabled']) ? $this->options['SAITNube_PedidoObs_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PedidoObs_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PedidoObs_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+
+	}
+	
+	public function SAITNube_PedidoDirenvio_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_PedidoDirenvio_enabled']) ? $this->options['SAITNube_PedidoDirenvio_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PedidoDirenvio_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PedidoDirenvio_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+	}
+	
+	public function SAITNube_PedidoOtrosDatos_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_PedidoOtrosDatos_enabled']) ? $this->options['SAITNube_PedidoOtrosDatos_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PedidoOtrosDatos_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PedidoOtrosDatos_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+	}
 
 }
 

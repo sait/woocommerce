@@ -1,13 +1,13 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 1.1.8
+ * @version 1.1.9
  */
 /*
 Plugin Name: SAIT WooCommerce
 Description: Este plugin agrega un endpoint a wordpress para procesar eventos enviados desde SAIT.
 Author: SAIT Software Administrativo
-Version: 1.1.8
+Version: 1.1.9
 Author URI: http://sait.mx
 */
 
@@ -166,7 +166,36 @@ function registrar_estilos_scripts() {
         ));
     }
 }
-// Usar wp_enqueue_scripts con prioridad alta (20)
-add_action('wp_enqueue_scripts', 'registrar_estilos_scripts', 20);
 
+/*
+add_action( 'woocommerce_product_query', 'ocultar_productos_sin_precio_o_stock' );
+function ocultar_productos_sin_precio_o_stock( $query ) {
+    // Solo en el frontend
+    if ( is_admin() ) return;
 
+    $meta_query = $query->get( 'meta_query' );
+
+    if ( ! $meta_query ) {
+        $meta_query = [];
+    }
+
+    // Precio mayor a 0
+    $meta_query[] = array(
+        'key' => '_price',
+        'value' => 0,
+        'compare' => '>',
+        'type' => 'NUMERIC'
+    );
+
+    // Stock mayor a 0
+    // 
+    $meta_query[] = array(
+        'key' => '_stock',
+        'value' => 0,
+        'compare' => '>',
+        'type' => 'NUMERIC'
+    );
+
+    $query->set( 'meta_query', $meta_query );
+}
+*/

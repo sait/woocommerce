@@ -45,11 +45,13 @@ function calcularpreciosCarrito($cart) {
 		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/calcularprecios?numart=".$numart."&unidad=".$unidad."&cant=".$cantidad."&divisadoc=P&numalm=".$sucursal_id."&formapago=1&numcli=".$numcli);
 		$preciopub = $api_response["result"]["preciopub"];
 		$pjedesc = $api_response["result"]["pjedesc"];
-		
+		$original_price = $product->get_regular_price();
         $discounted_price = $preciopub * (1 - ($pjedesc / 100));
 
         // Establecer el nuevo precio en el producto
-        $product->set_price($discounted_price);
+			if ($discounted_price < $original_price) {
+				$product->set_price($discounted_price);
+			}
     }
 }
 
@@ -67,3 +69,86 @@ function display_discounted_price_in_cart($price, $cart_item, $cart_item_key) {
 
     return $price;
 }
+
+
+
+//  Establecer monto mínimo de carrito antes de permitir checkout
+add_action( 'woocommerce_checkout_process', 'sait_minimo_total_carrito' );
+add_action( 'woocommerce_before_cart', 'sait_minimo_total_carrito' );
+
+function sait_minimo_total_carrito() {
+	// Si no esta activo no hace nada
+	$SAIT_options=get_option( 'opciones_sait' );
+	$Minimo_activo = isset($SAIT_options['SAITNube_MinimoCarrito_Enabled']) && $SAIT_options['SAITNube_MinimoCarrito_Enabled'] === '1';
+
+	if (!$Minimo_activo) {
+		return ;
+	}
+    $minimo = floatval($SAIT_options['SAITNube_MinimoCarrito']); //  Cambia el monto mínimo
+
+    if ( WC()->cart && WC()->cart->get_total( 'edit' ) < $minimo ) {
+        if ( is_cart() ) {
+            wc_print_notice( 
+                sprintf( 'Tu pedido actual es de %s — el monto mínimo para comprar es %s.', 
+                    wc_price( WC()->cart->get_total( 'edit' ) ), 
+                    wc_price( $minimo )
+                ), 'error' 
+            );
+        } else {
+            wc_add_notice( 
+                sprintf( 'Tu pedido actual es de %s — el monto mínimo para comprar es %s.', 
+                    wc_price( WC()->cart->get_total( 'edit' ) ), 
+                    wc_price( $minimo )
+                ), 'error' 
+            );
+        }
+    }
+}
+
+// Bloquear botones de checkout y PayPal si no se cumple el mínimo
+add_action( 'wp_footer', 'sait_bloquear_botones_checkout' );
+function sait_bloquear_botones_checkout() {
+    if ( is_cart() || is_checkout() ) :
+		// Si no esta activo no hace nada
+		$SAIT_options=get_option( 'opciones_sait' );
+		$Minimo_activo = isset($SAIT_options['SAITNube_MinimoCarrito_Enabled']) && $SAIT_options['SAITNube_MinimoCarrito_Enabled'] === '1';
+
+		if (!$Minimo_activo) {
+			return ;
+		}
+		$minimo = floatval($SAIT_options['SAITNube_MinimoCarrito']); //  Cambia el monto mínimo
+        ?>
+        <script type="text/javascript">
+        jQuery(function($){
+            function bloquearSiNoCumple() {
+                // WooCommerce muestra el total en diferentes lugares según el theme
+                var totalText = $("tr.order-total td .woocommerce-Price-amount bdi, td[data-title='Total'] bdi").last().text();
+                if (!totalText) return;
+
+                // Limpieza de texto -> convertir a número
+                var total = parseFloat(totalText.replace(/[^0-9.,]/g, '').replace(",", "."));
+                var minimo = <?php echo $minimo; ?>;
+
+                if ( total < minimo ) {
+                    // Deshabilitar botones de checkout y métodos de pago
+                    $(".checkout-button, #place_order, .wc-proceed-to-checkout a, .paypal-button, .wc-stripe-checkout-button")
+                        .prop("disabled", true)
+                        .css({"opacity":"0.5","pointer-events":"none"});
+                } else {
+                    // Habilitar botones
+                    $(".checkout-button, #place_order, .wc-proceed-to-checkout a, .paypal-button, .wc-stripe-checkout-button")
+                        .prop("disabled", false)
+                        .css({"opacity":"1","pointer-events":"auto"});
+                }
+            }
+
+            bloquearSiNoCumple();
+
+            // Reevaluar cuando WooCommerce actualice totales del carrito o checkout
+            $(document.body).on("updated_cart_totals updated_checkout", bloquearSiNoCumple);
+        });
+        </script>
+        <?php
+    endif;
+}
+

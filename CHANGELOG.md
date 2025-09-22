@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [1.1.9] - 22/SEP/2025 
+### add
+- Se agrega opcion de monto minimo en carrito
+- Se agregan opciones para enviar informacion extra en pedido a SAIT: obs, direnvio, otrosdatos.
+### fix
+- No procesar actprecio de precioxvol
+
 ## [1.1.8] - 22/AGO/2025 
 ### fix
 - Se valida codigo de barras antes de asignarlo a la variable
