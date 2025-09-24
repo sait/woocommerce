@@ -186,7 +186,7 @@ function agregar_modal_sucursal() {
 	$Sucursal_activo = isset($SAIT_options['SAITNube_Sucursal_enabled']) && $SAIT_options['SAITNube_Sucursal_enabled'] === '1';
 
 	if (!$Sucursal_activo) {
-		return $items;
+		return ;
 	}
     $response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
     $sucursales = isset($response['result']) ? $response['result'] : [];

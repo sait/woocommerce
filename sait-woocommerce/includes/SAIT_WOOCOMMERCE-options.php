@@ -200,9 +200,9 @@ class SAITSettingsPage
 		
 		// Campo para activar o desactivar las promociones en el carrito
 		add_settings_field(
-			'SAITNube_PedidoOtrosDatos_enabled',
-			'Enviar a SAIT campos OtrosDatos',
-			array( $this, 'SAITNube_PedidoOtrosDatos_enabled_callback' ),
+			'SAITNube_FuncionPersonalizadaPedido_enabled',
+			'Usar funcion personalizada de pedido',
+			array( $this, 'SAITNube_FuncionPersonalizadaPedido_enabled_callback' ),
 			'opciones_sait_page',
 			'SAITNube'
 		);
@@ -259,8 +259,8 @@ class SAITSettingsPage
 			$new_input['SAITNube_PedidoDirenvio_enabled'] = sanitize_text_field($input['SAITNube_PedidoDirenvio_enabled']);
 		}
 		
-		if (isset($input['SAITNube_PedidoOtrosDatos_enabled'])) {
-			$new_input['SAITNube_PedidoOtrosDatos_enabled'] = sanitize_text_field($input['SAITNube_PedidoOtrosDatos_enabled']);
+		if (isset($input['SAITNube_FuncionPersonalizadaPedido_enabled'])) {
+			$new_input['SAITNube_FuncionPersonalizadaPedido_enabled'] = sanitize_text_field($input['SAITNube_FuncionPersonalizadaPedido_enabled']);
 		}
 		
         if( isset( $input['SAITNube_PrecioLista'] ) )
@@ -474,16 +474,16 @@ class SAITSettingsPage
 		<?php
 	}
 	
-	public function SAITNube_PedidoOtrosDatos_enabled_callback()
+	public function SAITNube_FuncionPersonalizadaPedido_enabled_callback()
 	{
-		$value = isset($this->options['SAITNube_PedidoOtrosDatos_enabled']) ? $this->options['SAITNube_PedidoOtrosDatos_enabled'] : '0';
+		$value = isset($this->options['SAITNube_FuncionPersonalizadaPedido_enabled']) ? $this->options['SAITNube_FuncionPersonalizadaPedido_enabled'] : '0';
 		?>
 		<label>
-			<input type="radio" name="opciones_sait[SAITNube_PedidoOtrosDatos_enabled]" value="1" <?php checked('1', $value); ?> />
+			<input type="radio" name="opciones_sait[SAITNube_FuncionPersonalizadaPedido_enabled]" value="1" <?php checked('1', $value); ?> />
 			Activado
 		</label><br>
 		<label>
-			<input type="radio" name="opciones_sait[SAITNube_PedidoOtrosDatos_enabled]" value="0" <?php checked('0', $value); ?> />
+			<input type="radio" name="opciones_sait[SAITNube_FuncionPersonalizadaPedido_enabled]" value="0" <?php checked('0', $value); ?> />
 			Desactivado
 		</label>
 		<?php

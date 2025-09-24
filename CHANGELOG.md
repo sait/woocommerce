@@ -1,6 +1,11 @@
 # Changelog
 
 
+## [1.1.10] - 22/SEP/2025 
+### upd
+- Se agrega configuracion para funcion personalizada de la empresa
+- la funcion para otros datos se movio al archivo personalizado.php
+
 ## [1.1.9] - 22/SEP/2025 
 ### add
 - Se agrega opcion de monto minimo en carrito

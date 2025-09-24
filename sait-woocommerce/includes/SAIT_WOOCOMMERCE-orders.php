@@ -44,16 +44,14 @@
 			
 			$Obs_activo = isset($SAIT_options['SAITNube_PedidoObs_Enabled']) && $SAIT_options['SAITNube_PedidoObs_Enabled'] === '1';
 			$Direnvio_activo = isset($SAIT_options['SAITNube_PedidoDirenvio_Enabled']) && $SAIT_options['SAITNube_PedidoDirenvio_Enabled'] === '1';
-			$Otrosdatos_activo = isset($SAIT_options['SAITNube_PedidoOtrosDatos_Enabled']) && $SAIT_options['SAITNube_PedidoOtrosDatos_Enabled'] === '1';
+			$FuncionPersonalizadaPedido_activo = isset($SAIT_options['SAITNube_FuncionPersonalizadaPedido_Enabled']) && $SAIT_options['SAITNube_FuncionPersonalizadaPedido_Enabled'] === '1';
 			if (!$Obs_activo) {
-				$pedido->obs = self::SAIT_getObs($order);
+				$pedido->obs = trim($order->get_customer_note());
 			}
 			if (!$Direnvio_activo) {
 				$pedido->direnvio = self::SAIT_getDirEnvio($order);
 			}
-			if (!$Otrosdatos_activo) {
-				$pedido->otrosdatos = self::SAIT_getOtrosDatos($order);
-			}
+
 				
 			
 			$order_items_data = array_map( function($item){ return $item->get_data(); }, $order->get_items() );
@@ -91,6 +89,11 @@
 				$clienteeventual->email = $order->get_billing_email();
 				$pedido->clievent = $clienteeventual;
 		}
+
+		if (!$FuncionPersonalizadaPedido_activo) {
+			$pedido = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($pedido,$order);
+		}
+		
 		
 		return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido);
 	}
@@ -131,6 +134,8 @@
 					$pedido->items[] = $art;
 			}
 			
+
+			
 			return SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$pedido);
 	}
 
@@ -151,7 +156,7 @@
 
 	 
 	public static function SAIT_sendPedidoTest(){
-			$order = wc_get_order( 6138   );
+			$order = wc_get_order( 6151 );
 			return self::SAIT_sendPedido($order,"1");
 		}
 
@@ -159,30 +164,6 @@
 		return round((($precio-($total/$cantidad))/$precio)*100,2);
 	}
 	 
-/**
- * Obtiene OBS: tipo de entrega + forma de pago + notas
- */
-public static function SAIT_getObs($order) {
-    $shipping_method = trim($order->get_shipping_method());
-    if (empty($shipping_method)) {
-        $shipping_method = "SIN ENTREGA";
-    }
-
-    $payment_method_title = trim($order->get_payment_method_title());
-    if (empty($payment_method_title)) {
-        $payment_method_title = "SIN PAGO";
-    }
-
-    $customer_note = trim($order->get_customer_note());
-
-    $obs = strtoupper($shipping_method . " Y " . $payment_method_title);
-
-    if (!empty($customer_note)) {
-        $obs .= "\r\n Obs: " . $customer_note;
-    }
-
-    return $obs;
-}
 
 /**
  * Obtiene DIR ENVIO en formato: calle^numero^colonia^ciudad^estado^c.p 00000
@@ -222,39 +203,4 @@ public static function SAIT_getDirEnvio($order) {
     return strtoupper($dir);
 }
 
-/**
- * Obtiene otros datos en formato de texto multilinea para VFP
- */
-public static function SAIT_getOtrosDatos($order) {
-    $shipping_method = trim($order->get_shipping_method());
-    if (empty($shipping_method)) {
-        $shipping_method = "Recoger en sucursal";
-    }
-	
-	$payment_method_title = trim($order->get_payment_method_title());
-    if (empty($payment_method_title)) {
-        $payment_method_title = "SIN PAGO";
-    }
-
-    $name  = trim($order->get_formatted_billing_full_name());
-    $phone = trim($order->get_billing_phone());
-    $email = trim($order->get_billing_email());
-
-    if (empty($name))  $name  = "SIN NOMBRE";
-    if (empty($phone)) $phone = "SIN TELEFONO";
-    if (empty($email)) $email = "SIN CORREO";
-
-    // Usamos \r\n para asegurar compatibilidad con VFP
-    $otros = "Tipo de Entrega=" . $shipping_method . "\r\n"
-           . "Metodo de pago=" . $payment_method_title . "\r\n"
-           . "Nombre= " . $name . "\r\n"
-           . "Telefono= " . $phone . "\r\n"
-           . "Correo= " . $email . "\r\n"
-           . "clinum=     0";
-
-    return $otros;
-}
-	  
-	 
-	 
 }
