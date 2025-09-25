@@ -141,7 +141,7 @@ class SAITSettingsPage
         ); 
 		// Campo para activar el monto minimo de compra
 		add_settings_field(
-			'SAITNube_MinimoCarrito_enabled',
+			'SAITNube_MinimoCarrito_Enabled',
 			'Activar Monto minimo de compra',
 			array( $this, 'SAITNube_MinimoCarrito_enabled_callback' ),
 			'opciones_sait_page',
@@ -238,8 +238,8 @@ class SAITSettingsPage
 		if( isset( $input['SAITNube_ExistAlm'] ) )
             $new_input['SAITNube_ExistAlm'] = sanitize_text_field( $input['SAITNube_ExistAlm'] );	
 		
-        if (isset($input['SAITNube_MinimoCarrito_enabled'])) {
-			$new_input['SAITNube_MinimoCarrito_enabled'] = sanitize_text_field($input['SAITNube_MinimoCarrito_enabled']);
+        if (isset($input['SAITNube_MinimoCarrito_Enabled'])) {
+			$new_input['SAITNube_MinimoCarrito_Enabled'] = sanitize_text_field($input['SAITNube_MinimoCarrito_Enabled']);
 		}
 		if( isset( $input['SAITNube_MinimoCarrito'] ) )
             $new_input['SAITNube_MinimoCarrito'] = sanitize_text_field( $input['SAITNube_MinimoCarrito'] );	
@@ -419,14 +419,14 @@ class SAITSettingsPage
 	
 	public function SAITNube_MinimoCarrito_enabled_callback()
 	{
-		$value = isset($this->options['SAITNube_MinimoCarrito_enabled']) ? $this->options['SAITNube_MinimoCarrito_enabled'] : '0';
+		$value = isset($this->options['SAITNube_MinimoCarrito_Enabled']) ? $this->options['SAITNube_MinimoCarrito_Enabled'] : '0';
 		?>
 		<label>
-			<input type="radio" name="opciones_sait[SAITNube_MinimoCarrito_enabled]" value="1" <?php checked('1', $value); ?> />
+			<input type="radio" name="opciones_sait[SAITNube_MinimoCarrito_Enabled]" value="1" <?php checked('1', $value); ?> />
 			Activado
 		</label><br>
 		<label>
-			<input type="radio" name="opciones_sait[SAITNube_MinimoCarrito_enabled]" value="0" <?php checked('0', $value); ?> />
+			<input type="radio" name="opciones_sait[SAITNube_MinimoCarrito_Enabled]" value="0" <?php checked('0', $value); ?> />
 			Desactivado
 		</label>
 		<?php

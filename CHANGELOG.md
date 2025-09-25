@@ -1,7 +1,12 @@
 # Changelog
 
 
-## [1.1.10] - 22/SEP/2025 
+
+## [1.1.11] - 24/SEP/2025 
+### fix
+- Fix typo en configuracion de minimo
+
+## [1.1.10] - 24/SEP/2025 
 ### upd
 - Se agrega configuracion para funcion personalizada de la empresa
 - la funcion para otros datos se movio al archivo personalizado.php
