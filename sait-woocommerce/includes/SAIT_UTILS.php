@@ -119,6 +119,16 @@
 		return $res;
 	}
 
+	/**
+	 * Helper para obtener reglas ya procesadas
+	 */
+	public static function SAIT_get_rules( $type )
+	{
+			$key = 'SAIT_' . ucfirst($type) . 'Rules';
+			$json = get_option( $key, '{}' );
+			return json_decode( $json, true );
+	}
+
 	public static function SAIT_codigo_valido($codigo) {
 		$codigo = trim($codigo);
 

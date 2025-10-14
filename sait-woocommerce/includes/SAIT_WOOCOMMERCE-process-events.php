@@ -75,7 +75,10 @@
 		$numart = trim(self::xml_attribute($oKeys, "numart"));
 		$codigo = SAIT_UTILS::SAIT_codigo_valido(trim(self::xml_attribute($oFlds, "codigo")));
 		$desc = trim(self::xml_attribute($oFlds, "desc"));
-		$depto = trim(self::xml_attribute($oFlds, "numdep"));
+		$linea = trim(self::xml_attribute($oFlds, "linea"));
+		$familia = trim(self::xml_attribute($oFlds, "familia"));
+		$categoria = trim(self::xml_attribute($oFlds, "categoria"));
+		$departamento = trim(self::xml_attribute($oFlds, "numdep"));
 		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
 		$statusweb = trim(self::xml_attribute($oFlds, "statusweb"));
 		$obs = trim(self::xml_attribute($oFlds, "obs"));
@@ -83,9 +86,32 @@
 		if ( $statusweb === "")  {
 					return SAIT_UTILS::SAIT_response(200, "statusweb null");
 			}
-		// Obtener la categoría una sola vez
-		$clavedepto = SAIT_UTILS::SAIT_getClaves("deptos", $depto, null);
-		$category_id = isset($clavedepto->wcid) ? array($clavedepto->wcid) : array();
+		// Obtener las categorías una sola vez
+		$category_ids = [];
+
+		// reglas de línea
+		$rulesLin = SAIT_UTILS::SAIT_get_rules('Lin');
+			if ( isset($rulesLin[$linea]) ) {
+				$category_ids[] = $rulesLin[$linea];
+		}
+
+		// reglas de familia
+		$rulesFam = SAIT_UTILS::SAIT_get_rules('Fam');
+		if ( isset($rulesFam[$familia]) ) {
+			$category_ids[] = $rulesFam[$familia];
+		}
+
+		// reglas de categoría
+		$rulesCat = SAIT_UTILS::SAIT_get_rules('Cat');
+		if ( isset($rulesCat[$categoria]) ) {
+			$category_ids[] = $rulesCat[$categoria];
+		}
+
+		// reglas de departamento
+		$rulesDep = SAIT_UTILS::SAIT_get_rules('Dep');
+		if ( isset($rulesDep[$departamento]) ) {
+			$category_ids[] = $rulesDep[$departamento];
+		}
 		
 		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
 	
@@ -179,7 +205,7 @@
 				$product->set_global_unique_id( $codigo );
 		
 				if (!empty($category_id)) {
-						$product->set_category_ids($category_id);
+						$product->set_category_ids($category_ids);
 				}
 		
 				if (!empty($modelo)) {
@@ -204,7 +230,7 @@
 		$product->set_manage_stock(true);
 		$product->set_regular_price( 0);
 		if (!empty($category_id)) {
-				$product->set_category_ids($category_id);
+				$product->set_category_ids($category_ids);
 		}
 		
 		if (!empty($modelo)) {

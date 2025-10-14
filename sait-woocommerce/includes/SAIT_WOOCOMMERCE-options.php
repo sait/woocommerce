@@ -13,6 +13,9 @@ class SAITSettingsPage
     {
         add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
         add_action( 'admin_init', array( $this, 'page_init' ) );
+
+         // Hook: cuando se actualicen las opciones, procesar reglas
+         add_action( 'update_option_opciones_sait', array( $this, 'after_save_options' ), 10, 3 );
     }
 
     /**
@@ -206,6 +209,16 @@ class SAITSettingsPage
 			'opciones_sait_page',
 			'SAITNube'
 		);
+
+		// Campo Reglas Cat
+		add_settings_field(
+			'SAITNube_ReglasCat',
+			'Reglas de Categorías',
+			array( $this, 'SAITNube_ReglasCat_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+
     }
 
     /**
@@ -268,6 +281,10 @@ class SAITSettingsPage
         
         if( isset( $input['SAITNube_AccessToken'] ) )
             $new_input['SAITNube_AccessToken'] = sanitize_text_field( $input['SAITNube_AccessToken'] );
+
+        if( isset( $input['SAITNube_ReglasCat'] ) )
+    		$new_input['SAITNube_ReglasCat'] = sanitize_textarea_field( $input['SAITNube_ReglasCat'] );
+
         return $new_input;
     }
 	
@@ -488,6 +505,82 @@ class SAITSettingsPage
 		</label>
 		<?php
 	}
+
+	public function SAITNube_ReglasCat_callback()
+	{
+		printf(
+			'<textarea id="SAITNube_ReglasCat" name="opciones_sait[SAITNube_ReglasCat]" rows="5" cols="50">%s</textarea>',
+			isset( $this->options['SAITNube_ReglasCat'] ) ? esc_textarea( $this->options['SAITNube_ReglasCat'] ) : ''
+		);
+	}
+	
+    /**
+     * Procesa las reglas después de guardar las opciones
+     */
+    public function after_save_options( $old_value, $value, $option )
+    {
+        if ( isset( $value['SAITNube_ReglasCat'] ) ) {
+            $raw = $value['SAITNube_ReglasCat'];
+
+            $rules = $this->parse_reglas( $raw );
+
+            if ( ! empty( $rules['fam'] ) ) {
+                update_option( 'SAIT_FamRules', json_encode( $rules['fam'] ) );
+            }
+            if ( ! empty( $rules['lin'] ) ) {
+                update_option( 'SAIT_LinRules', json_encode( $rules['lin'] ) );
+            }
+            if ( ! empty( $rules['cat'] ) ) {
+                update_option( 'SAIT_CatRules', json_encode( $rules['cat'] ) );
+            }
+            if ( ! empty( $rules['dep'] ) ) {
+                update_option( 'SAIT_DepRules', json_encode( $rules['dep'] ) );
+            }
+        }
+    }
+
+    /**
+     * Convierte el textarea en arrays de reglas
+     */
+    private function parse_reglas( $raw )
+    {
+    $rules = ['lin'=>[],'fam'=>[],'cat'=>[],'dep'=>[]];
+    $lines = explode("\n", $raw);
+
+        foreach ( $lines as $line ) {
+            if ( empty($line) ) continue;
+
+			$line = trim($line);
+			if (!$line) continue;
+
+			// Dividir en partes "tipo:código=slug"
+			$parts = explode("=", $line);
+			if (count($parts) < 2) continue;
+
+			$left = explode(":", $parts[0]);
+			if (count($left) < 2) continue;
+
+			$type = $left[0]; // numlin / numfam / numcat / valdep
+			$code = $left[1];
+			$slug = trim($parts[1]);
+
+			$term = get_term_by('slug', $slug, 'product_cat');
+			if ($term) {
+				if ($type == 'numlin') 
+					$rules['lin'][$code] = $term->term_id;
+				if ($type == 'numfam') 
+					$rules['fam'][$code] = $term->term_id;
+				if ($type == 'numcat') 
+					$rules['cat'][$code] = $term->term_id;
+				if ($type == 'valdep') 
+					$rules['dep'][$code] = $term->term_id;
+			}
+        }
+
+        return $rules;
+    }
+
+
 
 }
 
