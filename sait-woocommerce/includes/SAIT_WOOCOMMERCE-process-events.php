@@ -75,7 +75,7 @@
 		$numart = trim(self::xml_attribute($oKeys, "numart"));
 		$codigo = SAIT_UTILS::SAIT_codigo_valido(trim(self::xml_attribute($oFlds, "codigo")));
 		$desc = trim(self::xml_attribute($oFlds, "desc"));
-		$depto = trim(self::xml_attribute($oFlds, "numdep"));
+		$linea = trim(self::xml_attribute($oFlds, "linea"));
 		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
 		$statusweb = trim(self::xml_attribute($oFlds, "statusweb"));
 		$obs = trim(self::xml_attribute($oFlds, "obs"));
@@ -84,8 +84,8 @@
 					return SAIT_UTILS::SAIT_response(200, "statusweb null");
 			}
 		// Obtener la categoría una sola vez
-		$clavedepto = SAIT_UTILS::SAIT_getClaves("deptos", $depto, null);
-		$category_id = isset($clavedepto->wcid) ? array($clavedepto->wcid) : array();
+		$clavelinea = SAIT_UTILS::SAIT_getClaves("lineas", $linea, null);
+		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
 		
 		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
 	
