@@ -298,14 +298,14 @@
 		$productflds = $oXml->action[0]->flds[0];
 
 		// Verificar si hay precios normales
-		$tiene_precios_normales = (
-			self::xml_attribute($productflds, "preciopub") !== "" ||
-			self::xml_attribute($productflds, "precio1")   !== "" ||
-			self::xml_attribute($productflds, "precio2")   !== "" ||
-			self::xml_attribute($productflds, "precio3")   !== "" ||
-			self::xml_attribute($productflds, "precio4")   !== "" ||
-			self::xml_attribute($productflds, "precio5")   !== ""
-		);
+		$tiene_precios_normales = false;
+		foreach (["preciopub", "precio1", "precio2", "precio3", "precio4", "precio5"] as $campo) {
+			$valor = self::xml_attribute($productflds, $campo);
+			if ($valor !== "" && is_numeric($valor) && floatval($valor) > 0) {
+				$tiene_precios_normales = true;
+				break;
+			}
+		}
 
 		if (!$tiene_precios_normales) {
 			return SAIT_UTILS::SAIT_response(200, "IGNORADO (ppubv*)");
@@ -331,8 +331,10 @@
 		$TC = isset($SAIT_options['SAITNube_TipoCambio']) ? $SAIT_options['SAITNube_TipoCambio'] : "";
 
 		// Precio desde XML
-		if (($preciopub = self::xml_attribute($productflds, "preciopub")) !== "") {
-			if (floatval($product->get_regular_price()) != floatval($preciopub)) {
+		$preciopub_attr = self::xml_attribute($productflds, "preciopub");
+		if ($preciopub_attr !== "" && is_numeric($preciopub_attr) && floatval($preciopub_attr) > 0) {
+			$preciopub = floatval($preciopub_attr);
+			if (floatval($product->get_regular_price()) != $preciopub) {
 				$product->set_regular_price($preciopub);
 				$cambios = true;
 			}
