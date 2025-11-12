@@ -250,13 +250,19 @@
 	public static function ACTEXIST($oXml){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$NumAlm = $SAIT_options['SAITNube_NumAlm'];
-		if (!isset($NumAlm) && is_null($NumAlm)) {
-			return SAIT_UTILS::SAIT_response(200,"STOCK ERR ACTEXIST Not set");
+		
+	    $SAIT_options = get_option('opciones_sait');
+		$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) && $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
+
+		
+		if (!$ExistAlm_activo && (!isset($NumAlm) || is_null($NumAlm))) {
+			return SAIT_UTILS::SAIT_response(200, "STOCK ERR ACTEXIST Not set");
 		}
+		
 		foreach ($oXml->action as $action) {
 			$NumAlmEvent = trim(self::xml_attribute($action->keys[0],"numalm"));
-			if ($NumAlm!=$NumAlmEvent){
-				return SAIT_UTILS::SAIT_response(200,"STOCK ERR ACTEXIST");
+			if (!$ExistAlm_activo && $NumAlm != $NumAlmEvent) {
+				return SAIT_UTILS::SAIT_response(200, "STOCK ERR ACTEXIST");
 			}
 
 			$clave = SAIT_UTILS::SAIT_getClaves("arts",trim(self::xml_attribute($action->keys[0],"numart")),null);
@@ -282,9 +288,35 @@
 			if (!$product) {
 				return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
 			}
+      
+			$quantity = self::xml_attribute($action->flds[0], "existencia");
+			
+			if ($ExistAlm_activo) {
+				    // Clave de caché diferente según sucursal
+					$cache_key = 'sait_stock_' . md5($sku ?? 'total');
+					$total = get_transient($cache_key);
 
+					if ($total === false) {
+						$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . trim($sku));
+						$total = 0;
+
+						if (!is_wp_error($respuesta) && isset($respuesta['result'])) {
+							foreach ($respuesta['result'] as $almacen) {
+								// sumar solo las almacenes permitidas
+								$almacenes_a_mostrar = array_map('trim', explode(',', $SAIT_options['SAITNube_ExistAlm']));
+								if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
+									$total += (float) $almacen['existencia'];
+								}
+							}
+
+						}
+
+						set_transient($cache_key, $total, 120); // caché 2 min
+					}
+			}	
+				
 			// Cambia el stock y guarda
-			$product->set_stock_quantity(self::xml_attribute($action->flds[0], "existencia"));
+			$product->set_stock_quantity($quantity);
 			$product->save();
 		}
 		
@@ -313,13 +345,29 @@
 
 
 
-        $clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
+		
+		$clave  = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
+		$productflds = $oXml->action[0]->flds[0];
 
-		if (!isset($clave->wcid)) {
+		$product_id = null;
+
+		// Primero intenta con $clave->wcid
+		if (!empty($clave->wcid)) {
+			$product_id = $clave->wcid;
+		} else {
+			// Si no existe o no es válido, buscar por SKU
+			$product_id = wc_get_product_id_by_sku($numart);
+		}
+
+		// Si no se encontró producto
+		if (empty($product_id)) {
 			return SAIT_UTILS::SAIT_response(200, "ART NO EXISTE");
 		}
 
-		$product = wc_get_product($clave->wcid);
+		// Obtener producto
+		$product = wc_get_product($product_id);
+
+		// Si el objeto producto no es válido
 		if (!$product) {
 			return SAIT_UTILS::SAIT_response(200, "ART NO EXISTE");
 		}
