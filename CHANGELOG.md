@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [1.1.13] - 1/NOV/2025 
+### fix
+- Fix ACTPRECIO: se busca por SKU si no se encuentra 
+- Fix ACTEXIST: Se calcula existencia total de almacenes seleccionados
+
+## [1.1.12] - 1/NOV/2025 
+### fix
+- Fix ACTPRECIO, se ignora el evento ACTPRECIO de precios por volumen
+
 
 ## [1.1.11] - 24/SEP/2025 
 ### fix

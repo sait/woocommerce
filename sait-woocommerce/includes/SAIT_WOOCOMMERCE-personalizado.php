@@ -23,8 +23,7 @@
 
 
 	public static function SAIT_FuncionPersonalizaPostPedido($body,$order) {
-		$body->otrosdatos =  self::SAIT_getOtrosDatos($order);
-		$body->obs =  self::SAIT_getObs($order);
+		//$body->otrosdatos =  self::SAIT_getOtrosDatos($order);
 		return $body;
 	}
 	
@@ -64,29 +63,4 @@ $payment_method_title = trim($order->get_payment_method_title());
 	return $otros;
 }
 	 
-/**
- * Obtiene OBS: tipo de entrega + forma de pago + notas
- */
-public static function SAIT_getObs($order) {
-    $shipping_method = trim($order->get_shipping_method());
-    if (empty($shipping_method)) {
-        $shipping_method = "SIN ENTREGA";
-    }
-
-    $payment_method_title = trim($order->get_payment_method_title());
-    if (empty($payment_method_title)) {
-        $payment_method_title = "SIN PAGO";
-    }
-
-    $customer_note = trim($order->get_customer_note());
-
-    $obs = strtoupper($shipping_method . " Y " . $payment_method_title);
-
-    if (!empty($customer_note)) {
-        $obs .= "\r\n Obs: " . $customer_note;
-    }
-
-    return $obs;
-}	 
-
- }
+}
