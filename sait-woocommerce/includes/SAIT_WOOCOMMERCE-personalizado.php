@@ -64,3 +64,19 @@ $payment_method_title = trim($order->get_payment_method_title());
 }
 	 
 }
+
+
+add_action('woocommerce_after_checkout_form', function() {
+	wp_enqueue_script(
+			'modal-script',
+			plugins_url('../assets/js/personalizado.js', __FILE__),
+			array('jquery'),
+			'1.0',
+			true
+	);
+
+	wp_localize_script('modal-script', 'sait_woocommerce_ajax', array(
+			'ajax_url' => admin_url('admin-ajax.php'),
+			'nonce'    => wp_create_nonce('sait-woocommerce_nonce'),
+	));
+});
