@@ -63,7 +63,7 @@
 		return "";
 	}
 
-	public static function SAIT_PostNube($uri,$bodyObject){
+	public static function SAIT_PostNube($uri,$bodyObject, $wait = false){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$url = $SAIT_options['SAITNube_URL'].$uri;
 		$apikey = $SAIT_options['SAITNube_APIKey'];
@@ -73,7 +73,7 @@
 		'redirection' => 5,
 		'httpversion' => '1.0',
 		'sslverify' => false,
-		'blocking' => false,
+		'blocking' => $wait ? true : false,
 		'headers' => array(
 			'X-sait-api-key' => $apikey,
 			'Content-Type' => 'application/json',
@@ -303,7 +303,7 @@ function mostrar_tabla_almacenes() {
 		if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
 			echo '<tr>';
 			echo '<td>' . esc_html(trim($almacen['nomalm'])) . '</td>';
-			echo '<td>' . esc_html($almacen['existencia']) . '</td>';
+			echo '<td>' . esc_html(round($almacen['existencia'], 2)) . '</td>';
 			echo '</tr>';
 		}
 	}
