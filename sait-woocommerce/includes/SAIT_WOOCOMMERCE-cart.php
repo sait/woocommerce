@@ -126,7 +126,7 @@ function sait_bloquear_botones_checkout() {
                 if (!totalText) return;
 
                 // Limpieza de texto -> convertir a número
-                var total = parseFloat(totalText.replace(/[^0-9.,]/g, '').replace(",", "."));
+                var total = parseFloat(totalText.replace(/[^0-9.,]/g, '').replace(",", ""));
                 var minimo = <?php echo $minimo; ?>;
 
                 if ( total < minimo ) {
