@@ -1,7 +1,7 @@
     <event version="2" dev="LINUX#Admin" usr="MSL_SAIT NACIONAL" time="20230725174634" loc="1" ref="STD3581022M" type="ACTPRECIO" src="sait">
       <action cmd="write" tbl="arts">
-        <dbf fld="NUMART" val="         STD3581022M"/>
-        <keys numart="STD3581022M"/>
-        <flds precio1="1324.86200" precio2="1305.93540" precio3="1287.00880" precio4="1268.08220" precio5="1040.96300" factor1="1.4000" factor2="1.3800" factor3="1.3600" factor4="1.3400" factor5="1.1000" preciopub="1430.85" pjedesc="0.00" oferta="0.0000"/>
+        <dbf fld="NUMART" val="         GRC-GMD1590"/>
+        <keys numart="GRC-GMD1590"/>
+        <flds precio1="480.00" precio2="396.00" precio3="360.00" precio4="336.00" precio5="255.00" preciopub="556.00" pjedesc="0.00" oferta="0.0000"/>
       </action>
     </event>
