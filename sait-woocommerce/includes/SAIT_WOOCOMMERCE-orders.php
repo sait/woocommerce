@@ -77,9 +77,6 @@
 		}else{
 			// buscar Cliente o Cliente Eventual en SAIT
 			$pedido->numcli = SAIT_UTILS::SAIT_getClientebyemail($order->get_billing_email());
-			if ($pedido->numcli == ""  ) {
-				$pedido->numcliev = SAIT_UTILS::SAIT_getClienteEventualbyemail($order->get_billing_email());
-			}
 		}
 
 		// no se encontro ningun cliente
@@ -160,9 +157,6 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 	}else{
 		// buscar Cliente o Cliente Eventual en SAIT
 		$cotizacion->numcli = SAIT_UTILS::SAIT_getClientebyemail($order->get_billing_email());
-		if ($cotizacion->numcli == ""  ) {
-			$cotizacion->numcliev = SAIT_UTILS::SAIT_getClienteEventualbyemail($order->get_billing_email());
-		}
 	}
 
 	// no se encontro ningun cliente

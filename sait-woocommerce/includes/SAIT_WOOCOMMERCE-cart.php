@@ -25,7 +25,9 @@ function calcularpreciosCarrito($cart) {
 		if (isset($clave->clave)){
 		 	$numcli =  str_pad($clave->clave,5, " ", STR_PAD_LEFT);
 		}else{
-			$numcli = SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email);
+			if (isset($current_user->user_email)){
+				$numcli = SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email);
+			}
 		}
 		if (strpos($numcli, '-') !== false) {
 			$numcli = "    0";
