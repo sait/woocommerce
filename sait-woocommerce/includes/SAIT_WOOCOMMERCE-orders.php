@@ -96,12 +96,12 @@
 			$pedido = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($pedido,$order);
 		}
 
-		$api_response =json_decode( wp_remote_retrieve_body( SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos?dryrun=true",$pedido,true)) );
-		if   ($api_response->result=="OK"){
+		//$api_response =json_decode( wp_remote_retrieve_body( SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos?dryrun=true",$pedido,true)) );
+		//if   ($api_response->result=="OK"){
 			// Enviar pedido sin esperar respuesta
-			SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,false);
-		}	
-			return;
+			//SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,false);
+		//}	
+			return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,false);
 }
 
 public static function SAIT_sendCotizacion( $order,$formapago ){
@@ -176,12 +176,12 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 		$cotizacion = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($cotizacion,$order);
 	}
 
-	$api_response =json_decode( wp_remote_retrieve_body( SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones?dryrun=true",$cotizacion,true)) );
-	if   ($api_response->result=="OK"){
+	//$api_response =json_decode( wp_remote_retrieve_body( SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones?dryrun=true",$cotizacion,true)) );
+	//if   ($api_response->result=="OK"){
 		// Enviar cotizacion sin esperar respuesta
-		SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,false);
-	}	
-		return;
+		//SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,false);
+	//}	
+		return SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,false);
 }
 
 
