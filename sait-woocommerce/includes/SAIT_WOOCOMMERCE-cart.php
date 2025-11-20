@@ -88,18 +88,20 @@ function sait_minimo_total_carrito() {
 	}
     $minimo = floatval($SAIT_options['SAITNube_MinimoCarrito']); //  Cambia el monto mínimo
 
-    if ( WC()->cart && WC()->cart->get_total( 'edit' ) < $minimo ) {
+    $subtotal = WC()->cart->get_subtotal();
+
+    if ( WC()->cart && $subtotal < $minimo ) {
         if ( is_cart() ) {
             wc_print_notice( 
                 sprintf( 'Tu pedido actual es de %s — el monto mínimo para comprar es %s.', 
-                    wc_price( WC()->cart->get_total( 'edit' ) ), 
+                    wc_price( $subtotal ), 
                     wc_price( $minimo )
                 ), 'error' 
             );
         } else {
             wc_add_notice( 
                 sprintf( 'Tu pedido actual es de %s — el monto mínimo para comprar es %s.', 
-                    wc_price( WC()->cart->get_total( 'edit' ) ), 
+                    wc_price( $subtotal ), 
                     wc_price( $minimo )
                 ), 'error' 
             );
@@ -124,7 +126,7 @@ function sait_bloquear_botones_checkout() {
         jQuery(function($){
             function bloquearSiNoCumple() {
                 // WooCommerce muestra el total en diferentes lugares según el theme
-                var totalText = $("tr.order-total td .woocommerce-Price-amount bdi, td[data-title='Total'] bdi").last().text();
+                var totalText = $("tr.cart-subtotal td .woocommerce-Price-amount bdi, td[data-title='Subtotal'] bdi").last().text();
                 if (!totalText) return;
 
                 // Limpieza de texto -> convertir a número
