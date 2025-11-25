@@ -22,6 +22,8 @@ function calcularpreciosCarrito($cart) {
 		$current_user = wp_get_current_user();
 		$clave = SAIT_UTILS::SAIT_getClaves("clientes",null,get_current_user_id());		 
 		$numcli = "    0";
+        $original_price = $product->get_regular_price();
+
 		if (isset($clave->clave)){
 		 	$numcli =  str_pad($clave->clave,5, " ", STR_PAD_LEFT);
 		}else{
@@ -45,15 +47,38 @@ function calcularpreciosCarrito($cart) {
         }
 		$sucursal_id =  str_pad( $sucursal_id,2, " ", STR_PAD_LEFT);
 		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/calcularprecios?numart=".$numart."&unidad=".$unidad."&cant=".$cantidad."&divisadoc=P&numalm=".$sucursal_id."&formapago=1&numcli=".$numcli);
-		$preciopub = $api_response["result"]["preciopub"];
-		$pjedesc = $api_response["result"]["pjedesc"];
-		$original_price = $product->get_regular_price();
+        // Validar errores en respuesta
+        if (
+            !isset($api_response["result"]) ||
+            !isset($api_response["result"]["preciopub"]) ||
+            !isset($api_response["result"]["pjedesc"])
+        ) {
+            $product->set_price($original_price);
+            continue;
+        }
+
+        $preciopub = floatval($api_response["result"]["preciopub"]);
+        $pjedesc   = floatval($api_response["result"]["pjedesc"]);
+
+        // Si precio API viene en 0 → dejar precio regular
+        if ($preciopub <= 0) {
+            $product->set_price($original_price);
+            continue;
+        }
+
+        // Calcular nuevo precio
         $discounted_price = $preciopub * (1 - ($pjedesc / 100));
 
-        // Establecer el nuevo precio en el producto
-			if ($discounted_price < $original_price) {
-				$product->set_price($discounted_price);
-			}
+        // Si el resultado es inválido o 0 dejar precio regular
+        if ($discounted_price <= 0 || empty($discounted_price)) {
+            $product->set_price($original_price);
+            continue;
+        }
+
+        // Solo aplicar si el precio con descuento es menor al precio normal
+        if ($discounted_price < $original_price) {
+            $product->set_price($discounted_price);
+        }
     }
 }
 

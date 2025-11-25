@@ -143,6 +143,12 @@ function sendOrderSAIT_thankyou( $order_id ){
 /* Agregar estilos y scripts */
 function registrar_estilos_scripts() {
     // Cargar solo si es frontend y no en admin
+		$SAIT_options = get_option('opciones_sait');
+		$Sucursal_activo = isset($SAIT_options['SAITNube_Sucursal_enabled']) && $SAIT_options['SAITNube_Sucursal_enabled'] === '1';
+	
+		if (!$Sucursal_activo) {
+			return ;
+		}
     if (!is_admin()) {
 		wp_enqueue_style(
 			'font-awesome',
