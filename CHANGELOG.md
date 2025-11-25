@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.15] - 18/NOV/2025 
+### fix
+- Fix promo: fallback a precio registrado si hay error de comunicacion
+- Fix monto minim0: se valida con subtotal
+
+## [1.1.14] - 18/NOV/2025 
+### fix
+- Fix numcli: se evita numcli vacio en pedidos y carrito
+### upd
+- cotizaciones: se actualizo para estar igual que pedididos
 
 ## [1.1.13] - 1/NOV/2025 
 ### fix
