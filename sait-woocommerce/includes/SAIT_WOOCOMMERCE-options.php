@@ -122,6 +122,16 @@ class SAITSettingsPage
             'SAITNube'
         ); 
 		
+
+		// Campo para activar o desactivar ocultar productos con precio en 0
+		add_settings_field(
+			'SAITNube_OcultarSinPrecio_enabled',
+			'¿Ocultar Productos con Precio en 0?',
+			array( $this, 'SAITNube_OcultarSinPrecio_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+
 		// Campo para activar o desactivar la opción ExistAlm
 		add_settings_field(
 			'SAITNube_ExistAlm_enabled',
@@ -172,6 +182,16 @@ class SAITSettingsPage
 			'opciones_sait_page',
 			'SAITNube'
 		);
+
+        // Campo para activar o desactivar las promociones globales
+		add_settings_field(
+			'SAITNube_PromoGlobal_enabled',
+			'Calculo de precios y promociones en la tienda',
+			array( $this, 'SAITNube_PromoGlobal_enabled_callback' ),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+
         // Campo PrecioLista
         add_settings_field(
             'SAITNube_PrecioLista', 
@@ -180,7 +200,7 @@ class SAITSettingsPage
             'opciones_sait_page', 
             'SAITNube'
         ); 
-		// Campo para activar o desactivar las promociones en el carrito
+		// Campo para activar o desactivar enviar las observaciones del pedido a SAIT
 		add_settings_field(
 			'SAITNube_PedidoObs_enabled',
 			'Enviar a SAIT las observaciones del pedido',
@@ -189,7 +209,7 @@ class SAITSettingsPage
 			'SAITNube'
 		);
 		
-		// Campo para activar o desactivar las promociones en el carrito
+		// Campo para activar o desactivar enviar la direccion de envio en el pedido
 		add_settings_field(
 			'SAITNube_PedidoDirenvio_enabled',
 			'Enviar a SAIT la direccion de envio',
@@ -198,7 +218,7 @@ class SAITSettingsPage
 			'SAITNube'
 		);
 		
-		// Campo para activar o desactivar las promociones en el carrito
+		// Campo para activar o desactivar las funciones personalizadas de la empresa
 		add_settings_field(
 			'SAITNube_FuncionPersonalizadaPedido_enabled',
 			'Usar funcion personalizada de pedido',
@@ -232,6 +252,9 @@ class SAITSettingsPage
 			$new_input['SAITNube_Sucursal_enabled'] = sanitize_text_field($input['SAITNube_Sucursal_enabled']);
 		}
 		
+        if (isset($input['SAITNube_OcultarSinPrecio_enabled'])) {
+			$new_input['SAITNube_OcultarSinPrecio_enabled'] = sanitize_text_field($input['SAITNube_OcultarSinPrecio_enabled']);
+		}
         if (isset($input['SAITNube_ExistAlm_enabled'])) {
 			$new_input['SAITNube_ExistAlm_enabled'] = sanitize_text_field($input['SAITNube_ExistAlm_enabled']);
 		}
@@ -249,6 +272,10 @@ class SAITSettingsPage
         
 		if (isset($input['SAITNube_Promo_enabled'])) {
 			$new_input['SAITNube_Promo_enabled'] = sanitize_text_field($input['SAITNube_Promo_enabled']);
+		}
+
+		if (isset($input['SAITNube_PromoGlobal_enabled'])) {
+			$new_input['SAITNube_PromoGlobal_enabled'] = sanitize_text_field($input['SAITNube_PromoGlobal_enabled']);
 		}
 		
 		if (isset($input['SAITNube_PedidoObs_enabled'])) {
@@ -373,6 +400,22 @@ class SAITSettingsPage
 		</label>
 		<?php
 	}
+
+
+	public function SAITNube_PromoGlobal_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_PromoGlobal_enabled']) ? $this->options['SAITNube_PromoGlobal_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PromoGlobal_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_PromoGlobal_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+	}
 	
 	public function SAITNube_Sucursal_enabled_callback()
 	{
@@ -390,6 +433,23 @@ class SAITSettingsPage
 		//$existAlm_activo = !empty($options['SAITNube_ExistAlm_enabled']) && $options['SAITNube_ExistAlm_enabled'] === '1';
 	}
 	
+
+	public function SAITNube_OcultarSinPrecio_enabled_callback()
+	{
+		$value = isset($this->options['SAITNube_OcultarSinPrecio_enabled']) ? $this->options['SAITNube_OcultarSinPrecio_enabled'] : '0';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_OcultarSinPrecio_enabled]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[SAITNube_OcultarSinPrecio_enabled]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<?php
+		//$existAlm_activo = !empty($options['SAITNube_ExistAlm_enabled']) && $options['SAITNube_ExistAlm_enabled'] === '1';
+	}
+
 	public function SAITNube_ExistAlm_enabled_callback()
 	{
 		$value = isset($this->options['SAITNube_ExistAlm_enabled']) ? $this->options['SAITNube_ExistAlm_enabled'] : '0';

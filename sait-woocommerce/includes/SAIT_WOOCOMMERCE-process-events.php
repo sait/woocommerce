@@ -313,6 +313,9 @@
 
 						set_transient($cache_key, $total, 120); // caché 2 min
 					}
+					$product->set_stock_quantity(round($total, 2));
+					$product->save();
+					return SAIT_UTILS::SAIT_response(200,"STOCK UPD ACTEXIST");
 			}	
 				
 			// Cambia el stock y guarda

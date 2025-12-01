@@ -310,3 +310,184 @@ function mostrar_tabla_almacenes() {
 
 	echo '</table>';
 }
+
+add_action( 'woocommerce_product_query', 'ocultar_productos_sin_precio' );
+function ocultar_productos_sin_precio( $query ) {
+   
+		$SAIT_options = get_option('opciones_sait');
+		$OcultarSinPrecio = isset($SAIT_options['SAITNube_OcultarSinPrecio']) && $SAIT_options['SAITNube_OcultarSinPrecio'] === '1';
+
+		if (!$OcultarSinPrecio) {
+			return ;
+		}
+	
+    // Solo front evitar Admin/REST
+    if ( is_admin() || ( defined('REST_REQUEST') && REST_REQUEST ) ) return;
+
+    // Aplicar solo al catálogo
+    if ( ! is_shop() && ! is_product_taxonomy() && ! is_search() ) return;
+
+    $meta_query = $query->get( 'meta_query' );
+
+    if ( ! $meta_query ) {
+        $meta_query = [];
+    }
+
+    // Precio mayor a 0
+    $meta_query[] = array(
+        'key' => '_price',
+        'value' => 0,
+        'compare' => '>',
+        'type' => 'NUMERIC'
+    );
+
+    $query->set( 'meta_query', $meta_query );
+}
+
+
+
+add_filter('woocommerce_get_price_html', 'sait_precio_promocional_en_producto', 30, 2);
+function sait_precio_promocional_en_producto($price_html, $product) {
+
+    $SAIT_options = get_option('opciones_sait');
+    $Promo_activo = isset($SAIT_options['SAITNube_PromoGlobal_enabled']) && $SAIT_options['SAITNube_PromoGlobal_enabled'] === '1';
+
+    if (!$Promo_activo) {
+        return $price_html;
+    }
+
+	if (is_admin()) {
+	     return $price_html;
+ 	}
+    // Solo en página de producto
+   //// if (!is_product()) {
+   //     return $price_html;
+   // }
+	
+    // SKU
+    $numart = $product->get_sku();
+    if (!$numart) {
+        return $price_html;
+    }
+
+    // Cliente
+	// CACHE Datos del cliente (6 horas)
+	$cache_cli = 'sait_cli_' . get_current_user_id();
+	$cli_cache = get_transient($cache_cli);
+
+	if ($cli_cache !== false) {
+		$numcli = $cli_cache;
+	} else {
+		$clave = SAIT_UTILS::SAIT_getClaves("clientes", null, get_current_user_id());
+		$numcli = (isset($clave->clave))
+			? str_pad($clave->clave, 5, " ", STR_PAD_LEFT)
+			: SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email);
+
+		if (empty($numcli) || strpos($numcli, '-') !== false) {
+			$numcli = "    0";
+		}
+
+		set_transient($cache_cli, $numcli, 21600); // cache 6 hrs
+	}
+
+
+    // Sucursal
+    $sucursal_id = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+    if (empty($sucursal_id)) {
+        $sucursal_id = $SAIT_options['SAITNube_NumAlm'];
+    }
+    $sucursal_id = str_pad($sucursal_id, 2, " ", STR_PAD_LEFT);
+
+    // Unidad
+		// CACHE Artículo por SKU (24 horas)
+		$cache_art = 'sait_art_' . $numart;
+		$api_art = get_transient($cache_art);
+
+		if ($api_art === false) {
+			$api_art = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/" . $numart);
+			if (!empty($api_art)) {
+				set_transient($cache_art, $api_art, 86400); // 24 hrs
+			}
+		}
+    $unidad = $api_art["result"]["unidad"];
+
+    // --------------------------------------------
+    //  TRANSIENT KEY (cache por producto + cliente + sucursal)
+    // --------------------------------------------
+    $cache_key = 'sait_precio_' . md5($numart . '_' . $numcli . '_' . $sucursal_id);
+    $cached = get_transient($cache_key);
+
+    if ($cached !== false) {
+        $preciopub = $cached['preciopub'];
+        $pje_api = $cached['pje_api'];
+    } else {
+        // Consulta REAL a la API
+        $api_calc = SAIT_UTILS::SAIT_GetNube(
+            "/api/v3/calcularprecios?numart=$numart&unidad=$unidad&cant=1&divisadoc=P&numalm=$sucursal_id&formapago=1&numcli=$numcli"
+        );
+
+        if (!isset($api_calc["result"])) {
+            return $price_html;
+        }
+
+        $preciopub = floatval($api_calc["result"]["preciopub"]);
+        $pje_api   = floatval($api_calc["result"]["pjedesc"]);
+
+        // Guardar en caché 15 minutos
+        set_transient($cache_key, [
+            'preciopub' => $preciopub,
+            'pje_api'   => $pje_api
+        ], 900); // 900 = 15 minutos
+    }
+
+    $precio_regular = floatval($product->get_regular_price());
+    $precio_promocional = $preciopub;
+
+    // Si API regresa precio en 0
+    if ($preciopub <= 0) {
+        return $price_html;
+    }
+
+    //   LÓGICA DE DESCUENTO
+    if ($pje_api > 0) {
+
+        // API trae descuento: SE USA
+        $pjedesc = round($pje_api);
+        $precio_promocional = $preciopub * (1 - ($pjedesc / 100));
+
+    } else {
+
+        // API no trae, calcular si aplica
+        if ($precio_regular > 0 && $precio_promocional < $precio_regular) {
+            $pjedesc = round((1 - ($precio_promocional / $precio_regular)) * 100);
+        } else {
+            return $price_html;
+        }
+    }
+
+    if ($pje_api == 0 && $precio_promocional >= $precio_regular) {
+        return $price_html;
+    }
+
+    // Nuevo HTML para el PRECIO
+    $nuevo_html = '
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+        <span style="font-size:22px;color:#cc0000;font-weight:bold;">' . wc_price($precio_promocional) . '</span>
+        <span style="background:#cc0000;color:white;padding:2px 6px;font-size:11px;border-radius:4px;font-weight:bold;">
+            -' . $pjedesc . '%
+        </span>
+    </div>
+    <small style="opacity:0.6;font-size:13px;">
+        Antes: <del>' . wc_price($precio_regular) . '</del>
+    </small>
+';
+	
+   // Solo en página de producto
+    if (is_product()) {
+	 //HTML final 
+		 $product_html = ' <span class="precio-promocion-principal" style="font-size:28px;color:#cc0000;font-weight:bold;"> ' . wc_price($precio_promocional) . ' </span><br> <span style="opacity:0.7; font-size:15px;"> Antes: <del>' . wc_price($precio_regular) . '</del> </span><br> <span style="background:#cc0000;color:white;padding:3px 8px;border-radius:6px;font-size:13px;"> -' . $pjedesc . '% OFF </span> ';
+		return $product_html;
+    }
+ 
+    return $nuevo_html;
+}
