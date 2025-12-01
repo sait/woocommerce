@@ -1,9 +1,15 @@
 # Changelog
 
-## [1.1.15] - 18/NOV/2025 
+
+## [1.1.16] - 1/DIC/2025 
+### add
+- promo: se aplican promociones en busquedas y descripciones de articulos
+- filtro precio0: opciond de ocultar productos con precio 0
+
+## [1.1.15] - 24/NOV/2025 
 ### fix
 - Fix promo: fallback a precio registrado si hay error de comunicacion
-- Fix monto minim0: se valida con subtotal
+- Fix monto minimo: se valida con subtotal
 
 ## [1.1.14] - 18/NOV/2025 
 ### fix
