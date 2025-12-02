@@ -356,43 +356,43 @@ function sait_precio_promocional_en_producto($price_html, $product) {
         return $price_html;
     }
 
-	if (is_admin()) {
-	     return $price_html;
- 	}
-    // Solo en página de producto
-   //// if (!is_product()) {
-   //     return $price_html;
-   // }
+		if (is_admin()) {
+				return $price_html;
+		}
 	
-    // SKU
-    $numart = $product->get_sku();
-    if (!$numart) {
-        return $price_html;
-    }
-
-    // Cliente
-	// CACHE Datos del cliente (6 horas)
-	$cache_cli = 'sait_cli_' . get_current_user_id();
-	$cli_cache = get_transient($cache_cli);
-
-	if ($cli_cache !== false) {
-		$numcli = $cli_cache;
-	} else {
-		$clave = SAIT_UTILS::SAIT_getClaves("clientes", null, get_current_user_id());
-		$numcli = (isset($clave->clave))
-			? str_pad($clave->clave, 5, " ", STR_PAD_LEFT)
-			: SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email);
-
-		if (empty($numcli) || strpos($numcli, '-') !== false) {
-			$numcli = "    0";
+		// SKU
+		$numart = $product->get_sku();
+		if (!$numart) {
+				return $price_html;
 		}
 
-		set_transient($cache_cli, $numcli, 21600); // cache 6 hrs
-	}
+		// Cliente
+		$current_user = wp_get_current_user();
+		// CACHE Datos del cliente (media hora)
+		$current_user_id = get_current_user_id();
+		$cache_cli = 'sait_cli_' . $current_user_id;
+		$cli_cache = get_transient($cache_cli);
+
+		if ($cli_cache !== false) {
+			$numcli = $cli_cache;
+		} else {
+			$clave = SAIT_UTILS::SAIT_getClaves("clientes", null, $current_user_id);
+			$numcli = (isset($clave->clave))
+				? str_pad($clave->clave, 5, " ", STR_PAD_LEFT)
+				: SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email);
+
+			if (empty($numcli) || strpos($numcli, '-') !== false) {
+				$numcli = "    0";
+			}else{
+				SAIT_UTILS::SAIT_insertClaves("clientes",trim($numcli),$current_user_id);
+			}
+
+			set_transient($cache_cli, $numcli, 1800); // cache media hora
+		}
 
 
     // Sucursal
-    $sucursal_id = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+    $sucursal_id = get_user_meta($current_user_id, 'sucursal_seleccionada', true);
     if (empty($sucursal_id)) {
         $sucursal_id = $SAIT_options['SAITNube_NumAlm'];
     }
@@ -480,7 +480,7 @@ function sait_precio_promocional_en_producto($price_html, $product) {
     <small style="opacity:0.6;font-size:13px;">
         Antes: <del>' . wc_price($precio_regular) . '</del>
     </small>
-';
+		';
 	
    // Solo en página de producto
     if (is_product()) {
