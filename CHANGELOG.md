@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.17] - 5/DIC/2025 
+### fix
+- Fix promo: tomar correctamente el id del usuario conectado
+- Fix promo: redondear respuesta de la api
 
 ## [1.1.16] - 1/DIC/2025 
 ### add
