@@ -441,7 +441,7 @@ function sait_precio_promocional_en_producto($price_html, $product) {
     }
 
     $precio_regular = floatval($product->get_regular_price());
-    $precio_promocional = $preciopub;
+    $precio_promocional = round($preciopub,2);
 
     // Si API regresa precio en 0
     if ($preciopub <= 0) {
@@ -477,15 +477,15 @@ function sait_precio_promocional_en_producto($price_html, $product) {
             -' . $pjedesc . '%
         </span>
     </div>
-    <small style="opacity:0.6;font-size:13px;">
-        Antes: <del>' . wc_price($precio_regular) . '</del>
+    <small style="opacity:0.9;font-size:13px;">
+        Antes: <del style="color:#3c3636;" >' . wc_price($precio_regular) . '</del>
     </small>
 		';
 	
    // Solo en página de producto
     if (is_product()) {
 	 //HTML final 
-		 $product_html = ' <span class="precio-promocion-principal" style="font-size:28px;color:#cc0000;font-weight:bold;"> ' . wc_price($precio_promocional) . ' </span><br> <span style="opacity:0.7; font-size:15px;"> Antes: <del>' . wc_price($precio_regular) . '</del> </span><br> <span style="background:#cc0000;color:white;padding:3px 8px;border-radius:6px;font-size:13px;"> -' . $pjedesc . '% OFF </span> ';
+		 $product_html = ' <span class="precio-promocion-principal" style="font-size:28px;color:#cc0000;font-weight:bold;"> ' . wc_price($precio_promocional) . ' </span><br> <span style="opacity:0.9; font-size:15px;"> Antes: <del  style="color:#3c3636;"  >' . wc_price($precio_regular) . '</del> </span><br> <span style="background:#cc0000;color:white;padding:3px 8px;border-radius:6px;font-size:13px;"> -' . $pjedesc . '% OFF </span> ';
 		return $product_html;
     }
  

@@ -76,7 +76,7 @@ function calcularpreciosCarrito($cart) {
         }
 
         // Solo aplicar si el precio con descuento es menor al precio normal
-        if ($discounted_price < $original_price) {
+        if (round($discounted_price,2) < $original_price) {
             $product->set_price($discounted_price);
         }
     }
