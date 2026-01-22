@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.18] - 22/ENE/2025 
+### fix
+- Fix modcli: fix al actualizar nuevo correo de cliente desde evento 
+
 ## [1.1.17] - 5/DIC/2025 
 ### fix
 - Fix promo: tomar correctamente el id del usuario conectado
