@@ -383,8 +383,6 @@ function sait_precio_promocional_en_producto($price_html, $product) {
 
 			if (empty($numcli) || strpos($numcli, '-') !== false) {
 				$numcli = "    0";
-			}else{
-				SAIT_UTILS::SAIT_insertClaves("clientes",trim($numcli),$current_user_id);
 			}
 
 			set_transient($cache_cli, $numcli, 1800); // cache media hora

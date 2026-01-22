@@ -548,6 +548,10 @@
 			$customer = new WC_Customer( $clave->wcid );
 			$customer->get_email();
 			if ($emailtw != $customer->get_email()){			
+				$user_by_email = get_user_by('email',$emailtw);
+				if ($user_by_email && $user_by_email->ID != $clave->wcid){
+					return SAIT_UTILS::SAIT_response(200,"Correo ya asignado a otro usuario");
+				}
 				$customer->set_email( $emailtw );
 				$customer->save();
 				$mailer = WC()->mailer();
@@ -558,6 +562,14 @@
 
 			return SAIT_UTILS::SAIT_response(200,"Cliente ya existe");
 		}
+	
+		// Si no existe el numcli pero el correo ya existe, ligar la clave
+		$user_by_email = get_user_by('email',$emailtw);
+		if ($user_by_email){
+			SAIT_UTILS::SAIT_insertClaves("clientes",trim(self::xml_attribute($oXml->action[0]->keys[0],"numcli")),$user_by_email->ID);
+			return SAIT_UTILS::SAIT_response(200,"Cliente ligado a usuario existente");
+		}
+	
 		// woocommerce 9.3 requiere estas opciones
 		update_option('woocommerce_registration_generate_password', 'yes');
 		update_option('woocommerce_registration_generate_username', 'yes');
