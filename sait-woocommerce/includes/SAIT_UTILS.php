@@ -135,6 +135,58 @@
 		return "";
 	}
 
+	public static function getExistSAIT($SKU) {
+		$SAIT_options = get_option('opciones_sait');
+
+		// Validación temprana para evitar procesamiento innecesario
+		if (empty($SAIT_options)) {
+			return 0;
+		}
+
+		$NumAlm = $SAIT_options['SAITNube_NumAlm'] ?? '';
+		$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) 
+			&& $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
+
+		// Procesar almacenes a mostrar solo si está activo
+		$almacenes_a_mostrar = [];
+		if ($ExistAlm_activo && isset($SAIT_options['SAITNube_ExistAlm'])) {
+			$almacenes_a_mostrar = array_map('trim', 
+				explode(',', $SAIT_options['SAITNube_ExistAlm']));
+			$almacenes_a_mostrar = array_filter($almacenes_a_mostrar); // Eliminar vacíos
+		}
+
+		// Consulta a la API
+		$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . trim($SKU));
+
+		// Validación rápida de respuesta
+		if (is_wp_error($respuesta) || empty($respuesta['result'])) {
+			return 0;
+		}
+
+		$quantity = 0;
+
+		// Lógica optimizada para procesar almacenes
+		foreach ($respuesta['result'] as $almacen) {
+			$almacenNum = $almacen['numalm'] ?? '';
+			$existencia = (float) ($almacen['existencia'] ?? 0);
+
+			if ($ExistAlm_activo) {
+				// Modo múltiples almacenes
+				if (in_array($almacenNum, $almacenes_a_mostrar)) {
+					$quantity += $existencia;
+				}
+			} else {
+				// Modo único almacén
+				if ($almacenNum == $NumAlm) {
+					$quantity = $existencia;
+					break; // Solo necesitamos uno, podemos salir del bucle
+				}
+			}
+		}
+    
+    	return round($quantity, 2);
+	}
+	 
  }
 
 // Agregar select de almacen al menu principal.

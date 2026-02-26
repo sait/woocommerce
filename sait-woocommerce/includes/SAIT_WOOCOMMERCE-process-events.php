@@ -214,6 +214,15 @@
 		if (!empty($obs)) {
 			$product->set_description($obs);
 		}
+
+		$sait_stock = SAIT_UTILS::getExistSAIT($numart);
+
+		// Si hay existencia en SAIT, actualizar el stock
+		if (!empty($sait_stock) && $sait_stock > 0) {
+			$product->set_stock_quantity($sait_stock);
+
+		}
+
 		$product_id = $product->save();
 		
 		// Guardar la nueva clave si se creó el producto
