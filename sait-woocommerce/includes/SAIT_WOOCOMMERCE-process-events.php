@@ -176,7 +176,12 @@
 				// Actualizar producto
 				$product->set_name($desc);
 				$product->set_sku($numart);
-				$product->set_global_unique_id( $codigo );
+				try {
+					$product->set_global_unique_id( $codigo );
+				} catch (Exception $e) {
+					// Si falla (por duplicado o inválido), lo registramos en el log y seguimos
+					error_log("SAIT Error: No se pudo asignar el código $codigo al producto " . $numart . " - " . $e->getMessage());
+				}
 		
 				if (!empty($category_id)) {
 						$product->set_category_ids($category_id);
@@ -189,7 +194,19 @@
 				if (!empty($obs)) {
 					$product->set_description($obs);
 				}
-		
+				// Obtener stock actual del producto
+				$current_stock = $product->get_stock_quantity();
+
+				// Si el stock es 0, consultar existencia en SAIT
+				if (empty($current_stock) || $current_stock <= 0) {
+					$sait_stock = SAIT_UTILS::getExistSAIT($numart);
+
+					// Si hay existencia en SAIT, actualizar el stock
+					if (!empty($sait_stock) && $sait_stock > 0) {
+						$product->set_stock_quantity($sait_stock);
+	
+					}
+				}
 				$product->save();
 		
 				return SAIT_UTILS::SAIT_response(200, "ART UPD");
@@ -199,7 +216,12 @@
 		$product = new WC_Product_Simple();
 		$product->set_name($desc);
 		$product->set_sku($numart);
-		$product->set_global_unique_id( $codigo );
+		try {
+			$product->set_global_unique_id( $codigo );
+		} catch (Exception $e) {
+			// Si falla (por duplicado o inválido), lo registramos en el log y seguimos
+			error_log("SAIT Error: No se pudo asignar el código $codigo al producto " . $numart . " - " . $e->getMessage());
+		}
 		$product->set_status("draft");
 		$product->set_manage_stock(true);
 		$product->set_regular_price( 0);
