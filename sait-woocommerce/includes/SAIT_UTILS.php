@@ -18,7 +18,7 @@
  * @author     Ali Moreno <ali@saitenlinea.com>
  */
 
-	
+ class SAIT_UTILS{
 	public static function SAIT_getClientebyemail($email){
 		if (empty($email) || !is_string($email) || !is_email($email)) {
 				return "";
