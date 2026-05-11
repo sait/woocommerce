@@ -64,8 +64,17 @@
 					$art->cant = $item->get_quantity();
 					$product = $item->get_product();
 					$art->numart = $product->get_sku();
-					$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart);
-					$art->unidad = $api_response["result"]["unidad"];
+					$api_response = null;
+					$intentos = 0;
+					$max_intentos = 3;
+					while (!isset($api_response["result"]["unidad"]) && $intentos < $max_intentos) {
+							if ($intentos > 0) {
+									usleep($intentos * 500000); // 0.5s, 1s, 1.5s
+							}
+							$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
+							$intentos++;
+					}
+					$art->unidad = isset($api_response["result"]["unidad"]) ? $api_response["result"]["unidad"] : "";
 					$art->preciopub =  (float)$product->get_regular_price();
 					$art->precio = (float)$product->get_regular_price();
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
@@ -146,7 +155,17 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 				$art->numart = $product->get_sku();
 				$art->preciopub =  (float)$product->get_regular_price();
 				$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart);
-				$art->unidad = $api_response["result"]["unidad"];
+				$api_response = null;
+				$intentos = 0;
+				$max_intentos = 3;
+				while (!isset($api_response["result"]["unidad"]) && $intentos < $max_intentos) {
+						if ($intentos > 0) {
+								usleep($intentos * 500000); // 0.5s, 1s, 1.5s
+						}
+						$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
+						$intentos++;
+				}
+				$art->unidad = isset($api_response["result"]["unidad"]) ? $api_response["result"]["unidad"] : "";
 				$art->precio = (float)$product->get_regular_price();
 				$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
 				$cotizacion->items[] = $art;

@@ -19,28 +19,30 @@
  */
 
 	
- class SAIT_UTILS{
 	public static function SAIT_getClientebyemail($email){
-		//Consultar si el cliente existe en SAIT
-		$api_response = self::SAIT_GetNube("/api/v3/clientes?emailtw=".urlencode($email));
-		//return $api_response;
-		if ($api_response["result"]!=null){
-			return  str_pad($api_response["result"][0]["numcli"],5, " ", STR_PAD_LEFT);
+		if (empty($email) || !is_string($email) || !is_email($email)) {
+				return "";
 		}
-		return "";
+		$api_response = self::SAIT_GetNube("/api/v3/clientes?emailtw=".urlencode($email));
+		if (!isset($api_response["result"]) || $api_response["result"] == null){
+				return "";
+		}
+		return str_pad($api_response["result"][0]["numcli"],5, " ", STR_PAD_LEFT);
 	}
 
 	public static function SAIT_getClienteEventualbyemail($email){
-		//Consultar si el cliente evebntual existe en SAIT
-		$api_response = self::SAIT_GetNube("/api/v3/clienteseventuales?email=".urlencode($email));
-		if ($api_response["result"]!=null){
-			return str_pad($api_response["result"][0]["numcliev"],5, " ", STR_PAD_LEFT);
+		if (empty($email) || !is_string($email) || !is_email($email)) {
+				return "";
 		}
-		return "";
+		$api_response = self::SAIT_GetNube("/api/v3/clienteseventuales?email=".urlencode($email));
+		if (!isset($api_response["result"]) || $api_response["result"] == null){
+				return "";
+		}
+		return str_pad($api_response["result"][0]["numcliev"],5, " ", STR_PAD_LEFT);
 	}
 
 
-	public static function SAIT_GetNube($uri){
+	public static function SAIT_GetNube($uri, $reintentar = true){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$url = $SAIT_options['SAITNube_URL'].$uri;
 		$apikey = $SAIT_options['SAITNube_APIKey'];
@@ -56,11 +58,16 @@
 		);
 		$resSAIT =  wp_remote_get($url, $args);
 		if ( ! is_wp_error( $resSAIT ) ) {
-    		$body = wp_remote_retrieve_body( $resSAIT );
-    		$data = json_decode( $body ,true );
-			return $data;
-		}
-		return "";
+    		$data = json_decode( wp_remote_retrieve_body( $resSAIT), true );
+    		if ($data !== null) {
+					return $data;
+				}
+			}
+			if ($reintentar) {
+				usleep(500000);
+				return self::SAIT_GetNube($uri, false);
+			}
+			return null;
 	}
 
 	public static function SAIT_PostNube($uri,$bodyObject, $wait = false){
@@ -431,7 +438,9 @@ function sait_precio_promocional_en_producto($price_html, $product) {
 			$clave = SAIT_UTILS::SAIT_getClaves("clientes", null, $current_user_id);
 			$numcli = (isset($clave->clave))
 				? str_pad($clave->clave, 5, " ", STR_PAD_LEFT)
-				: SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email);
+				: ((!empty($current_user->user_email) && is_email($current_user->user_email))
+						? SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email)
+						: "");
 
 			if (empty($numcli) || strpos($numcli, '-') !== false) {
 				$numcli = "    0";
@@ -455,11 +464,18 @@ function sait_precio_promocional_en_producto($price_html, $product) {
 
 		if ($api_art === false) {
 			$api_art = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/" . $numart);
-			if (!empty($api_art)) {
-				set_transient($cache_art, $api_art, 86400); // 24 hrs
+			if (!isset($api_art["result"]["unidad"])) {
+					usleep(500000);
+					$api_art = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/" . $numart, false);
 			}
-		}
-    $unidad = $api_art["result"]["unidad"];
+			if (!empty($api_art)) {
+					set_transient($cache_art, $api_art, 86400);
+			}
+	}
+	if (!isset($api_art["result"]["unidad"])) {
+			return $price_html;
+	}
+	$unidad = $api_art["result"]["unidad"];
 
     // --------------------------------------------
     //  TRANSIENT KEY (cache por producto + cliente + sucursal)

@@ -17,8 +17,16 @@ function calcularpreciosCarrito($cart) {
         // Obtener el producto
         $product = $cart_item['data'];
 		$numart = $product->get_sku();
-		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
-		$unidad = $api_response["result"]["unidad"];
+        $api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
+        if (!isset($api_response["result"]["unidad"])) {
+            usleep(500000);
+            $api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart, false);
+        }
+        if (!isset($api_response["result"]["unidad"])) {
+            $product->set_price($original_price);
+            continue;
+        }
+        $unidad = $api_response["result"]["unidad"];
 		$current_user = wp_get_current_user();
 		$clave = SAIT_UTILS::SAIT_getClaves("clientes",null,get_current_user_id());		 
 		$numcli = "    0";
