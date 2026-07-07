@@ -78,11 +78,15 @@ Clase `SAIT_WOOCOMMERCE_Orders`.
 
 Metodos:
 
-- `SAIT_sendPedido($order, $formapago)`: arma body de pedido y lo envia a `/api/v3/pedidos`.
-- `SAIT_sendCotizacion($order, $formapago)`: arma body de cotizacion y lo envia a `/api/v3/cotizaciones`.
-- `SAIT_sendOrder($id_pedido, $formapago)`: decide pedido/cotizacion segun configuracion.
+- `SAIT_sendPedido($order, $formapago, $wait = false)`: arma body de pedido y lo envia a `/api/v3/pedidos`.
+- `SAIT_sendCotizacion($order, $formapago, $wait = false)`: arma body de cotizacion y lo envia a `/api/v3/cotizaciones`.
+- `SAIT_sendOrder($id_pedido, $formapago)`: envio automatico con idempotencia; decide pedido/cotizacion segun configuracion.
+- `SAIT_envioAutomaticoDisparado($order)`: revisa si la orden ya disparo envio automatico a SAIT.
+- `SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo)`: guarda metadata del envio automatico disparado.
 - `SAIT_reenviarPedido($id_pedido)`: reenvia la orden indicada como pedido o cotizacion.
 - `SAIT_sendPedidoTest($id_pedido)`: alias interno de compatibilidad.
+- `SAIT_registrarResultadoEnvio($order, $response, $tipo, $formapago, $modo)`: guarda metadata del ultimo resultado recibido de SAIT.
+- `SAIT_responderResultadoEnvio($resultado)`: genera respuesta REST del reenvio manual.
 - `SAIT_calcularPjeDescuentoItem($cantidad, $total, $precio)`: calcula descuento porcentual.
 - `SAIT_getDirEnvio($order)`: genera cadena `direnvio` para SAIT.
 

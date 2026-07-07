@@ -4,20 +4,20 @@ Estas notas son hallazgos iniciales al leer el codigo. No se hicieron cambios fu
 
 ## Riesgos Altos
 
-### SQL construido por concatenacion
+### SQL preparado en mapeos SAIT
 
 Archivo: `includes/SAIT_UTILS.php`
 
-`SAIT_getClaves()` arma SQL concatenando `$tabla`, `$clave` y `$wcid`.
+`SAIT_getClaves()` armaba SQL concatenando `$tabla`, `$clave` y `$wcid`.
 
-Riesgo:
+Riesgo antes de corregir:
 
 - Inyeccion SQL si algun valor llega contaminado desde XML, request o datos externos.
 
-Siguiente paso sugerido:
+Correccion aplicada:
 
-- Usar `$wpdb->prepare`.
-- Manejar `null` explicitamente para no producir condiciones ambiguas.
+- Usa `$wpdb->prepare`.
+- Maneja `null` explicitamente para no producir condiciones ambiguas.
 
 ### Endpoint de reenvio expuesto sin autenticacion
 
@@ -133,7 +133,10 @@ Riesgo:
 
 - Menor seguridad en conexiones HTTPS.
 
-Puede tener una razon operativa, pero deberia documentarse o convertirlo en opcion controlada.
+Decision actual:
+
+- Se conserva `sslverify => false` por compatibilidad operativa.
+- No se agrega configuracion por ahora.
 
 ### Envio de pedidos sin esperar respuesta
 
@@ -153,18 +156,21 @@ Siguiente paso sugerido:
 - Guardar metadata en la orden con estado de envio.
 - Agregar accion manual de reenvio.
 
-### Falta de idempotencia clara en envio de ordenes
+Nota: el reenvio manual ya espera respuesta y registra metadata del ultimo resultado. El checkout automatico sigue sin esperar respuesta.
+
+### Idempotencia en envio automatico de ordenes
 
 Los hooks `woocommerce_payment_complete` y `woocommerce_thankyou` pueden ejecutarse en escenarios cercanos para una misma orden, dependiendo del flujo de pago.
 
-Riesgo:
+Riesgo antes de corregir:
 
 - Envio duplicado a SAIT.
 
-Siguiente paso sugerido:
+Correccion aplicada:
 
-- Guardar meta `_sait_enviado` o equivalente.
-- Validar antes de enviar.
+- `SAIT_sendOrder()` omite el envio si la orden ya tiene `_sait_envio_disparado = yes`.
+- El primer envio automatico guarda `_sait_envio_disparado`, fecha, forma de pago y tipo de documento.
+- El endpoint manual de reenvio no se bloquea por esta metadata.
 
 ### Funciones globales mezcladas con utilidades
 
@@ -201,19 +207,19 @@ Esto hace mas dificil probar y razonar sobre efectos secundarios.
 - [x] Arreglar `$sku` no definido en `ACTEXIST()` cuando esta activo multi-almacen.
 - [x] Arreglar `$original_price` usado antes de definirse en `calcularpreciosCarrito()`.
 - [x] Renombrar endpoint operativo de reenvio a `POST /wp-json/saitplugin/v1/reenviar-pedido-sait/{idpedido}` y dejar `GET /testpedido/{idpedido}` como alias de compatibilidad.
-- [ ] Cambiar `SAIT_UTILS::SAIT_getClaves()` para usar `$wpdb->prepare`.
+- [x] Cambiar `SAIT_UTILS::SAIT_getClaves()` para usar `$wpdb->prepare`.
 
 ### Prioridad Media
 
-- [ ] Agregar idempotencia al envio de ordenes a SAIT:
+- [x] Agregar idempotencia al envio de ordenes a SAIT:
   - Guardar metadata en la orden cuando ya se envio.
   - Evitar doble envio entre `woocommerce_payment_complete` y `woocommerce_thankyou`.
-- [ ] Registrar resultado del envio a SAIT en metadata o logs consultables:
-  - Pendiente.
+- [x] Registrar resultado del envio a SAIT en metadata o logs consultables:
+  - Envio automatico disparado sin confirmacion.
   - Enviado.
   - Error.
   - Reintento requerido.
-- [ ] Revisar `sslverify => false` en llamadas HTTP y decidir si debe ser configurable o corregirse.
+- [x] Revisar `sslverify => false` en llamadas HTTP y decidir si debe ser configurable o corregirse.
 - [ ] Separar el handle duplicado `modal-script` para `modal.js` y `personalizado.js`.
 - [ ] Confirmar que `registrar_estilos_scripts()` este conectado a `wp_enqueue_scripts`.
 - [ ] Normalizar el contrato de `SAIT_GetNube()`:

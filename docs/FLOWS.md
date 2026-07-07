@@ -105,17 +105,35 @@ La funcion:
 Archivo: `includes/SAIT_WOOCOMMERCE-orders.php`
 
 1. `SAIT_sendOrder($id_pedido, $formapago)` carga la orden.
-2. Lee `SAITNube_TipoDoc`.
-3. Genera pedido o cotizacion.
-4. Para cada item:
+2. Si la orden ya tiene `_sait_envio_disparado = yes`, omite el envio automatico para evitar duplicados.
+3. Lee `SAITNube_TipoDoc`.
+4. Marca la orden con metadata de envio automatico disparado:
+   - `_sait_envio_disparado`
+   - `_sait_envio_disparado_at`
+   - `_sait_envio_formapago`
+   - `_sait_envio_tipodoc`
+5. Genera pedido o cotizacion.
+6. Para cada item:
    - Obtiene SKU como `numart`.
    - Consulta unidad en `/api/v3/articulos/{sku}`.
    - Usa precio regular como `preciopub` y `precio`.
    - Calcula descuento con total del item.
-5. Busca cliente SAIT por mapeo o por email.
-6. Si no hay cliente, agrega objeto de cliente eventual.
-7. Aplica funcion personalizada si la bandera lo permite segun el comportamiento actual.
-8. Envia a SAITNube.
+7. Busca cliente SAIT por mapeo o por email.
+8. Si no hay cliente, agrega objeto de cliente eventual.
+9. Aplica funcion personalizada si la bandera esta activa.
+10. Envia a SAITNube.
+
+La metadata indica que WooCommerce disparo el envio automatico; no confirma que SAITNube lo haya recibido, porque el POST se hace sin esperar respuesta.
+
+El endpoint manual `reenviar-pedido-sait/{idpedido}` no usa este bloqueo, para permitir recuperacion cuando SAITNube/API no estuvo disponible. Ese reenvio espera respuesta de SAITNube y guarda metadata del ultimo resultado:
+
+- `_sait_ultimo_envio_estado`: `enviado`, `error` o `reintento_requerido`.
+- `_sait_ultimo_status_code`: status HTTP recibido. `201` significa aceptado por SAIT.
+- `_sait_ultimo_envio_at`
+- `_sait_ultimo_envio_formapago`
+- `_sait_ultimo_envio_tipodoc`
+- `_sait_ultimo_envio_modo`
+- `_sait_ultimo_error`, solo cuando el resultado no fue exitoso.
 
 ## Sucursales En Frontend
 

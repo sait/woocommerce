@@ -24,7 +24,7 @@
 
 	// sendPedido()
 	//  Manda el pedido a sait
-	public static function SAIT_sendPedido( $order,$formapago ){
+	public static function SAIT_sendPedido( $order,$formapago,$wait = false ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 			$SAIT_options=get_option( 'opciones_sait' );
 			$pedido = new stdClass();
@@ -110,10 +110,10 @@
 			// Enviar pedido sin esperar respuesta
 			//SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,false);
 		//}	
-			return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,false);
-}
+			return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,$wait);
+	}
 
-public static function SAIT_sendCotizacion( $order,$formapago ){
+public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 
 		$SAIT_options=get_option( 'opciones_sait' );
@@ -200,7 +200,7 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 		// Enviar cotizacion sin esperar respuesta
 		//SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,false);
 	//}	
-		return SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,false);
+		return SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,$wait);
 }
 
 
@@ -209,13 +209,32 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 	public static function SAIT_sendOrder($id_pedido,$formapago){
 		
 		$order = wc_get_order( $id_pedido );
+		if (!$order) {
+			return SAIT_UTILS::SAIT_response(404, "Pedido no existe");
+		}
 		$SAIT_options=get_option( 'opciones_sait' );
 		$tipo = $SAIT_options['SAITNube_TipoDoc'];
+		if (self::SAIT_envioAutomaticoDisparado($order)) {
+			return SAIT_UTILS::SAIT_response(200, "SAIT ENVIO YA DISPARADO");
+		}
+		self::SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo);
 		if ($tipo==="P"){
 			return self::SAIT_sendPedido($order,$formapago);
 		}else{
 			return self::SAIT_sendCotizacion($order,$formapago);
 		}
+	}
+
+	public static function SAIT_envioAutomaticoDisparado($order){
+		return $order->get_meta('_sait_envio_disparado') === 'yes';
+	}
+
+	public static function SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo){
+		$order->update_meta_data('_sait_envio_disparado', 'yes');
+		$order->update_meta_data('_sait_envio_disparado_at', current_time('mysql'));
+		$order->update_meta_data('_sait_envio_formapago', $formapago);
+		$order->update_meta_data('_sait_envio_tipodoc', $tipo);
+		$order->save();
 	}
 
 	 
@@ -227,15 +246,61 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 			$SAIT_options=get_option( 'opciones_sait' );
 			$tipo = $SAIT_options['SAITNube_TipoDoc'];
 			if ($tipo==="P"){
-				return self::SAIT_sendPedido($order,"1");
+				$response = self::SAIT_sendPedido($order,"1",true);
 			}else{
-				return self::SAIT_sendCotizacion($order,"1");
+				$response = self::SAIT_sendCotizacion($order,"1",true);
 			}
+			$resultado = self::SAIT_registrarResultadoEnvio($order, $response, $tipo, "1", "manual");
+			return self::SAIT_responderResultadoEnvio($resultado);
 		}
 
 	public static function SAIT_sendPedidoTest($id_pedido){
 			return self::SAIT_reenviarPedido($id_pedido);
 		}
+
+	public static function SAIT_registrarResultadoEnvio($order, $response, $tipo, $formapago, $modo){
+		$is_error = is_wp_error($response);
+		$status_code = $is_error ? 0 : (int) wp_remote_retrieve_response_code($response);
+		$message = $is_error ? $response->get_error_message() : wp_remote_retrieve_body($response);
+
+		if ($status_code === 201) {
+			$estado = 'enviado';
+		} elseif ($is_error || $status_code === 0 || $status_code >= 500) {
+			$estado = 'reintento_requerido';
+		} else {
+			$estado = 'error';
+		}
+
+		$order->update_meta_data('_sait_ultimo_envio_estado', $estado);
+		$order->update_meta_data('_sait_ultimo_status_code', $status_code);
+		$order->update_meta_data('_sait_ultimo_envio_at', current_time('mysql'));
+		$order->update_meta_data('_sait_ultimo_envio_formapago', $formapago);
+		$order->update_meta_data('_sait_ultimo_envio_tipodoc', $tipo);
+		$order->update_meta_data('_sait_ultimo_envio_modo', $modo);
+
+		if ($estado === 'enviado') {
+			$order->delete_meta_data('_sait_ultimo_error');
+		} else {
+			$order->update_meta_data('_sait_ultimo_error', substr((string) $message, 0, 1000));
+		}
+
+		$order->save();
+
+		return array(
+			'estado' => $estado,
+			'status_code' => $status_code,
+			'message' => $message,
+		);
+	}
+
+	public static function SAIT_responderResultadoEnvio($resultado){
+		$status_code = !empty($resultado['status_code']) ? (int) $resultado['status_code'] : 500;
+		return SAIT_UTILS::SAIT_response($status_code, array(
+			'estado' => $resultado['estado'],
+			'status_code' => $resultado['status_code'],
+			'message' => $resultado['message'],
+		));
+	}
 
 	public static function SAIT_calcularPjeDescuentoItem($cantidad,$total,$precio){
 		return round((($precio-($total/$cantidad))/$precio)*100,2);

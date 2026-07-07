@@ -100,7 +100,26 @@
 	//
 	public static function SAIT_getClaves($tabla,$clave,$wcid){
 		global $wpdb;
-		return $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."sait_claves WHERE tabla = '".$tabla."'and (clave = '".$clave."' or wcid ='" .$wcid."')", OBJECT);
+		$table_name = $wpdb->prefix . 'sait_claves';
+		$lookup_conditions = array();
+		$values = array($tabla);
+
+		if ($clave !== null) {
+			$lookup_conditions[] = 'clave = %s';
+			$values[] = $clave;
+		}
+
+		if ($wcid !== null) {
+			$lookup_conditions[] = 'wcid = %d';
+			$values[] = $wcid;
+		}
+
+		if (empty($lookup_conditions)) {
+			return null;
+		}
+
+		$sql = "SELECT * FROM $table_name WHERE tabla = %s AND (" . implode(' OR ', $lookup_conditions) . ")";
+		return $wpdb->get_row($wpdb->prepare($sql, $values), OBJECT);
 	}
 	public static function SAIT_insertClaves($tabla,$clave,$wcid){
 		global $wpdb;
