@@ -24,6 +24,24 @@ El plugin registra tres rutas bajo `saitplugin/v1`:
 
 Todas usan `permission_callback => __return_true`; la proteccion real de `/saitevents` depende del header `x-AccessToken`.
 
+## Convencion De Respuestas En Webhooks
+
+En `POST /saitevents`, varios casos operativos responden HTTP `200` aunque el mensaje parezca un error, por ejemplo `ART NO EXISTE`, `STOCK ERR ACTEXIST`, `statusweb null`, `IGNORADO (ppubv*)` o `Correo ya asignado a otro usuario`.
+
+La intencion es distinguir entre:
+
+- Errores de transporte/autenticacion/formato, donde si aplica un codigo HTTP de error:
+  - Token invalido: `401`.
+  - XML invalido: `500`.
+  - Errores reales de WordPress al crear terminos/categorias: `500`.
+- Eventos recibidos correctamente pero no aplicables al estado actual de WooCommerce:
+  - El producto no existe o no esta ligado.
+  - El evento no corresponde al almacen configurado.
+  - El evento no trae datos suficientes para actualizar precio o categoria.
+  - El cliente no es cliente web o su correo ya pertenece a otro usuario.
+
+Para esos casos no aplicables se usa `200` para confirmar a SAIT que el webhook fue recibido y evaluado. El texto de respuesta queda como diagnostico operativo, pero no debe interpretarse como fallo HTTP del endpoint. Esto evita que SAIT trate el evento como entrega fallida y lo reintente cuando el plugin ya decidio ignorarlo o no puede aplicarlo con la informacion disponible.
+
 ## Evento `MODART`
 
 Archivo: `includes/SAIT_WOOCOMMERCE-process-events.php`
@@ -64,7 +82,7 @@ Archivo: `includes/SAIT_WOOCOMMERCE-process-events.php`
 5. Si multi-almacen esta activo, consulta SAITNube y suma existencias de `SAITNube_ExistAlm`.
 6. Si multi-almacen no esta activo, usa la existencia del evento.
 
-Nota: en la rama multi-almacen se usa `$sku`, pero no se ve definido en la funcion. Conviene revisar antes de depender de esta ruta.
+Nota: en la rama multi-almacen el total se cachea brevemente por articulo para evitar consultar la API en cada evento repetido.
 
 ## Evento `ACTTC`
 

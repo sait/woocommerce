@@ -191,15 +191,15 @@ Correccion aplicada:
 - AJAX.
 - Filtros de precio.
 
-Esto hace mas dificil probar y razonar sobre efectos secundarios.
+Esto hace mas dificil probar y razonar sobre las acciones que ejecuta cada bloque.
 
 ## Observaciones De Mantenimiento
 
 - No se detecto suite de tests.
 - No se detecto `composer.json`.
 - Hay bloques grandes comentados en `MODART()` que parecen historicos.
-- Hay comentarios con reglas de negocio utiles, pero faltan docblocks de entradas/salidas en funciones criticas.
-- Algunas respuestas REST devuelven `200` para errores operativos como `ART NO EXISTE`; puede ser intencional para webhooks, pero conviene documentarlo.
+- Hay comentarios con reglas de negocio utiles; las funciones criticas ya tienen docblocks base de entradas, salidas y acciones que realizan.
+- Algunas respuestas REST devuelven `200` para errores operativos como `ART NO EXISTE`; se documento como convencion para webhooks recibidos pero no aplicables.
 - `SAIT_GetNube()` retorna `array|null`. Para leer `result` de forma segura se agrego `SAIT_getResult()`.
 
 ## Checklist Por Prioridad
@@ -243,8 +243,8 @@ Esto hace mas dificil probar y razonar sobre efectos secundarios.
   - UI de sucursales.
   - Filtros de precios.
 - [ ] Limpiar bloques historicos comentados en `MODART()`.
-- [x] Agregar docblocks a funciones criticas con entrada, salida y efectos secundarios.
-- [ ] Documentar por que algunos errores operativos responden HTTP `200`.
+- [x] Agregar docblocks a funciones criticas con entrada, salida y acciones que realizan.
+- [x] Documentar por que algunos errores operativos responden HTTP `200`.
 - [ ] Crear fixtures XML para eventos principales:
   - `MODART`.
   - `ACTEXIST`.
