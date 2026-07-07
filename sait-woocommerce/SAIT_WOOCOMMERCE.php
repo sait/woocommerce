@@ -95,6 +95,15 @@ function SAIT_helloworld(){
 	return SAIT_WOOCOMMERCE_Hello::SAIT_helloworld();;
 }
 
+/**
+ * Procesa eventos entrantes enviados por SAIT al endpoint REST.
+ *
+ * @param WP_REST_Request $request Peticion con header x-AccessToken y XML en el body.
+ * @return WP_REST_Response Respuesta del procesador de eventos o error de validacion/XML.
+ *
+ * Acciones que realiza: valida el token configurado, parsea XML y puede crear/actualizar productos,
+ * categorias, clientes, existencias, precios u opciones segun el tipo de evento recibido.
+ */
 function SAIT_procesEvents($request){
 	$AccessToken = $request->get_header('x-AccessToken');
 	$SAIT_options=get_option( 'opciones_sait' );
@@ -118,6 +127,14 @@ function SAIT_procesEvents($request){
 	return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($oXml);
 }
 
+/**
+ * Reenvia manualmente un pedido de WooCommerce hacia SAIT.
+ *
+ * @param WP_REST_Request $request Peticion REST con parametro idpedido.
+ * @return WP_REST_Response Resultado del intento de reenvio.
+ *
+ * Acciones que realiza: envia el pedido/cotizacion a la API SAIT y guarda metadatos del ultimo intento.
+ */
 function SAIT_reenviarPedido($request){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
 	$id_pedido = absint($request['idpedido']);
@@ -135,21 +152,41 @@ add_action( 'woocommerce_payment_complete', 'sendOrderSAIT_payment', 10, 2 );
 add_action( 'woocommerce_thankyou', 'sendOrderSAIT_thankyou', 10, 2 );
 
 
-// Order Pagada enviar formapago 1
+/**
+ * Envia automaticamente a SAIT una orden marcada como pagada.
+ *
+ * @param int $order_id ID de la orden WooCommerce.
+ * @return void
+ *
+ * Acciones que realiza: dispara un envio idempotente con formapago 1.
+ */
 function sendOrderSAIT_payment( $order_id ){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
 	SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($order_id,"1");
 }
 
 
-// Orden sin pago enviar formapago 2
+/**
+ * Envia automaticamente a SAIT una orden creada sin pago confirmado.
+ *
+ * @param int $order_id ID de la orden WooCommerce.
+ * @return void
+ *
+ * Acciones que realiza: dispara un envio idempotente con formapago 2.
+ */
 function sendOrderSAIT_thankyou( $order_id ){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
 	SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($order_id,"2");
 }
 
-// Registrar scripts y estilos
-/* Agregar estilos y scripts */
+/**
+ * Registra assets frontend para seleccion de sucursal.
+ *
+ * @return void
+ *
+ * Acciones que realiza: encola CSS/JS cuando la opcion de sucursal esta activa y mantiene
+ * el handle legacy modal-script para scripts personalizados de clientes.
+ */
 function registrar_estilos_scripts() {
     // Cargar solo si es frontend y no en admin
 		$SAIT_options = get_option('opciones_sait');

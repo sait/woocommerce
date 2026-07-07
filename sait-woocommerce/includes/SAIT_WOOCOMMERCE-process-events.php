@@ -21,8 +21,15 @@
 
  class SAIT_WOOCOMMERCE_ProcessEvents{
 
-	// processEvent()
-	//  Manda a procesar cada tipo de evento a su funcion correspondiente
+	/**
+	 * Enruta un evento XML de SAIT al procesador correspondiente.
+	 *
+	 * @param SimpleXMLElement $oXml XML del evento con atributo type.
+	 * @return WP_REST_Response Respuesta normalizada para el endpoint REST.
+	 *
+	 * Acciones que realiza: delega en funciones que pueden modificar productos, categorias,
+	 * clientes, existencias, precios u opciones del plugin.
+	 */
 	public static function SAIT_processEvent($oXml){
 		$type = self::xml_attribute($oXml,"type");
 		switch ($type) {
@@ -67,6 +74,15 @@
 	// dividir esta func, add,upd,delete.
 	//
 
+	/**
+	 * Procesa altas, cambios o bajas web de articulos SAIT.
+	 *
+	 * @param SimpleXMLElement $oXml Evento MODART.
+	 * @return WP_REST_Response Resultado de la sincronizacion del articulo.
+	 *
+	 * Acciones que realiza: crea, actualiza, restaura o envia a papelera productos WooCommerce
+	 * y mantiene la relacion en sait_claves.
+	 */
 	public static function MODART($oXml){
 		// Proceso de MODART
 		$oKeys = $oXml->action[0]->keys[0];
@@ -257,6 +273,14 @@
 	}
 	
 
+	/**
+	 * Actualiza existencias globales cuando no hay almacen especifico configurado.
+	 *
+	 * @param SimpleXMLElement $oXml Evento ACTEXISGBL.
+	 * @return WP_REST_Response Resultado de actualizacion de stock.
+	 *
+	 * Acciones que realiza: modifica stock de productos WooCommerce ligados en sait_claves.
+	 */
 	public static function ACTEXISGBL($oXml){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$NumAlm = $SAIT_options['SAITNube_NumAlm'];
@@ -278,6 +302,15 @@
 		return SAIT_UTILS::SAIT_response(200,"STOCK UPD");
 	}
 
+	/**
+	 * Actualiza existencias por articulo y almacen.
+	 *
+	 * @param SimpleXMLElement $oXml Evento ACTEXIST.
+	 * @return WP_REST_Response Resultado de actualizacion de stock.
+	 *
+	 * Acciones que realiza: modifica stock de productos WooCommerce; en modo multi-almacen
+	 * consulta SAIT Nube, suma almacenes permitidos y cachea el total temporalmente.
+	 */
 	public static function ACTEXIST($oXml){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$NumAlm = $SAIT_options['SAITNube_NumAlm'];
@@ -359,6 +392,15 @@
 		return SAIT_UTILS::SAIT_response(200,"STOCK UPD ACTEXIST");
 	}
 
+	/**
+	 * Actualiza el precio regular de un articulo WooCommerce desde SAIT.
+	 *
+	 * @param SimpleXMLElement $oXml Evento ACTPRECIO.
+	 * @return WP_REST_Response Resultado de actualizacion de precio.
+	 *
+	 * Acciones que realiza: puede consultar datos del articulo en SAIT Nube y guardar cambios
+	 * de precio en el producto WooCommerce.
+	 */
 	public static function ACTPRECIO($oXml){
 		$numart = trim(self::xml_attribute($oXml->action[0]->keys[0], "numart"));
 		
@@ -463,12 +505,17 @@
 		return SAIT_UTILS::SAIT_response(200, "NO CAMBIO");
 	}
 
-	// MODCATEGORIAWC()
-	//  registra o modifica una categoria en WooCommerce
-	//  $oXml: el evento
-	//  $tabla: nombre de la tabla de la categoria
-	//  $numcat: nombre del campo clave
-	//  $nomcat: campo con el nombre de la categoria
+	/**
+	 * Crea o actualiza una categoria WooCommerce vinculada a una tabla de SAIT.
+	 *
+	 * @param SimpleXMLElement $oXml Evento de categoria.
+	 * @param string $tabla Nombre logico guardado en sait_claves.
+	 * @param string $numcat Atributo XML que contiene la clave SAIT.
+	 * @param string $nomcat Atributo XML que contiene el nombre de la categoria.
+	 * @return WP_REST_Response Resultado de alta/actualizacion.
+	 *
+	 * Acciones que realiza: crea/actualiza terminos product_cat y mantiene relaciones en sait_claves.
+	 */
 	public static function MODCATEGORIAWC($oXml,$tabla,$numcat,$nomcat){
 		$clave = SAIT_UTILS::SAIT_getClaves($tabla,trim(self::xml_attribute($oXml->action[0]->keys[0],$numcat)),null);
 		$nombre = trim(self::xml_attribute($oXml->action[0]->flds[0],$nomcat));
@@ -538,6 +585,15 @@
 		return self::MODCATEGORIAWC($oXml,"catego","numcat","nomcat");
 	}
 
+	/**
+	 * Actualiza el tipo de cambio configurado y recalcula precios de articulos en dolares.
+	 *
+	 * @param SimpleXMLElement $oXml Evento ACTTC.
+	 * @return WP_REST_Response Resultado de actualizacion de tipo de cambio.
+	 *
+	 * Acciones que realiza: actualiza opciones_sait, consulta articulos en divisa D y guarda
+	 * precios regulares recalculados en productos WooCommerce.
+	 */
 	public static function ACTTC($oXml){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$OldTC = $SAIT_options['SAITNube_TipoCambio'];
@@ -567,6 +623,15 @@
 		return SAIT_UTILS::SAIT_response(200,"Upd TC");
 	}
 
+	/**
+	 * Sincroniza un cliente SAIT con un usuario/cliente WooCommerce.
+	 *
+	 * @param SimpleXMLElement $oXml Evento MODCLI.
+	 * @return WP_REST_Response Resultado de sincronizacion del cliente.
+	 *
+	 * Acciones que realiza: puede crear clientes WooCommerce, actualizar email, enviar correo
+	 * de nueva cuenta y mantener la relacion en sait_claves.
+	 */
 	public static function MODCLI($oXml){
 
 		// Si no es cliente web omitir
@@ -622,8 +687,13 @@
 	//
 	// UTILERIAS
 
-	// xml_attribute()
-	// te retorna el valor del atributo del nodo que le mandes 
+	/**
+	 * Lee un atributo XML y lo devuelve como texto decodificado.
+	 *
+	 * @param SimpleXMLElement $object Nodo XML origen.
+	 * @param string $attribute Nombre del atributo.
+	 * @return string|null Valor del atributo o null si no existe.
+	 */
 	public static function xml_attribute($object, $attribute)
 	{
 			if(isset($object[$attribute]))

@@ -243,7 +243,7 @@ Esto hace mas dificil probar y razonar sobre efectos secundarios.
   - UI de sucursales.
   - Filtros de precios.
 - [ ] Limpiar bloques historicos comentados en `MODART()`.
-- [ ] Agregar docblocks a funciones criticas con entrada, salida y efectos secundarios.
+- [x] Agregar docblocks a funciones criticas con entrada, salida y efectos secundarios.
 - [ ] Documentar por que algunos errores operativos responden HTTP `200`.
 - [ ] Crear fixtures XML para eventos principales:
   - `MODART`.

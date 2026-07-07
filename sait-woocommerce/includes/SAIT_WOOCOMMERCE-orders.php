@@ -22,8 +22,17 @@
 	
  class SAIT_WOOCOMMERCE_Orders{
 
-	// sendPedido()
-	//  Manda el pedido a sait
+	/**
+	 * Construye y envia un pedido WooCommerce al endpoint de pedidos de SAIT.
+	 *
+	 * @param WC_Order $order Orden WooCommerce origen.
+	 * @param string $formapago Codigo de forma de pago que espera SAIT.
+	 * @param bool $wait Si es true espera la respuesta HTTP de SAIT.
+	 * @return array|WP_Error Respuesta de wp_remote_post() o error de WordPress.
+	 *
+	 * Acciones que realiza: consulta articulos/clientes en SAIT, puede ejecutar personalizacion
+	 * del pedido y realiza POST a /api/v3/pedidos.
+	 */
 	public static function SAIT_sendPedido( $order,$formapago,$wait = false ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 			$SAIT_options=get_option( 'opciones_sait' );
@@ -115,6 +124,17 @@
 			return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,$wait);
 	}
 
+	/**
+	 * Construye y envia una cotizacion WooCommerce al endpoint de cotizaciones de SAIT.
+	 *
+	 * @param WC_Order $order Orden WooCommerce origen.
+	 * @param string $formapago Codigo de forma de pago que espera SAIT.
+	 * @param bool $wait Si es true espera la respuesta HTTP de SAIT.
+	 * @return array|WP_Error Respuesta de wp_remote_post() o error de WordPress.
+	 *
+	 * Acciones que realiza: consulta articulos/clientes en SAIT, puede ejecutar personalizacion
+	 * del documento y realiza POST a /api/v3/cotizaciones.
+	 */
 public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 
@@ -208,7 +228,16 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 
 
 
-	// funcion para cuando los pedidos no fueron pagados.
+	/**
+	 * Envia una orden a SAIT desde hooks automaticos de WooCommerce.
+	 *
+	 * @param int $id_pedido ID de la orden WooCommerce.
+	 * @param string $formapago Codigo de forma de pago a enviar.
+	 * @return WP_REST_Response|array|WP_Error Respuesta local o respuesta del POST a SAIT.
+	 *
+	 * Acciones que realiza: marca la orden como envio automatico disparado antes del POST para
+	 * evitar duplicados entre hooks de WooCommerce.
+	 */
 	public static function SAIT_sendOrder($id_pedido,$formapago){
 		
 		$order = wc_get_order( $id_pedido );
@@ -228,10 +257,26 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 		}
 	}
 
+	/**
+	 * Indica si una orden ya tuvo un envio automatico disparado.
+	 *
+	 * @param WC_Order $order Orden WooCommerce.
+	 * @return bool True si el meta _sait_envio_disparado esta marcado.
+	 */
 	public static function SAIT_envioAutomaticoDisparado($order){
 		return $order->get_meta('_sait_envio_disparado') === 'yes';
 	}
 
+	/**
+	 * Guarda la marca idempotente del envio automatico.
+	 *
+	 * @param WC_Order $order Orden WooCommerce.
+	 * @param string $formapago Codigo de forma de pago enviado.
+	 * @param string $tipo Tipo de documento configurado en SAITNube_TipoDoc.
+	 * @return void
+	 *
+	 * Acciones que realiza: actualiza metadatos de la orden y la guarda.
+	 */
 	public static function SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo){
 		$order->update_meta_data('_sait_envio_disparado', 'yes');
 		$order->update_meta_data('_sait_envio_disparado_at', current_time('mysql'));
@@ -240,7 +285,15 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 		$order->save();
 	}
 
-	 
+	/**
+	 * Reenvia manualmente una orden a SAIT y registra el resultado del intento.
+	 *
+	 * @param int $id_pedido ID de la orden WooCommerce.
+	 * @return WP_REST_Response Respuesta con estado, codigo HTTP y mensaje de SAIT.
+	 *
+	 * Acciones que realiza: omite la marca idempotente automatica, espera respuesta de SAIT
+	 * y guarda metadatos del ultimo envio manual.
+	 */
 	public static function SAIT_reenviarPedido($id_pedido){
 			$order = wc_get_order( $id_pedido );
 			if (!$order) {
@@ -257,10 +310,28 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 			return self::SAIT_responderResultadoEnvio($resultado);
 		}
 
+	/**
+	 * Alias legacy para compatibilidad con integraciones que llaman testpedido.
+	 *
+	 * @param int $id_pedido ID de la orden WooCommerce.
+	 * @return WP_REST_Response Respuesta del reenvio manual.
+	 */
 	public static function SAIT_sendPedidoTest($id_pedido){
 			return self::SAIT_reenviarPedido($id_pedido);
 		}
 
+	/**
+	 * Clasifica y persiste el resultado de un envio a SAIT.
+	 *
+	 * @param WC_Order $order Orden WooCommerce.
+	 * @param array|WP_Error $response Respuesta de wp_remote_post() o error.
+	 * @param string $tipo Tipo de documento enviado.
+	 * @param string $formapago Forma de pago enviada.
+	 * @param string $modo Origen del envio: automatico o manual.
+	 * @return array Estado normalizado con estado, status_code y message.
+	 *
+	 * Acciones que realiza: actualiza metadatos _sait_ultimo_* en la orden y la guarda.
+	 */
 	public static function SAIT_registrarResultadoEnvio($order, $response, $tipo, $formapago, $modo){
 		$is_error = is_wp_error($response);
 		$status_code = $is_error ? 0 : (int) wp_remote_retrieve_response_code($response);
@@ -296,6 +367,12 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 		);
 	}
 
+	/**
+	 * Convierte el resultado normalizado de envio en una respuesta REST.
+	 *
+	 * @param array $resultado Estado devuelto por SAIT_registrarResultadoEnvio().
+	 * @return WP_REST_Response Respuesta con el mismo codigo HTTP de SAIT cuando existe.
+	 */
 	public static function SAIT_responderResultadoEnvio($resultado){
 		$status_code = !empty($resultado['status_code']) ? (int) $resultado['status_code'] : 500;
 		return SAIT_UTILS::SAIT_response($status_code, array(
@@ -311,7 +388,10 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 	 
 
 /**
- * Obtiene DIR ENVIO en formato: calle^numero^colonia^ciudad^estado^c.p 00000
+ * Construye el campo DIR ENVIO esperado por SAIT a partir de shipping/billing.
+ *
+ * @param WC_Order $order Orden WooCommerce.
+ * @return string Direccion en mayusculas con campos separados por ^.
  */
 public static function SAIT_getDirEnvio($order) {
     // Tomamos datos de shipping, y si no hay, usamos billing

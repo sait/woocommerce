@@ -44,6 +44,16 @@
 	}
 
 
+	/**
+	 * Ejecuta una consulta GET contra la API configurada de SAIT Nube.
+	 *
+	 * @param string $uri Ruta relativa de la API, por ejemplo /api/v3/articulos/ABC.
+	 * @param bool   $reintentar Permite un segundo intento corto si falla el primero.
+	 * @return array|null JSON decodificado como arreglo asociativo, o null si no hay respuesta valida.
+	 *
+	 * Acciones que realiza: realiza una peticion HTTP bloqueante; sslverify permanece desactivado
+	 * por compatibilidad con instalaciones existentes.
+	 */
 	public static function SAIT_GetNube($uri, $reintentar = true){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$url = $SAIT_options['SAITNube_URL'].$uri;
@@ -72,10 +82,27 @@
 			return null;
 	}
 
+	/**
+	 * Extrae de forma segura el nodo result del contrato JSON de SAIT.
+	 *
+	 * @param array|null $response Respuesta decodificada de SAIT_GetNube().
+	 * @return mixed|null Valor de result, o null si la respuesta no contiene ese nodo.
+	 */
 	public static function SAIT_getResult($response){
 		return is_array($response) && isset($response['result']) ? $response['result'] : null;
 	}
 
+	/**
+	 * Envia un payload JSON por POST a la API configurada de SAIT Nube.
+	 *
+	 * @param string $uri Ruta relativa de la API.
+	 * @param object|array $bodyObject Datos que se serializan como JSON.
+	 * @param bool $wait Si es true espera y devuelve la respuesta; si es false dispara en segundo plano.
+	 * @return array|WP_Error Respuesta de wp_remote_post() o error de WordPress.
+	 *
+	 * Acciones que realiza: realiza una peticion HTTP POST; sslverify permanece desactivado
+	 * por compatibilidad con instalaciones existentes.
+	 */
 	public static function SAIT_PostNube($uri,$bodyObject, $wait = false){
 		$SAIT_options=get_option( 'opciones_sait' );
 		$url = $SAIT_options['SAITNube_URL'].$uri;
@@ -104,6 +131,16 @@
 	// Funciones Claves SAIT
 	// Tabla sait_claves creada en SAIT_WOOCOMMERCE-activator.php
 	//
+	/**
+	 * Busca una relacion entre claves SAIT y IDs de WordPress/WooCommerce.
+	 *
+	 * @param string $tabla Nombre logico de la relacion: arts, clientes, lineas, etc.
+	 * @param string|null $clave Clave proveniente de SAIT.
+	 * @param int|null $wcid ID de WordPress/WooCommerce.
+	 * @return object|null Fila de sait_claves o null si no hay criterios suficientes.
+	 *
+	 * Acciones que realiza: consulta la tabla personalizada {$wpdb->prefix}sait_claves.
+	 */
 	public static function SAIT_getClaves($tabla,$clave,$wcid){
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'sait_claves';
@@ -167,6 +204,14 @@
 		return "";
 	}
 
+	/**
+	 * Calcula la existencia disponible para un SKU usando la API SAIT.
+	 *
+	 * @param string $SKU SKU/numart del articulo.
+	 * @return float Existencia redondeada segun almacen unico o suma de almacenes permitidos.
+	 *
+	 * Acciones que realiza: consulta la API de existencias y lee opciones de almacen configuradas.
+	 */
 	public static function getExistSAIT($SKU) {
 		$SAIT_options = get_option('opciones_sait');
 
