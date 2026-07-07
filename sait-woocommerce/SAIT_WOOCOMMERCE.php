@@ -69,10 +69,18 @@ add_action( 'rest_api_init', function () {
 
 
 add_action( 'rest_api_init', function () {
+	register_rest_route( 'saitplugin/v1', '/reenviar-pedido-sait/(?P<idpedido>\d+)',
+		array(
+			'methods' => 'POST', 
+			'callback' => 'SAIT_reenviarPedido',
+			'permission_callback' => '__return_true', 
+		)
+	);
+
 	register_rest_route( 'saitplugin/v1', '/testpedido/(?P<idpedido>\d+)',
 		array(
 			'methods' => 'GET', 
-			'callback' => 'SAIT_testPedido',
+			'callback' => 'SAIT_reenviarPedido',
 			'permission_callback' => '__return_true', 
 		)
 	);
@@ -110,10 +118,10 @@ function SAIT_procesEvents($request){
 	return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($oXml);
 }
 
-function SAIT_testPedido($request){
+function SAIT_reenviarPedido($request){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
 	$id_pedido = absint($request['idpedido']);
-	return SAIT_WOOCOMMERCE_Orders::SAIT_sendPedidoTest($id_pedido);;
+	return SAIT_WOOCOMMERCE_Orders::SAIT_reenviarPedido($id_pedido);;
 }
 
 

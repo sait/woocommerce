@@ -44,13 +44,13 @@
 			$pedido->fentrega = date("Ymd"); // 20251113
 			$pedido->hentrega = date("H:i"); // 15:27
 			
-			$Obs_activo = isset($SAIT_options['SAITNube_PedidoObs_Enabled']) && $SAIT_options['SAITNube_PedidoObs_Enabled'] === '1';
-			$Direnvio_activo = isset($SAIT_options['SAITNube_PedidoDirenvio_Enabled']) && $SAIT_options['SAITNube_PedidoDirenvio_Enabled'] === '1';
-			$FuncionPersonalizadaPedido_activo = isset($SAIT_options['SAITNube_FuncionPersonalizadaPedido_Enabled']) && $SAIT_options['SAITNube_FuncionPersonalizadaPedido_Enabled'] === '1';
-			if (!$Obs_activo) {
+			$Obs_activo = isset($SAIT_options['SAITNube_PedidoObs_enabled']) && $SAIT_options['SAITNube_PedidoObs_enabled'] === '1';
+			$Direnvio_activo = isset($SAIT_options['SAITNube_PedidoDirenvio_enabled']) && $SAIT_options['SAITNube_PedidoDirenvio_enabled'] === '1';
+			$FuncionPersonalizadaPedido_activo = isset($SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled']) && $SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled'] === '1';
+			if ($Obs_activo) {
 				$pedido->obs = trim($order->get_customer_note());
 			}
-			if (!$Direnvio_activo) {
+			if ($Direnvio_activo) {
 				$pedido->direnvio = self::SAIT_getDirEnvio($order);
 			}
 
@@ -101,7 +101,7 @@
 				$pedido->clievent = $clienteeventual;
 		}
 
-		if (!$FuncionPersonalizadaPedido_activo) {
+		if ($FuncionPersonalizadaPedido_activo) {
 			$pedido = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($pedido,$order);
 		}
 
@@ -137,13 +137,13 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 			$cotizacion->fentrega = date("Ymd"); // 20251113
 			$cotizacion->hentrega = date("H:i"); // 15:27
 		
-		$Obs_activo = isset($SAIT_options['SAITNube_PedidoObs_Enabled']) && $SAIT_options['SAITNube_PedidoObs_Enabled'] === '1';
-		$Direnvio_activo = isset($SAIT_options['SAITNube_PedidoDirenvio_Enabled']) && $SAIT_options['SAITNube_PedidoDirenvio_Enabled'] === '1';
-		$FuncionPersonalizadaPedido_activo = isset($SAIT_options['SAITNube_FuncionPersonalizadaPedido_Enabled']) && $SAIT_options['SAITNube_FuncionPersonalizadaPedido_Enabled'] === '1';
-		if (!$Obs_activo) {
+		$Obs_activo = isset($SAIT_options['SAITNube_PedidoObs_enabled']) && $SAIT_options['SAITNube_PedidoObs_enabled'] === '1';
+		$Direnvio_activo = isset($SAIT_options['SAITNube_PedidoDirenvio_enabled']) && $SAIT_options['SAITNube_PedidoDirenvio_enabled'] === '1';
+		$FuncionPersonalizadaPedido_activo = isset($SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled']) && $SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled'] === '1';
+		if ($Obs_activo) {
 			$cotizacion->obs = trim($order->get_customer_note());
 		}
-		if (!$Direnvio_activo) {
+		if ($Direnvio_activo) {
 			$cotizacion->direnvio = self::SAIT_getDirEnvio($order);
 		}
 
@@ -191,7 +191,7 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 			$cotizacion->clievent = $clienteeventual;
 	}
 
-	if (!$FuncionPersonalizadaPedido_activo) {
+	if ($FuncionPersonalizadaPedido_activo) {
 		$cotizacion = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($cotizacion,$order);
 	}
 
@@ -219,7 +219,7 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 	}
 
 	 
-	public static function SAIT_sendPedidoTest($id_pedido){
+	public static function SAIT_reenviarPedido($id_pedido){
 			$order = wc_get_order( $id_pedido );
 			if (!$order) {
 				return SAIT_UTILS::SAIT_response(404, "Pedido no existe");
@@ -231,6 +231,10 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 			}else{
 				return self::SAIT_sendCotizacion($order,"1");
 			}
+		}
+
+	public static function SAIT_sendPedidoTest($id_pedido){
+			return self::SAIT_reenviarPedido($id_pedido);
 		}
 
 	public static function SAIT_calcularPjeDescuentoItem($cantidad,$total,$precio){

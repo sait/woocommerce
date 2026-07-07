@@ -291,12 +291,13 @@
 		}
 		
 		foreach ($oXml->action as $action) {
+			$numart = trim(self::xml_attribute($action->keys[0],"numart"));
 			$NumAlmEvent = trim(self::xml_attribute($action->keys[0],"numalm"));
 			if (!$ExistAlm_activo && $NumAlm != $NumAlmEvent) {
 				return SAIT_UTILS::SAIT_response(200, "STOCK ERR ACTEXIST");
 			}
 
-			$clave = SAIT_UTILS::SAIT_getClaves("arts",trim(self::xml_attribute($action->keys[0],"numart")),null);
+			$clave = SAIT_UTILS::SAIT_getClaves("arts",$numart,null);
 			$product_id = null;
 
 			// Primero intenta con $clave->wcid
@@ -304,7 +305,7 @@
 				$product_id = $clave->wcid;
 			} else {
 				// Si no hay wcid, intenta buscar por sku
-				$product_id = wc_get_product_id_by_sku(trim(self::xml_attribute($action->keys[0],"numart")));
+				$product_id = wc_get_product_id_by_sku($numart);
 			}
 
 			// Si no hay producto, salte
@@ -324,11 +325,11 @@
 			
 			if ($ExistAlm_activo) {
 				    // Clave de caché diferente según sucursal
-					$cache_key = 'sait_stock_' . md5($sku ?? 'total');
+					$cache_key = 'sait_stock_' . md5($numart);
 					$total = get_transient($cache_key);
 
 					if ($total === false) {
-						$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . trim($sku));
+						$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . $numart);
 						$total = 0;
 
 						if (!is_wp_error($respuesta) && isset($respuesta['result'])) {

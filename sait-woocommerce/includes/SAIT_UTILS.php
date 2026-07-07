@@ -374,7 +374,7 @@ add_action( 'woocommerce_product_query', 'ocultar_productos_sin_precio' );
 function ocultar_productos_sin_precio( $query ) {
    
 		$SAIT_options = get_option('opciones_sait');
-		$OcultarSinPrecio = isset($SAIT_options['SAITNube_OcultarSinPrecio']) && $SAIT_options['SAITNube_OcultarSinPrecio'] === '1';
+		$OcultarSinPrecio = isset($SAIT_options['SAITNube_OcultarSinPrecio_enabled']) && $SAIT_options['SAITNube_OcultarSinPrecio_enabled'] === '1';
 
 		if (!$OcultarSinPrecio) {
 			return ;

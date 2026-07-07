@@ -16,6 +16,7 @@ function calcularpreciosCarrito($cart) {
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
         // Obtener el producto
         $product = $cart_item['data'];
+        $original_price = $product->get_regular_price();
 		$numart = $product->get_sku();
         $api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
         if (!isset($api_response["result"]["unidad"])) {
@@ -30,7 +31,6 @@ function calcularpreciosCarrito($cart) {
 		$current_user = wp_get_current_user();
 		$clave = SAIT_UTILS::SAIT_getClaves("clientes",null,get_current_user_id());		 
 		$numcli = "    0";
-        $original_price = $product->get_regular_price();
 
 		if (isset($clave->clave)){
 		 	$numcli =  str_pad($clave->clave,5, " ", STR_PAD_LEFT);
@@ -188,4 +188,3 @@ function sait_bloquear_botones_checkout() {
         <?php
     endif;
 }
-
