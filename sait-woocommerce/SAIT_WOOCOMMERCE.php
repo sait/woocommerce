@@ -69,7 +69,7 @@ add_action( 'rest_api_init', function () {
 
 
 add_action( 'rest_api_init', function () {
-	register_rest_route( 'saitplugin/v1', '/testpedido',
+	register_rest_route( 'saitplugin/v1', '/testpedido/(?P<idpedido>\d+)',
 		array(
 			'methods' => 'GET', 
 			'callback' => 'SAIT_testPedido',
@@ -110,9 +110,10 @@ function SAIT_procesEvents($request){
 	return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($oXml);
 }
 
-function SAIT_testPedido(){
+function SAIT_testPedido($request){
 	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
-	return SAIT_WOOCOMMERCE_Orders::SAIT_sendPedidoTest();;
+	$id_pedido = absint($request['idpedido']);
+	return SAIT_WOOCOMMERCE_Orders::SAIT_sendPedidoTest($id_pedido);;
 }
 
 
@@ -181,4 +182,3 @@ function registrar_estilos_scripts() {
         ));
     }
 }
-

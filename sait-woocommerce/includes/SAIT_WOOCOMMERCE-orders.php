@@ -219,8 +219,11 @@ public static function SAIT_sendCotizacion( $order,$formapago ){
 	}
 
 	 
-	public static function SAIT_sendPedidoTest(){
-			$order = wc_get_order( 0001 );
+	public static function SAIT_sendPedidoTest($id_pedido){
+			$order = wc_get_order( $id_pedido );
+			if (!$order) {
+				return SAIT_UTILS::SAIT_response(404, "Pedido no existe");
+			}
 			$SAIT_options=get_option( 'opciones_sait' );
 			$tipo = $SAIT_options['SAITNube_TipoDoc'];
 			if ($tipo==="P"){
