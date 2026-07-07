@@ -330,10 +330,11 @@
 
 					if ($total === false) {
 						$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . $numart);
+						$result = SAIT_UTILS::SAIT_getResult($respuesta);
 						$total = 0;
 
-						if (!is_wp_error($respuesta) && isset($respuesta['result'])) {
-							foreach ($respuesta['result'] as $almacen) {
+						if (!empty($result)) {
+							foreach ($result as $almacen) {
 								// sumar solo las almacenes permitidas
 								$almacenes_a_mostrar = array_map('trim', explode(',', $SAIT_options['SAITNube_ExistAlm']));
 								if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
@@ -426,7 +427,7 @@
 		// Precio desde API solo si es necesario
 		if ($preciolista != "" || $TC != "") {
 			$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
-			$api_result = isset($api_response["result"]) ? $api_response["result"] : null;
+			$api_result = SAIT_UTILS::SAIT_getResult($api_response);
 
 			if ($api_result !== null) {
 				// Precio lista
@@ -545,11 +546,13 @@
 			return SAIT_UTILS::SAIT_response(200,"same TC");
 		}
 		$SAIT_options['SAITNube_TipoCambio']=$NewTC;
-		update_option( 'opciones_sait', $SAIT_options );$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos?divisa=D&statusweb=1&limit=10000");
-		if (!isset($api_response["result"]) || $api_response["result"] == null){
+		update_option( 'opciones_sait', $SAIT_options );
+		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos?divisa=D&statusweb=1&limit=10000");
+		$result = SAIT_UTILS::SAIT_getResult($api_response);
+		if (empty($result)){
 				return SAIT_UTILS::SAIT_response(200,"Upd TC");
 		}
-		foreach ($api_response["result"] as $row) {
+		foreach ($result as $row) {
 			$clave = SAIT_UTILS::SAIT_getClaves("arts",trim($row["numart"]),null);
 			$product = wc_get_product( $clave->wcid );
 	

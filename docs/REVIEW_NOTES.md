@@ -200,7 +200,7 @@ Esto hace mas dificil probar y razonar sobre efectos secundarios.
 - Hay bloques grandes comentados en `MODART()` que parecen historicos.
 - Hay comentarios con reglas de negocio utiles, pero faltan docblocks de entradas/salidas en funciones criticas.
 - Algunas respuestas REST devuelven `200` para errores operativos como `ART NO EXISTE`; puede ser intencional para webhooks, pero conviene documentarlo.
-- `SAIT_GetNube()` retorna arrays, `null` o podria recibir `WP_Error`; las llamadas no siempre normalizan ese contrato.
+- `SAIT_GetNube()` retorna `array|null`. Para leer `result` de forma segura se agrego `SAIT_getResult()`.
 
 ## Checklist Por Prioridad
 
@@ -231,7 +231,7 @@ Esto hace mas dificil probar y razonar sobre efectos secundarios.
 - [x] Revisar `sslverify => false` en llamadas HTTP y decidir si debe ser configurable o corregirse.
 - [x] Separar el handle duplicado `modal-script` para `modal.js` y `personalizado.js`.
 - [x] Confirmar que `registrar_estilos_scripts()` este conectado a `wp_enqueue_scripts`.
-- [ ] Normalizar el contrato de `SAIT_GetNube()`:
+- [x] Normalizar el contrato de `SAIT_GetNube()`:
   - Definir si retorna array, `null` o `WP_Error`.
   - Ajustar llamadas que asumen respuestas distintas.
 

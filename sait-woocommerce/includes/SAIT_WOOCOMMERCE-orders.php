@@ -65,16 +65,18 @@
 					$product = $item->get_product();
 					$art->numart = $product->get_sku();
 					$api_response = null;
+					$api_result = null;
 					$intentos = 0;
 					$max_intentos = 3;
-					while (!isset($api_response["result"]["unidad"]) && $intentos < $max_intentos) {
+					while (!isset($api_result["unidad"]) && $intentos < $max_intentos) {
 							if ($intentos > 0) {
 									usleep($intentos * 500000); // 0.5s, 1s, 1.5s
 							}
 							$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
+							$api_result = SAIT_UTILS::SAIT_getResult($api_response);
 							$intentos++;
 					}
-					$art->unidad = isset($api_response["result"]["unidad"]) ? $api_response["result"]["unidad"] : "";
+					$art->unidad = isset($api_result["unidad"]) ? $api_result["unidad"] : "";
 					$art->preciopub =  (float)$product->get_regular_price();
 					$art->precio = (float)$product->get_regular_price();
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
@@ -154,18 +156,19 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 				$product = $item->get_product();
 				$art->numart = $product->get_sku();
 				$art->preciopub =  (float)$product->get_regular_price();
-				$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart);
 				$api_response = null;
+				$api_result = null;
 				$intentos = 0;
 				$max_intentos = 3;
-				while (!isset($api_response["result"]["unidad"]) && $intentos < $max_intentos) {
+				while (!isset($api_result["unidad"]) && $intentos < $max_intentos) {
 						if ($intentos > 0) {
 								usleep($intentos * 500000); // 0.5s, 1s, 1.5s
 						}
 						$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
+						$api_result = SAIT_UTILS::SAIT_getResult($api_response);
 						$intentos++;
 				}
-				$art->unidad = isset($api_response["result"]["unidad"]) ? $api_response["result"]["unidad"] : "";
+				$art->unidad = isset($api_result["unidad"]) ? $api_result["unidad"] : "";
 				$art->precio = (float)$product->get_regular_price();
 				$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
 				$cotizacion->items[] = $art;

@@ -24,10 +24,11 @@
 				return "";
 		}
 		$api_response = self::SAIT_GetNube("/api/v3/clientes?emailtw=".urlencode($email));
-		if (!isset($api_response["result"]) || $api_response["result"] == null){
+		$result = self::SAIT_getResult($api_response);
+		if (empty($result)){
 				return "";
 		}
-		return str_pad($api_response["result"][0]["numcli"],5, " ", STR_PAD_LEFT);
+		return str_pad($result[0]["numcli"],5, " ", STR_PAD_LEFT);
 	}
 
 	public static function SAIT_getClienteEventualbyemail($email){
@@ -35,10 +36,11 @@
 				return "";
 		}
 		$api_response = self::SAIT_GetNube("/api/v3/clienteseventuales?email=".urlencode($email));
-		if (!isset($api_response["result"]) || $api_response["result"] == null){
+		$result = self::SAIT_getResult($api_response);
+		if (empty($result)){
 				return "";
 		}
-		return str_pad($api_response["result"][0]["numcliev"],5, " ", STR_PAD_LEFT);
+		return str_pad($result[0]["numcliev"],5, " ", STR_PAD_LEFT);
 	}
 
 
@@ -68,6 +70,10 @@
 				return self::SAIT_GetNube($uri, false);
 			}
 			return null;
+	}
+
+	public static function SAIT_getResult($response){
+		return is_array($response) && isset($response['result']) ? $response['result'] : null;
 	}
 
 	public static function SAIT_PostNube($uri,$bodyObject, $wait = false){
@@ -183,16 +189,17 @@
 
 		// Consulta a la API
 		$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . trim($SKU));
+		$result = SAIT_UTILS::SAIT_getResult($respuesta);
 
 		// Validación rápida de respuesta
-		if (is_wp_error($respuesta) || empty($respuesta['result'])) {
+		if (empty($result)) {
 			return 0;
 		}
 
 		$quantity = 0;
 
 		// Lógica optimizada para procesar almacenes
-		foreach ($respuesta['result'] as $almacen) {
+		foreach ($result as $almacen) {
 			$almacenNum = $almacen['numalm'] ?? '';
 			$existencia = (float) ($almacen['existencia'] ?? 0);
 
@@ -236,7 +243,7 @@ function agregar_boton_al_menu($items, $args) {
 					
 					if (!empty($numalm)) {
 							$response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
-							$sucursales = is_string($response) ? json_decode($response, true)['result'] ?? [] : $response['result'] ?? [];
+							$sucursales = SAIT_UTILS::SAIT_getResult($response) ?? [];
 							
 							foreach ($sucursales as $sucursal) {
 									if (trim($sucursal['numalm']) == $numalm) {
@@ -267,7 +274,7 @@ function agregar_modal_sucursal() {
 		return ;
 	}
     $response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
-    $sucursales = isset($response['result']) ? $response['result'] : [];
+    $sucursales = SAIT_UTILS::SAIT_getResult($response) ?? [];
     ?>
     <div id="sucursal-modal">
         <div class="modal-content">
@@ -334,25 +341,20 @@ function mostrar_tabla_almacenes() {
 
     $ruta_api = "/api/v3/existencias/" . trim($numart);
 
-    // Llamada a tu función que consulta la API
-    $respuesta = SAIT_UTILS::SAIT_GetNube($ruta_api);
-    
-	if (is_wp_error($respuesta)) {
-		$error_message = $respuesta->get_error_message();
-		echo '<p>Error al obtener existencias: ' . esc_html($error_message) . '</p>';
-		return;
-	}
+	// Llamada a tu función que consulta la API
+	$respuesta = SAIT_UTILS::SAIT_GetNube($ruta_api);
+    $result = SAIT_UTILS::SAIT_getResult($respuesta);
 
-	if (empty($respuesta) || !isset($respuesta['result']) || empty($respuesta['result'])) {
+	if (empty($result)) {
 		echo '<p>No hay información de existencias (respuesta vacía o sin resultados).</p>';
 		return;
 	}
 
-	if (!empty($respuesta['error'])) {
+	if (is_array($respuesta) && !empty($respuesta['error'])) {
 		echo '<p>Error en la respuesta de la API: ' . esc_html($respuesta['error']) . '</p>';
 		return;
 	}
-	$almacenes = $respuesta['result'];
+	$almacenes = $result;
 
 	echo '<h3>Existencias por sucursal</h3>';
 
@@ -483,18 +485,22 @@ function sait_precio_promocional_en_producto($price_html, $product) {
 
 		if ($api_art === false) {
 			$api_art = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/" . $numart);
-			if (!isset($api_art["result"]["unidad"])) {
+			$api_art_result = SAIT_UTILS::SAIT_getResult($api_art);
+			if (!isset($api_art_result["unidad"])) {
 					usleep(500000);
 					$api_art = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/" . $numart, false);
+					$api_art_result = SAIT_UTILS::SAIT_getResult($api_art);
 			}
 			if (!empty($api_art)) {
 					set_transient($cache_art, $api_art, 86400);
 			}
+		} else {
+			$api_art_result = SAIT_UTILS::SAIT_getResult($api_art);
 	}
-	if (!isset($api_art["result"]["unidad"])) {
+	if (!isset($api_art_result["unidad"])) {
 			return $price_html;
 	}
-	$unidad = $api_art["result"]["unidad"];
+	$unidad = $api_art_result["unidad"];
 
     // --------------------------------------------
     //  TRANSIENT KEY (cache por producto + cliente + sucursal)
@@ -510,13 +516,14 @@ function sait_precio_promocional_en_producto($price_html, $product) {
         $api_calc = SAIT_UTILS::SAIT_GetNube(
             "/api/v3/calcularprecios?numart=$numart&unidad=$unidad&cant=1&divisadoc=P&numalm=$sucursal_id&formapago=1&numcli=$numcli"
         );
+        $api_calc_result = SAIT_UTILS::SAIT_getResult($api_calc);
 
-        if (!isset($api_calc["result"])) {
+        if (empty($api_calc_result)) {
             return $price_html;
         }
 
-        $preciopub = floatval($api_calc["result"]["preciopub"]);
-        $pje_api   = floatval($api_calc["result"]["pjedesc"]);
+        $preciopub = floatval($api_calc_result["preciopub"]);
+        $pje_api   = floatval($api_calc_result["pjedesc"]);
 
         // Guardar en caché 15 minutos
         set_transient($cache_key, [

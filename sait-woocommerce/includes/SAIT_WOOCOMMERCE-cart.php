@@ -19,15 +19,17 @@ function calcularpreciosCarrito($cart) {
         $original_price = $product->get_regular_price();
 		$numart = $product->get_sku();
         $api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
-        if (!isset($api_response["result"]["unidad"])) {
+        $api_result = SAIT_UTILS::SAIT_getResult($api_response);
+        if (!isset($api_result["unidad"])) {
             usleep(500000);
             $api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart, false);
+            $api_result = SAIT_UTILS::SAIT_getResult($api_response);
         }
-        if (!isset($api_response["result"]["unidad"])) {
+        if (!isset($api_result["unidad"])) {
             $product->set_price($original_price);
             continue;
         }
-        $unidad = $api_response["result"]["unidad"];
+        $unidad = $api_result["unidad"];
 		$current_user = wp_get_current_user();
 		$clave = SAIT_UTILS::SAIT_getClaves("clientes",null,get_current_user_id());		 
 		$numcli = "    0";
@@ -55,18 +57,18 @@ function calcularpreciosCarrito($cart) {
         }
 		$sucursal_id =  str_pad( $sucursal_id,2, " ", STR_PAD_LEFT);
 		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/calcularprecios?numart=".$numart."&unidad=".$unidad."&cant=".$cantidad."&divisadoc=P&numalm=".$sucursal_id."&formapago=1&numcli=".$numcli);
+		$api_result = SAIT_UTILS::SAIT_getResult($api_response);
         // Validar errores en respuesta
         if (
-            !isset($api_response["result"]) ||
-            !isset($api_response["result"]["preciopub"]) ||
-            !isset($api_response["result"]["pjedesc"])
+            !isset($api_result["preciopub"]) ||
+            !isset($api_result["pjedesc"])
         ) {
             $product->set_price($original_price);
             continue;
         }
 
-        $preciopub = floatval($api_response["result"]["preciopub"]);
-        $pjedesc   = floatval($api_response["result"]["pjedesc"]);
+        $preciopub = floatval($api_result["preciopub"]);
+        $pjedesc   = floatval($api_result["pjedesc"]);
 
         // Si precio API viene en 0 → dejar precio regular
         if ($preciopub <= 0) {
