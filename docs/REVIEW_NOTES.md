@@ -102,22 +102,31 @@ $product->set_price($original_price);
 
 Pero `$original_price` se asigna despues.
 
-### Doble enqueue con el mismo handle `modal-script`
+### Handles de scripts separados
 
 Archivo: `sait-woocommerce/SAIT_WOOCOMMERCE.php`
 
-`registrar_estilos_scripts()` encola dos scripts con el mismo handle `modal-script`, uno para `modal.js` y otro para `personalizado.js`.
+`registrar_estilos_scripts()` encolaba dos scripts con el mismo handle `modal-script`, uno para `modal.js` y otro para `personalizado.js`.
 
-Resultado probable:
+Riesgo antes de corregir:
 
 - WordPress puede ignorar el segundo o reemplazar/mezclar datos de forma no obvia.
 - `wp_localize_script('modal-script', ...)` queda asociado a un handle ambiguo.
 
+Correccion aplicada:
+
+- `modal.js` usa `sait-modal-script`.
+- `personalizado.js` usa `sait-personalizado-script`.
+- `modal-script` queda registrado como alias legacy para compatibilidad con personalizaciones que usan `wp_add_inline_script('modal-script', ...)`.
+
 ### Hook de assets no visible en archivo principal
 
-`registrar_estilos_scripts()` esta definido, pero en el fragmento revisado no aparece `add_action('wp_enqueue_scripts', 'registrar_estilos_scripts')`.
+`registrar_estilos_scripts()` estaba definido, pero no conectado a `wp_enqueue_scripts`.
 
-Si no se registra en otro lugar, el modal no cargara assets desde esa funcion.
+Correccion aplicada:
+
+- Se conecto `registrar_estilos_scripts()` a `wp_enqueue_scripts`.
+- Los assets siguen condicionados por `SAITNube_Sucursal_enabled`.
 
 ## Riesgos Medios
 
@@ -220,8 +229,8 @@ Esto hace mas dificil probar y razonar sobre efectos secundarios.
   - Error.
   - Reintento requerido.
 - [x] Revisar `sslverify => false` en llamadas HTTP y decidir si debe ser configurable o corregirse.
-- [ ] Separar el handle duplicado `modal-script` para `modal.js` y `personalizado.js`.
-- [ ] Confirmar que `registrar_estilos_scripts()` este conectado a `wp_enqueue_scripts`.
+- [x] Separar el handle duplicado `modal-script` para `modal.js` y `personalizado.js`.
+- [x] Confirmar que `registrar_estilos_scripts()` este conectado a `wp_enqueue_scripts`.
 - [ ] Normalizar el contrato de `SAIT_GetNube()`:
   - Definir si retorna array, `null` o `WP_Error`.
   - Ajustar llamadas que asumen respuestas distintas.

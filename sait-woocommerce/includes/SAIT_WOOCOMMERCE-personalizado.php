@@ -68,14 +68,23 @@ $payment_method_title = trim($order->get_payment_method_title());
 
 add_action('woocommerce_after_checkout_form', function() {
 	wp_enqueue_script(
-			'modal-script',
+			'sait-personalizado-script',
 			plugins_url('../assets/js/personalizado.js', __FILE__),
 			array('jquery'),
 			'1.0',
 			true
 	);
 
-	wp_localize_script('modal-script', 'sait_woocommerce_ajax', array(
+	wp_register_script(
+			'modal-script',
+			false,
+			array('sait-personalizado-script'),
+			'1.0',
+			true
+	);
+	wp_enqueue_script('modal-script');
+
+	wp_localize_script('sait-personalizado-script', 'sait_woocommerce_ajax', array(
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'nonce'    => wp_create_nonce('sait-woocommerce_nonce'),
 	));

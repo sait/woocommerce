@@ -169,24 +169,34 @@ function registrar_estilos_scripts() {
         
         // Cargar el script en el footer con alta prioridad
         wp_enqueue_script(
-            'modal-script', 
+            'sait-modal-script', 
             plugin_dir_url(__FILE__) . 'assets/js/modal.js', 
             array('jquery'), 
             '1.0', 
             true
         );
 
-				wp_enqueue_script(
-					'modal-script',
-					plugins_url('../assets/js/personalizado.js', __FILE__),
-					array('jquery'),
-					'1.0',
-					true
-			);
-        
-        wp_localize_script('modal-script', 'sait_woocommerce_ajax', array(
+		wp_enqueue_script(
+			'sait-personalizado-script',
+			plugins_url('../assets/js/personalizado.js', __FILE__),
+			array('jquery'),
+			'1.0',
+			true
+		);
+
+		wp_register_script(
+			'modal-script',
+			false,
+			array('sait-personalizado-script'),
+			'1.0',
+			true
+		);
+		wp_enqueue_script('modal-script');
+	        
+        wp_localize_script('sait-modal-script', 'sait_woocommerce_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('sait-woocommerce_nonce')
         ));
     }
 }
+add_action('wp_enqueue_scripts', 'registrar_estilos_scripts');
