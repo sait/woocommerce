@@ -1,0 +1,7 @@
+services:
+  php:
+    image: php:8.2-cli
+    working_dir: /workspace
+    volumes:
+      - ..:/workspace
+    command: ["php", "-v"]
