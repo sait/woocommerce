@@ -170,10 +170,10 @@ Flujo por SKU:
 
 1. El formulario envia `admin-post.php?action=sait_sync_articulo_sku`.
 2. El handler valida permisos `manage_options` y nonce.
-3. Consulta `/api/v3/articulos/{sku}` y `/api/v3/existencias/{sku}`.
+3. Consulta `/api/v3/articulos/clave/{sku}` y `/api/v3/existencias/{sku}`.
 4. Busca el producto por `sait_claves` o por SKU.
 5. Calcula precio usando `SAITNube_PrecioLista`, impuestos y `SAITNube_TipoCambio` si aplica.
-6. Calcula existencia usando almacen base o multi-almacen configurado.
+6. Calcula existencia desde `/api/v3/existencias/{sku}` usando almacen base o multi-almacen configurado.
 7. Actualiza precio regular, stock y metadata `_sait_precio_*` / `_sait_existencia_*`.
 
 Flujo desde listado de productos:
@@ -182,19 +182,21 @@ Flujo desde listado de productos:
 2. El handler valida permisos `edit_post` y nonce.
 3. Lee el SKU del producto.
 4. Ejecuta el mismo flujo de sincronizacion por SKU.
-5. Regresa al listado de productos con un aviso administrativo.
+5. Regresa al listado de productos con un aviso administrativo. El aviso distingue entre actualizacion aplicada, sin cambios, producto/SKU no encontrado, errores HTTP, JSON invalido o existencia no encontrada para los almacenes configurados.
 
 Flujo masivo:
 
 1. El formulario envia `admin-post.php?action=sait_sync_articulos_start`.
 2. Se inicializa el estado en `sait_art_sync_status`.
 3. Se agenda `sait_sync_articulos_batch` con Action Scheduler o WP-Cron.
-4. Cada lote consulta `/api/v3/articulos?statusweb=1&limit=200&offset={offset}`.
+4. Cada lote consulta `/api/v3/articulos?statusweb=1&order=id&limit=200&offset={offset}`.
 5. Se procesa cada articulo con la misma funcion que el SKU puntual.
 6. Si el lote viene lleno, agenda el siguiente offset.
 7. Si el lote viene incompleto o vacio, marca el proceso como finalizado.
 
-Nota operativa: el proceso masivo asume que SAITNube respeta `limit` y `offset`. Tiene un limite de seguridad de lotes para evitar ejecuciones indefinidas si alguna API ignora `offset`.
+Nota operativa: el proceso masivo usa la lista JSON directa que devuelve SAITNube y asume que respeta `limit` y `offset`. Tiene un limite de seguridad de lotes para evitar ejecuciones indefinidas si alguna API ignora `offset`.
+
+El avance visible usa `procesados / total_estimado`. El total estimado se calcula desde productos WooCommerce con SKU; si el proceso supera esa cifra, se ajusta al numero procesado para evitar mostrar avances mayores al 100%.
 
 ## Sucursales En Frontend
 

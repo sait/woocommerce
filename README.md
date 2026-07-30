@@ -182,11 +182,15 @@ En `Ajustes -> Configuracion SAIT` hay una seccion llamada `Sincronizacion de ar
 
 Herramientas disponibles:
 
-- Sincronizar un SKU especifico contra `/api/v3/articulos/{sku}` y `/api/v3/existencias/{sku}`.
+- Sincronizar un SKU especifico contra `/api/v3/articulos/clave/{sku}` y `/api/v3/existencias/{sku}`.
 - Programar sincronizacion masiva de articulos por lotes.
 - Sincronizar un producto puntual desde el listado de productos con la accion `Sincronizar SAIT`.
 
-La sincronizacion masiva consulta SAITNube con `statusweb=1`, `limit` y `offset`, y procesa lotes de 200 articulos. Si WooCommerce tiene Action Scheduler disponible, el trabajo se agenda ahi; si no, se usa WP-Cron.
+La accion del listado regresa a la pantalla de productos con un aviso administrativo que indica si se actualizo, si no hubo cambios, si no existe el producto/SKU, o si SAITNube respondio con error HTTP/JSON.
+
+La sincronizacion masiva consulta SAITNube con `statusweb=1`, `order=id`, `limit` y `offset`, y procesa lotes de 200 articulos. Si WooCommerce tiene Action Scheduler disponible, el trabajo se agenda ahi; si no, se usa WP-Cron.
+
+La pantalla muestra un avance tipo `N de X articulos estimados`. `X` se calcula con productos WooCommerce que tienen SKU.
 
 Cada producto actualizado guarda metadata general del proceso:
 
@@ -209,7 +213,7 @@ Y metadata de existencia:
 
 La sincronizacion usa `SAITNube_PrecioLista` cuando esta configurada. Si el articulo viene en dolares (`divisa = D`) y existe `SAITNube_TipoCambio`, convierte el precio a pesos.
 
-La existencia se calcula con `SAITNube_NumAlm`; si esta activo `SAITNube_ExistAlm_enabled`, suma los almacenes configurados en `SAITNube_ExistAlm`.
+La existencia siempre se toma desde `/api/v3/existencias/{sku}`. Si no esta activo multi-almacen, usa solo el almacen `SAITNube_NumAlm`; si esta activo `SAITNube_ExistAlm_enabled`, suma los almacenes configurados en `SAITNube_ExistAlm`.
 
 ## Pruebas De Sintaxis
 

@@ -34,6 +34,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 
 		$notice = self::get_notice();
 		$status = self::get_status();
+		$progress_text = self::get_progress_text($status);
 		?>
 		<hr>
 		<h2>Sincronizacion de articulos</h2>
@@ -53,7 +54,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 				</tr>
 				<tr>
 					<th scope="row">Procesados</th>
-					<td><?php echo esc_html(isset($status['procesados']) ? $status['procesados'] : 0); ?></td>
+					<td><?php echo esc_html($progress_text); ?></td>
 				</tr>
 				<tr>
 					<th scope="row">Actualizados</th>
@@ -100,6 +101,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			<input type="hidden" name="action" value="sait_sync_articulos_start">
 			<?php wp_nonce_field('sait_sync_articulos_start'); ?>
 			<?php submit_button('Sincronizar todos los articulos', 'primary', 'submit', false); ?>
+			<p><strong>Avance:</strong> <?php echo esc_html($progress_text); ?></p>
 			<p class="description">El proceso se ejecuta por lotes de <?php echo esc_html(self::BATCH_SIZE); ?> articulos. Usa Action Scheduler si esta disponible; si no, usa WP-Cron.</p>
 		</form>
 		<?php
@@ -118,7 +120,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		}
 
 		$result = self::sync_sku($sku, 'manual_sku');
-		$type = $result['estado'] === 'actualizado' || $result['estado'] === 'sin_cambio' ? 'success' : 'warning';
+		$type = self::notice_type_from_result($result);
 		self::set_notice($type, 'SKU ' . $sku . ': ' . $result['mensaje']);
 		$this->redirect_settings();
 	}
@@ -143,7 +145,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		}
 
 		$result = self::sync_sku($sku, 'product_row');
-		$type = $result['estado'] === 'actualizado' || $result['estado'] === 'sin_cambio' ? 'success' : 'warning';
+		$type = self::notice_type_from_result($result);
 		self::set_notice($type, 'Producto ' . $product_id . ' / SKU ' . $sku . ': ' . $result['mensaje']);
 		$this->redirect_products();
 	}
@@ -196,6 +198,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			'estado' => 'programado',
 			'offset' => 0,
 			'limit' => self::BATCH_SIZE,
+			'total_estimado' => self::count_local_products_with_sku(),
 			'procesados' => 0,
 			'actualizados' => 0,
 			'existencias_actualizadas' => 0,
@@ -235,8 +238,8 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		$status['actualizado_at'] = current_time('mysql');
 		self::save_status($status);
 
-		$response = SAIT_UTILS::SAIT_GetNube('/api/v3/articulos?statusweb=1&limit=' . $limit . '&offset=' . $offset);
-		$rows = SAIT_UTILS::SAIT_getResult($response);
+		$response = SAIT_UTILS::SAIT_GetNube('/api/v3/articulos?statusweb=1&order=id&limit=' . $limit . '&offset=' . $offset);
+		$rows = self::extract_list_response($response);
 
 		if (empty($rows) || !is_array($rows)) {
 			$status['estado'] = 'finalizado';
@@ -270,6 +273,9 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		}
 
 		$status['offset'] = $offset + count($rows);
+		if (empty($status['total_estimado']) || $status['procesados'] > $status['total_estimado']) {
+			$status['total_estimado'] = $status['procesados'];
+		}
 		$status['actualizado_at'] = current_time('mysql');
 
 		if (count($rows) >= $limit && $status['lotes'] < self::MAX_BATCHES) {
@@ -292,11 +298,24 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			return array('estado' => 'error', 'mensaje' => 'SKU vacio.');
 		}
 
-		$response = SAIT_UTILS::SAIT_GetNube('/api/v3/articulos/' . rawurlencode($sku));
-		$row = SAIT_UTILS::SAIT_getResult($response);
+		$article_request = self::get_nube_json('/api/v3/articulos/clave/' . rawurlencode($sku));
+		if (empty($article_request['ok'])) {
+			$message = $article_request['status_code'] === 404
+				? 'SAITNube no encontro el articulo.'
+				: 'No se pudo consultar el articulo en SAITNube. ' . $article_request['mensaje'];
+			return array(
+				'estado' => 'error',
+				'mensaje' => $message,
+			);
+		}
+
+		$row = self::extract_item_response($article_request['data']);
 
 		if (empty($row) || !is_array($row)) {
-			return array('estado' => 'error', 'mensaje' => 'SAITNube no regreso datos del articulo.');
+			$message = $article_request['status_code'] === 404
+				? 'SAITNube no encontro el articulo.'
+				: 'SAITNube respondio, pero no regreso datos del articulo.';
+			return array('estado' => 'error', 'mensaje' => $message);
 		}
 
 		return self::sync_product_from_api_row($sku, $row, $source);
@@ -400,7 +419,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			return array(
 				'sincronizado' => false,
 				'actualizado' => false,
-				'mensaje' => 'Existencia no disponible.',
+				'mensaje' => !empty($stock_data['mensaje']) ? $stock_data['mensaje'] : 'Existencia no disponible.',
 			);
 		}
 
@@ -429,17 +448,34 @@ class SAIT_WOOCOMMERCE_ArtSync {
 	private static function calculate_stock_from_sait($numart) {
 		$SAIT_options = get_option('opciones_sait');
 		if (empty($SAIT_options)) {
-			return array('sincronizado' => false, 'existencia' => 0);
-		}
-
-		$response = SAIT_UTILS::SAIT_GetNube('/api/v3/existencias/' . rawurlencode(trim($numart)));
-		$result = SAIT_UTILS::SAIT_getResult($response);
-		if (!is_array($result)) {
-			return array('sincronizado' => false, 'existencia' => 0);
+			return array(
+				'sincronizado' => false,
+				'existencia' => 0,
+				'mensaje' => 'No hay opciones SAITNube configuradas.',
+			);
 		}
 
 		$NumAlm = isset($SAIT_options['SAITNube_NumAlm']) ? trim($SAIT_options['SAITNube_NumAlm']) : '';
 		$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) && $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
+
+		$stock_request = self::get_nube_json('/api/v3/existencias/' . rawurlencode(trim($numart)));
+		if (empty($stock_request['ok'])) {
+			return array(
+				'sincronizado' => false,
+				'existencia' => 0,
+				'mensaje' => 'No se pudo consultar existencia en SAITNube. ' . $stock_request['mensaje'],
+			);
+		}
+
+		$result = self::extract_list_response($stock_request['data']);
+		if (!is_array($result)) {
+			return array(
+				'sincronizado' => false,
+				'existencia' => 0,
+				'mensaje' => 'SAITNube respondio, pero no regreso una lista de existencias.',
+			);
+		}
+
 		$almacenes_a_mostrar = array();
 
 		if ($ExistAlm_activo && !empty($SAIT_options['SAITNube_ExistAlm'])) {
@@ -471,7 +507,21 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		return array(
 			'sincronizado' => $matched,
 			'existencia' => round($quantity, 2),
+			'mensaje' => $matched ? '' : self::get_stock_not_found_message($ExistAlm_activo, $NumAlm, $almacenes_a_mostrar),
 		);
+	}
+
+	private static function get_stock_not_found_message($multi_almacen, $num_alm, $almacenes) {
+		if ($multi_almacen) {
+			$list = empty($almacenes) ? 'ningun almacen configurado' : implode(', ', $almacenes);
+			return 'SAITNube no regreso existencia para los almacenes configurados: ' . $list . '.';
+		}
+
+		if ($num_alm === '') {
+			return 'No hay almacen base configurado en SAITNube_NumAlm.';
+		}
+
+		return 'SAITNube no regreso existencia para el almacen configurado ' . $num_alm . '.';
 	}
 
 	private static function save_product_sync_meta($product, $source, $old_price, $new_price, $status) {
@@ -508,6 +558,131 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		return implode(' ', $messages);
 	}
 
+	private static function extract_list_response($response) {
+		if (!is_array($response)) {
+			return null;
+		}
+
+		if (isset($response['result']) && is_array($response['result'])) {
+			if (isset($response['result']['numart']) || isset($response['result']['id'])) {
+				return $response['result'];
+			}
+
+			if (isset($response['result'][0]) && is_array($response['result'][0])) {
+				return $response['result'][0];
+			}
+
+			return $response['result'];
+		}
+
+		if (array_key_exists(0, $response)) {
+			return $response;
+		}
+
+		return null;
+	}
+
+	private static function extract_item_response($response) {
+		if (!is_array($response)) {
+			return null;
+		}
+
+		if (isset($response['result']) && is_array($response['result'])) {
+			return $response['result'];
+		}
+
+		if (isset($response[0]) && is_array($response[0])) {
+			return $response[0];
+		}
+
+		if (isset($response['numart']) || isset($response['id'])) {
+			return $response;
+		}
+
+		return null;
+	}
+
+	private static function get_nube_json($uri, $reintentar = true) {
+		$SAIT_options = get_option('opciones_sait');
+		if (empty($SAIT_options['SAITNube_URL']) || empty($SAIT_options['SAITNube_APIKey'])) {
+			return array(
+				'ok' => false,
+				'status_code' => 0,
+				'data' => null,
+				'mensaje' => 'Falta configurar URL o API key.',
+			);
+		}
+
+		$url = rtrim($SAIT_options['SAITNube_URL'], '/') . '/' . ltrim($uri, '/');
+		$args = array(
+			'timeout' => 5,
+			'sslverify' => false,
+			'blocking' => true,
+			'headers' => array(
+				'X-sait-api-key' => $SAIT_options['SAITNube_APIKey'],
+				'Content-Type' => 'application/json',
+				'Accept' => 'application/json',
+			),
+		);
+
+		$response = wp_remote_get($url, $args);
+		if (is_wp_error($response)) {
+			if ($reintentar) {
+				usleep(500000);
+				return self::get_nube_json($uri, false);
+			}
+
+			return array(
+				'ok' => false,
+				'status_code' => 0,
+				'data' => null,
+				'mensaje' => $response->get_error_message(),
+			);
+		}
+
+		$status_code = (int) wp_remote_retrieve_response_code($response);
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
+
+		if ($status_code < 200 || $status_code >= 300) {
+			return array(
+				'ok' => false,
+				'status_code' => $status_code,
+				'data' => $data,
+				'mensaje' => 'HTTP ' . $status_code . self::format_response_detail($body),
+			);
+		}
+
+		if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+			return array(
+				'ok' => false,
+				'status_code' => $status_code,
+				'data' => null,
+				'mensaje' => 'HTTP ' . $status_code . ', JSON invalido: ' . json_last_error_msg() . '.',
+			);
+		}
+
+		return array(
+			'ok' => true,
+			'status_code' => $status_code,
+			'data' => $data,
+			'mensaje' => 'HTTP ' . $status_code . '.',
+		);
+	}
+
+	private static function format_response_detail($body) {
+		$body = trim(wp_strip_all_tags((string) $body));
+		if ($body === '') {
+			return '.';
+		}
+
+		if (strlen($body) > 180) {
+			$body = substr($body, 0, 180) . '...';
+		}
+
+		return ': ' . $body;
+	}
+
 	private static function schedule_batch($offset, $limit) {
 		$args = array(absint($offset), absint($limit));
 
@@ -524,6 +699,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			'estado' => 'sin ejecutar',
 			'offset' => 0,
 			'limit' => self::BATCH_SIZE,
+			'total_estimado' => 0,
 			'procesados' => 0,
 			'actualizados' => 0,
 			'existencias_actualizadas' => 0,
@@ -540,6 +716,34 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		return wp_parse_args(is_array($status) ? $status : array(), $defaults);
 	}
 
+	private static function get_progress_text($status) {
+		$processed = isset($status['procesados']) ? absint($status['procesados']) : 0;
+		$total = isset($status['total_estimado']) ? absint($status['total_estimado']) : 0;
+
+		if ($total > 0) {
+			$percent = min(100, round(($processed / $total) * 100, 1));
+			return $processed . ' de ' . $total . ' articulos estimados (' . $percent . '%)';
+		}
+
+		return $processed . ' articulos procesados';
+	}
+
+	private static function count_local_products_with_sku() {
+		global $wpdb;
+
+		$sql = "
+			SELECT COUNT(DISTINCT p.ID)
+			FROM {$wpdb->posts} p
+			INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+			WHERE p.post_type = 'product'
+				AND p.post_status NOT IN ('trash', 'auto-draft')
+				AND pm.meta_key = '_sku'
+				AND pm.meta_value <> ''
+		";
+
+		return (int) $wpdb->get_var($sql);
+	}
+
 	private static function save_status($status) {
 		update_option(self::STATUS_OPTION, $status, false);
 	}
@@ -549,6 +753,22 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			'type' => $type,
 			'message' => $message,
 		), 60);
+	}
+
+	private static function notice_type_from_result($result) {
+		if (!is_array($result) || empty($result['estado'])) {
+			return 'warning';
+		}
+
+		if ($result['estado'] === 'error') {
+			return 'error';
+		}
+
+		if ($result['estado'] === 'actualizado' || $result['estado'] === 'sin_cambio') {
+			return 'success';
+		}
+
+		return 'warning';
 	}
 
 	private static function get_notice() {
@@ -564,6 +784,12 @@ class SAIT_WOOCOMMERCE_ArtSync {
 	}
 
 	private function redirect_products() {
+		$referer = wp_get_referer();
+		if ($referer && strpos($referer, 'admin-post.php') === false) {
+			wp_safe_redirect($referer);
+			exit;
+		}
+
 		wp_safe_redirect(admin_url('edit.php?post_type=product'));
 		exit;
 	}
