@@ -153,6 +153,49 @@ El endpoint manual `reenviar-pedido-sait/{idpedido}` no usa este bloqueo, para p
 - `_sait_ultimo_envio_modo`
 - `_sait_ultimo_error`, solo cuando el resultado no fue exitoso.
 
+En la pantalla de edicion del pedido tambien se muestra el boton `Reenviar pedido a SAIT`. Ese boton ejecuta `admin-post.php?action=sait_reenviar_pedido_admin&order_id={id}`, valida permisos/nonce y llama el mismo flujo manual `SAIT_reenviarPedido()`.
+
+## Sincronizacion Manual De Articulos
+
+Archivo: `includes/SAIT_WOOCOMMERCE-art-sync.php`
+
+Desde `Ajustes -> Configuracion SAIT`, el administrador puede:
+
+- Sincronizar el precio y existencia de un SKU puntual.
+- Programar una sincronizacion masiva por lotes.
+
+Desde el listado de productos, cada fila tiene la accion `Sincronizar SAIT`, que ejecuta el mismo flujo puntual usando el SKU del producto.
+
+Flujo por SKU:
+
+1. El formulario envia `admin-post.php?action=sait_sync_articulo_sku`.
+2. El handler valida permisos `manage_options` y nonce.
+3. Consulta `/api/v3/articulos/{sku}` y `/api/v3/existencias/{sku}`.
+4. Busca el producto por `sait_claves` o por SKU.
+5. Calcula precio usando `SAITNube_PrecioLista`, impuestos y `SAITNube_TipoCambio` si aplica.
+6. Calcula existencia usando almacen base o multi-almacen configurado.
+7. Actualiza precio regular, stock y metadata `_sait_precio_*` / `_sait_existencia_*`.
+
+Flujo desde listado de productos:
+
+1. El enlace envia `admin-post.php?action=sait_sync_articulo_product&product_id={id}`.
+2. El handler valida permisos `edit_post` y nonce.
+3. Lee el SKU del producto.
+4. Ejecuta el mismo flujo de sincronizacion por SKU.
+5. Regresa al listado de productos con un aviso administrativo.
+
+Flujo masivo:
+
+1. El formulario envia `admin-post.php?action=sait_sync_articulos_start`.
+2. Se inicializa el estado en `sait_art_sync_status`.
+3. Se agenda `sait_sync_articulos_batch` con Action Scheduler o WP-Cron.
+4. Cada lote consulta `/api/v3/articulos?statusweb=1&limit=200&offset={offset}`.
+5. Se procesa cada articulo con la misma funcion que el SKU puntual.
+6. Si el lote viene lleno, agenda el siguiente offset.
+7. Si el lote viene incompleto o vacio, marca el proceso como finalizado.
+
+Nota operativa: el proceso masivo asume que SAITNube respeta `limit` y `offset`. Tiene un limite de seguridad de lotes para evitar ejecuciones indefinidas si alguna API ignora `offset`.
+
 ## Sucursales En Frontend
 
 Si `SAITNube_Sucursal_enabled === "1"`:

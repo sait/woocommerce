@@ -7,7 +7,8 @@ Archivo principal del plugin.
 Responsabilidades:
 
 - Declara metadatos del plugin.
-- Incluye opciones, utilidades, funciones personalizadas y carrito.
+- Incluye opciones, utilidades, sincronizacion administrativa de precios, funciones personalizadas y carrito.
+- Incluye acciones administrativas de pedidos.
 - Define constantes por defecto:
   - `SAIT_NUBE_NUMALM = "1"`
   - `SAIT_SERIE = "WO"`
@@ -91,6 +92,18 @@ Metodos:
 - `SAIT_calcularPjeDescuentoItem($cantidad, $total, $precio)`: calcula descuento porcentual.
 - `SAIT_getDirEnvio($order)`: genera cadena `direnvio` para SAIT.
 
+## `includes/SAIT_WOOCOMMERCE-order-admin.php`
+
+Clase `SAIT_WOOCOMMERCE_OrderAdmin`.
+
+Responsabilidades:
+
+- Agrega el boton `Reenviar pedido a SAIT` en la pantalla de edicion de pedidos.
+- Procesa el `admin_post` `sait_reenviar_pedido_admin`.
+- Valida permisos y nonce antes de reenviar.
+- Usa `SAIT_WOOCOMMERCE_Orders::SAIT_reenviarPedido()` para reutilizar el flujo manual existente.
+- Muestra aviso administrativo con el resultado del reenvio.
+
 ## `includes/SAIT_WOOCOMMERCE-cart.php`
 
 Funciones:
@@ -111,6 +124,31 @@ Responsabilidades:
 - Define campos de configuracion.
 - Sanitiza valores.
 - Renderiza inputs y radios.
+- Renderiza la seccion administrativa de sincronizacion de precios cuando la clase esta disponible.
+
+## `includes/SAIT_WOOCOMMERCE-art-sync.php`
+
+Clase `SAIT_WOOCOMMERCE_ArtSync`.
+
+Responsabilidades:
+
+- Agrega handlers `admin_post` para sincronizar precio/existencia por SKU, producto y arranque masivo.
+- Agrega accion de fila `Sincronizar SAIT` al listado de productos.
+- Renderiza controles y estado de sincronizacion en ajustes del plugin.
+- Consulta articulos en SAITNube por SKU o por lotes.
+- Actualiza precio regular y stock de productos WooCommerce.
+- Guarda metadata de auditoria de la ultima sincronizacion por producto.
+- Agenda lotes con Action Scheduler si esta disponible; si no, usa WP-Cron.
+
+Metodos principales:
+
+- `render_admin_section()`: pinta botones, estado y avisos.
+- `handle_sync_sku()`: procesa el formulario de SKU puntual.
+- `handle_sync_product()`: procesa la accion de fila del listado de productos.
+- `handle_start_batch()`: inicializa estado y agenda el primer lote.
+- `process_batch($offset, $limit)`: procesa un lote de articulos desde SAITNube.
+- `sync_sku($sku, $source)`: consulta y sincroniza un articulo puntual.
+- `sync_product_from_api_row($numart, $row, $source)`: aplica el precio y existencia calculados al producto WooCommerce.
 
 ## `includes/SAIT_WOOCOMMERCE-activator.php`
 

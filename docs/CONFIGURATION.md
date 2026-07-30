@@ -51,3 +51,13 @@ if ($Obs_activo) {
     $pedido->obs = trim($order->get_customer_note());
 }
 ```
+
+## Herramientas Administrativas
+
+La pagina `Ajustes -> Configuracion SAIT` tambien muestra `Sincronizacion de articulos`.
+
+- `Sincronizar articulo por SKU`: consulta un articulo puntual en SAITNube y actualiza su precio regular/existencia en WooCommerce.
+- `Sincronizar todos los articulos`: programa un proceso por lotes para articulos `statusweb=1`.
+- Accion `Sincronizar SAIT` en el listado de productos: sincroniza el producto de esa fila usando su SKU.
+
+El estado del proceso masivo se guarda en la opcion `sait_art_sync_status`.

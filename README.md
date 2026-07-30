@@ -14,6 +14,7 @@ El plugin sincroniza informacion de SAIT hacia WooCommerce mediante webhooks y e
 - Validar monto minimo de carrito cuando la opcion esta activa.
 - Enviar ordenes WooCommerce a SAITNube como pedidos o cotizaciones.
 - Reenviar manualmente pedidos cuando SAITNube/API no estuvo disponible.
+- Sincronizar articulos manualmente desde la configuracion del plugin.
 
 ## Requisitos
 
@@ -172,6 +173,43 @@ La ruta legacy sigue disponible:
 ```http
 GET https://mitienda.com/wp-json/saitplugin/v1/testpedido/1234
 ```
+
+Tambien se puede reenviar desde la pantalla de edicion del pedido en WooCommerce usando el boton `Reenviar pedido a SAIT`.
+
+## Sincronizacion Manual De Articulos
+
+En `Ajustes -> Configuracion SAIT` hay una seccion llamada `Sincronizacion de articulos`.
+
+Herramientas disponibles:
+
+- Sincronizar un SKU especifico contra `/api/v3/articulos/{sku}` y `/api/v3/existencias/{sku}`.
+- Programar sincronizacion masiva de articulos por lotes.
+- Sincronizar un producto puntual desde el listado de productos con la accion `Sincronizar SAIT`.
+
+La sincronizacion masiva consulta SAITNube con `statusweb=1`, `limit` y `offset`, y procesa lotes de 200 articulos. Si WooCommerce tiene Action Scheduler disponible, el trabajo se agenda ahi; si no, se usa WP-Cron.
+
+Cada producto actualizado guarda metadata general del proceso:
+
+- `_sait_art_sync_at`
+- `_sait_art_sync_source`
+- `_sait_art_sync_status`
+
+Y metadata de precio:
+
+- `_sait_precio_anterior`
+- `_sait_precio_sait`
+
+Y metadata de existencia:
+
+- `_sait_existencia_sync_at`
+- `_sait_existencia_sync_source`
+- `_sait_existencia_sync_status`
+- `_sait_existencia_anterior`
+- `_sait_existencia_sait`
+
+La sincronizacion usa `SAITNube_PrecioLista` cuando esta configurada. Si el articulo viene en dolares (`divisa = D`) y existe `SAITNube_TipoCambio`, convierte el precio a pesos.
+
+La existencia se calcula con `SAITNube_NumAlm`; si esta activo `SAITNube_ExistAlm_enabled`, suma los almacenes configurados en `SAITNube_ExistAlm`.
 
 ## Pruebas De Sintaxis
 
