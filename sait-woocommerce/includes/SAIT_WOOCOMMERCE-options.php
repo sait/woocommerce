@@ -48,6 +48,11 @@ class SAITSettingsPage
                 submit_button();
             ?>
             </form>
+            <?php
+                if (class_exists('SAIT_WOOCOMMERCE_ArtSync')) {
+                    SAIT_WOOCOMMERCE_ArtSync::render_admin_section();
+                }
+            ?>
         </div>
         <?php
     }
