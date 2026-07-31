@@ -11,11 +11,6 @@ Version: 1.2.3
 Author URI: http://sait.mx
 */
 
-if (defined('SAIT_WOOCOMMERCE_BOOTSTRAPPED') || function_exists('activate_SAIT_WOOCOMMERCE') || class_exists('SAIT_UTILS', false)) {
-	return;
-}
-
-define('SAIT_WOOCOMMERCE_BOOTSTRAPPED', true);
 
 include plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-options.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_UTILS.php';
