@@ -56,7 +56,7 @@ if ($Obs_activo) {
 
 La pagina `Ajustes -> Configuracion SAIT` tambien muestra `Sincronizacion de articulos`.
 
-- `Sincronizar articulo por SKU`: consulta un articulo puntual en SAITNube con `/api/v3/articulos/clave/{sku}` y actualiza su precio regular/existencia en WooCommerce.
+- `Sincronizar articulo por SKU`: consulta un articulo puntual en SAITNube con `/api/v3/articulos/{sku}` y actualiza su precio regular/existencia en WooCommerce.
 - `Sincronizar todos los articulos`: programa un proceso por lotes para articulos `statusweb=1`.
 - Accion `Sincronizar SAIT` en el listado de productos: sincroniza el producto de esa fila usando su SKU.
 

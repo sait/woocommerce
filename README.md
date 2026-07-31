@@ -182,7 +182,7 @@ En `Ajustes -> Configuracion SAIT` hay una seccion llamada `Sincronizacion de ar
 
 Herramientas disponibles:
 
-- Sincronizar un SKU especifico contra `/api/v3/articulos/clave/{sku}` y `/api/v3/existencias/{sku}`.
+- Sincronizar un SKU especifico contra `/api/v3/articulos/{sku}` y `/api/v3/existencias/{sku}`.
 - Programar sincronizacion masiva de articulos por lotes.
 - Sincronizar un producto puntual desde el listado de productos con la accion `Sincronizar SAIT`.
 

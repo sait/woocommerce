@@ -1,15 +1,21 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 1.2.1
+ * @version 1.2.2
  */
 /*
 Plugin Name: SAIT WooCommerce
 Description: Este plugin agrega un endpoint a wordpress para procesar eventos enviados desde SAIT.
 Author: SAIT Software Administrativo
-Version: 1.2.1
+Version: 1.2.2
 Author URI: http://sait.mx
 */
+
+if (defined('SAIT_WOOCOMMERCE_BOOTSTRAPPED') || function_exists('activate_SAIT_WOOCOMMERCE') || class_exists('SAIT_UTILS', false)) {
+	return;
+}
+
+define('SAIT_WOOCOMMERCE_BOOTSTRAPPED', true);
 
 include plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-options.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_UTILS.php';

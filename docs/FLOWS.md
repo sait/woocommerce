@@ -170,7 +170,7 @@ Flujo por SKU:
 
 1. El formulario envia `admin-post.php?action=sait_sync_articulo_sku`.
 2. El handler valida permisos `manage_options` y nonce.
-3. Consulta `/api/v3/articulos/clave/{sku}` y `/api/v3/existencias/{sku}`.
+3. Consulta `/api/v3/articulos/{sku}` y `/api/v3/existencias/{sku}`.
 4. Busca el producto por `sait_claves` o por SKU.
 5. Calcula precio usando `SAITNube_PrecioLista`, impuestos y `SAITNube_TipoCambio` si aplica.
 6. Calcula existencia desde `/api/v3/existencias/{sku}` usando almacen base o multi-almacen configurado.

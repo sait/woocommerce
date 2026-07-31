@@ -298,7 +298,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			return array('estado' => 'error', 'mensaje' => 'SKU vacio.');
 		}
 
-		$article_request = self::get_nube_json('/api/v3/articulos/clave/' . rawurlencode($sku));
+		$article_request = self::get_nube_json('/api/v3/articulos/' . rawurlencode($sku));
 		if (empty($article_request['ok'])) {
 			$message = $article_request['status_code'] === 404
 				? 'SAITNube no encontro el articulo.'
