@@ -377,6 +377,10 @@ class SAIT_WOOCOMMERCE_ArtSync {
 		$tc = isset($SAIT_options['SAITNube_TipoCambio']) ? (float) $SAIT_options['SAITNube_TipoCambio'] : 0;
 		$price = 0;
 
+		if (isset($row['preciopub']) && is_numeric($row['preciopub']) && (float) $row['preciopub'] > 0) {
+			$price = (float) $row['preciopub'];
+		}
+
 		if ($preciolista !== '' && isset($row['precio' . $preciolista])) {
 			$base = (float) $row['precio' . $preciolista];
 			if ($base > 0) {
@@ -386,12 +390,8 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			}
 		}
 
-		if ($price <= 0 && isset($row['preciopub'])) {
-			$price = (float) $row['preciopub'];
-		}
-
-		if (isset($row['divisa']) && $row['divisa'] === 'D' && $tc > 0 && $price > 0) {
-			$price = round($price * $tc, 2);
+		if (isset($row['divisa']) && $row['divisa'] === 'D' && $tc > 0 && isset($row['preciopub'])) {
+			$price = round((float) $row['preciopub'] * $tc, 2);
 		}
 
 		return round((float) $price, 2);
@@ -472,7 +472,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 			return array(
 				'sincronizado' => false,
 				'existencia' => 0,
-				'mensaje' => 'SAITNube respondio, pero no regreso una lista de existencias.',
+				'mensaje' => 'SAITNube no regreso existencias para el articulo.',
 			);
 		}
 

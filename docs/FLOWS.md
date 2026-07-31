@@ -172,8 +172,8 @@ Flujo por SKU:
 2. El handler valida permisos `manage_options` y nonce.
 3. Consulta `/api/v3/articulos/{sku}` y `/api/v3/existencias/{sku}`.
 4. Busca el producto por `sait_claves` o por SKU.
-5. Calcula precio usando `SAITNube_PrecioLista`, impuestos y `SAITNube_TipoCambio` si aplica.
-6. Calcula existencia desde `/api/v3/existencias/{sku}` usando almacen base o multi-almacen configurado.
+5. Calcula precio igual que `ACTPRECIO`: `preciopub`, luego `precio{lista}` con impuestos si hay lista configurada, y conversion por `SAITNube_TipoCambio` desde `preciopub` si `divisa = D`.
+6. Calcula existencia desde `/api/v3/existencias/{sku}` usando almacen base o multi-almacen configurado. Si la API responde `result: null`, no actualiza stock, pero continua con el resultado de precio.
 7. Actualiza precio regular, stock y metadata `_sait_precio_*` / `_sait_existencia_*`.
 
 Flujo desde listado de productos:
