@@ -64,23 +64,27 @@ Objetivo: saber qué comportamiento y versiones deben preservarse.
 
 ### Compatibilidad
 
-- [ ] Confirmar versión mínima y máxima objetivo de WordPress.
-- [ ] Confirmar versión mínima y máxima objetivo de WooCommerce.
-- [ ] Confirmar versión mínima de PHP.
-- [ ] Confirmar si debe funcionar en multisite.
-- [ ] Confirmar si HPOS es obligatorio, opcional o no soportado.
-- [ ] Documentar versiones de SAIT/SAITNube y contrato de API esperado.
-- [ ] Evitar APIs exclusivas de WordPress 7 o PHP 8 hasta tomar esta decisión.
+- [x] WordPress minimo 6.6; la version maxima se valida por release.
+- [x] WooCommerce minimo 9.3; la version maxima se valida por release.
+- [x] PHP minimo 7.4.
+- [x] Multisite no forma parte del soporte oficial actual.
+- [x] HPOS es obligatorio en las pruebas de compatibilidad.
+- [x] SAITNube API v3 confirmada por el contrato actual.
+- [x] Evitar APIs de WordPress o PHP superiores a la matriz aprobada sin una
+  actualizacion explicita de compatibilidad.
 
 ### Contratos actuales
 
-- [ ] Inventariar todos los hooks, filtros y endpoints registrados.
-- [ ] Inventariar opciones y valores predeterminados.
-- [ ] Inventariar metadatos de pedidos y productos.
-- [ ] Documentar estructura e índices de `sait_claves`.
-- [ ] Capturar payload real esperado para pedido y cotización.
-- [ ] Documentar respuestas HTTP y mensajes esperados por SAIT.
-- [ ] Documentar qué operaciones son bloqueantes y cuáles no esperan respuesta.
+- [x] Inventariar todos los hooks, filtros y endpoints registrados.
+- [x] Inventariar opciones y valores predeterminados.
+- [x] Inventariar metadatos de pedidos y productos.
+- [x] Documentar estructura e índices de `sait_claves`.
+- [x] Capturar la estructura actual del payload de pedido y cotización.
+- [x] Documentar respuestas HTTP y mensajes esperados por SAIT.
+- [x] Documentar qué operaciones son bloqueantes y cuáles no esperan respuesta.
+
+La linea base resultante esta en `docs/BASELINE_CONTRACTS.md`. Las versiones
+observadas y la matriz aprobada estan en `docs/COMPATIBILITY.md`.
 
 ### Fixtures mínimos
 
