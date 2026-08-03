@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="MODDEPTO" version="2" src="fixture">
+  <action cmd="write" tbl="deptos">
+    <keys valdep="FIX-DEP" />
+    <flds nomdep="Departamento Fixture" />
+  </action>
+</event>

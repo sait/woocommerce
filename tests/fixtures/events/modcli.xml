@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="MODCLI" version="2" src="fixture">
+  <action cmd="write" tbl="clientes">
+    <keys numcli="90001" />
+    <flds emailtw="cliente.fixture@example.test" nomcli="Cliente Fixture" statusweb="1" />
+  </action>
+</event>

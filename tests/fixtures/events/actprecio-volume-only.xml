@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="ACTPRECIO" version="2" src="fixture">
+  <action cmd="write" tbl="arts">
+    <keys numart="FIX-ART-001" />
+    <flds preciopub="0.00" precio1="0.00" precio2="0.00" precio3="0.00" precio4="0.00" precio5="0.00" ppubv1="110.00" cantv1="10" />
+  </action>
+</event>

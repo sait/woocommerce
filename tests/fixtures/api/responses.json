@@ -1,0 +1,44 @@
+{
+  "articulo_pesos": {
+    "result": {
+      "numart": "FIX-ART-001",
+      "unidad": "PZA",
+      "divisa": "P",
+      "precio1": 100,
+      "preciopub": 116,
+      "impuesto1": 16,
+      "impuesto2": 0
+    }
+  },
+  "articulo_dolares": {
+    "result": {
+      "numart": "FIX-USD-001",
+      "unidad": "PZA",
+      "divisa": "D",
+      "precio1": 10,
+      "preciopub": 11.6,
+      "impuesto1": 16,
+      "impuesto2": 0
+    }
+  },
+  "existencias": {
+    "result": [
+      { "numalm": "1", "existencia": 7.5 },
+      { "numalm": "2", "existencia": 2.25 },
+      { "numalm": "3", "existencia": 100 }
+    ]
+  },
+  "cliente_normal": {
+    "result": [
+      { "numcli": "123" }
+    ]
+  },
+  "cliente_eventual": {
+    "result": [
+      { "numcliev": "456" }
+    ]
+  },
+  "sin_resultados": {
+    "result": []
+  }
+}

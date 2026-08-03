@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="MODLINEA" version="2" src="fixture">
+  <action cmd="write" tbl="lineas">
+    <keys numlin="FIX-LIN" />
+    <flds nomlin="Linea Fixture" />
+  </action>
+</event>

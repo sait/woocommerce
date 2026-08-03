@@ -37,7 +37,7 @@ Nombre fisico: `{$wpdb->prefix}sait_claves`.
 
 No existen indices ni restricciones unicas para `tabla`, `clave` o `wcid`.
 Los valores logicos conocidos de `tabla` incluyen `arts`, `clientes`,
-`familias`, `deptos`, `lineas` y `catego`.
+`familia`, `deptos`, `lineas` y `catego`.
 
 ### Opciones
 
@@ -263,4 +263,3 @@ commit funcional separado, no parte de una extraccion mecanica.
 - Payload de pedido/cotizacion y reglas de cliente.
 - Prioridad de lista de precios, impuestos y tipo de cambio.
 - Seleccion de almacenes y suma multi-almacen.
-

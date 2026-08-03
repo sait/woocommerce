@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="MODART" version="2" src="fixture">
+  <action cmd="write" tbl="arts">
+    <keys numart="FIX-ART-001" />
+    <flds codigo="7500000000017" desc="Articulo de prueba" linea="FIX-LIN" modelo="M-1" statusweb="0" obs="Descripcion de prueba" />
+  </action>
+</event>

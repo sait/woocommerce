@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="MODFAMILIA" version="2" src="fixture">
+  <action cmd="write" tbl="familias">
+    <keys numfam="FIX-FAM" />
+    <flds nomfam="Familia Fixture" />
+  </action>
+</event>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="ACTTC" version="2" src="fixture">
+  <action cmd="write" tbl="cia">
+    <keys id="1" />
+    <flds tc="18.5000" tccompra="18.0000" tccredito="18.5000" />
+  </action>
+</event>

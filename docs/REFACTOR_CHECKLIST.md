@@ -88,13 +88,17 @@ observadas y la matriz aprobada estan en `docs/COMPATIBILITY.md`.
 
 ### Fixtures mínimos
 
-- [ ] `MODART`: alta, actualización, baja y producto preexistente por SKU.
-- [ ] `ACTPRECIO`: precio público, lista configurada, dólares y precio por volumen.
-- [ ] `ACTEXIST`: almacén único y múltiples almacenes.
-- [ ] `ACTTC`.
-- [ ] `MODCLI`: alta, actualización, correo duplicado y usuario preexistente.
-- [ ] Categorías: familia, departamento, línea y categoría.
-- [ ] Pedido y cotización para cliente normal, eventual y nuevo.
+- [x] `MODART`: alta, actualización, baja y producto preexistente por SKU.
+- [x] `ACTPRECIO`: precio público, lista configurada, dólares y precio por volumen.
+- [x] `ACTEXIST`: almacén único y múltiples almacenes.
+- [x] `ACTTC`.
+- [x] `MODCLI`: alta, actualización, correo duplicado y usuario preexistente.
+- [x] Categorías: familia, departamento, línea y categoría.
+- [x] Pedido y cotización para cliente normal, eventual y nuevo.
+
+Los fixtures estan en `tests/fixtures/` y la ejecucion manual se documenta en
+`docs/STAGING_BASELINE.md`. El cliente eventual existente se conserva como una
+regresion objetivo porque la version 1.2.3 no reutiliza actualmente su clave.
 
 ### Commit 0.1
 
