@@ -89,6 +89,19 @@ La prueba usa exclusivamente SKUs, terminos y correos con sufijo `Fixture` o
 dominio `example.test`. Al comenzar elimina los datos de una ejecucion previa
 para que pueda repetirse sobre el volumen Docker.
 
+## Caracterizacion REST
+
+El contrato HTTP 1.2.3 se verifica por separado antes de mover las rutas a
+controladores:
+
+```sh
+sh tests/test-rest.sh
+```
+
+La prueba conserva como linea base que los endpoints de reenvio son publicos.
+La restriccion de permisos se hara posteriormente en un commit de seguridad,
+con expectativas nuevas y sin ocultarla dentro del refactor mecanico.
+
 ## Caracterizacion De Documentos
 
 Pedidos y cotizaciones se construyen con ordenes WooCommerce reales dentro del

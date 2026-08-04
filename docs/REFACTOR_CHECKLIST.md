@@ -169,6 +169,9 @@ No continuar si las pruebas sólo pueden pasar llamando servicios productivos.
 
 Objetivo: estabilizar y proteger el contrato de entrada.
 
+- [x] Caracterizar namespace, discovery, metodos, permisos publicos actuales,
+  token, XML invalido, alias legacy y orden inexistente antes de mover rutas.
+
 - [ ] Crear controladores REST separados del archivo principal.
 - [ ] Conservar temporalmente el namespace `saitplugin/v1`.
 - [ ] Usar constantes `WP_REST_Server` para los métodos.
