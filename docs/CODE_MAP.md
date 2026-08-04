@@ -166,6 +166,12 @@ Metodos:
 - `SAIT_calcularPjeDescuentoItem($cantidad, $total, $precio)`: calcula descuento porcentual.
 - `SAIT_getDirEnvio($order)`: genera cadena `direnvio` para SAIT.
 
+## `includes/SAIT_WOOCOMMERCE-document-builders.php`
+
+- `SAIT_WOOCOMMERCE_OrderBuilder`: construye pedidos sin ejecutar HTTP.
+- `SAIT_WOOCOMMERCE_QuoteBuilder`: construye cotizaciones sin ejecutar HTTP.
+- Ambos comparten partidas, cliente, observaciones y direccion de envio.
+
 ## `includes/SAIT_WOOCOMMERCE-order-admin.php`
 
 Clase `SAIT_WOOCOMMERCE_OrderAdmin`.

@@ -34,90 +34,17 @@
 	 * del pedido y realiza POST a /api/v3/pedidos.
 	 */
 	public static function SAIT_sendPedido( $order,$formapago,$wait = false ){
-    // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
-			$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
-			$pedido = new stdClass();
-			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
-			$pedido->numcli = "";
-			$pedido->numcliev = "";
-			$pedido->numalm =  str_pad(SAIT_NUBE_NUMALM,2, " ", STR_PAD_LEFT);
-			// Si tiene NumAlm configurado usar ese.
-			$NumAlm = $SAIT_options['SAITNube_NumAlm'];
-			if (isset($NumAlm) && !is_null($NumAlm)) {
-				$pedido->numalm =  str_pad($NumAlm,2, " ", STR_PAD_LEFT);
-			}
-			$pedido->formapago = $formapago;
-			$pedido->divisa = "P";
-			$pedido->tc = 1;
-			$pedido->items = [];
-			$pedido->fentrega = date("Ymd"); // 20251113
-			$pedido->hentrega = date("H:i"); // 15:27
-			
-			$Obs_activo = isset($SAIT_options['SAITNube_PedidoObs_enabled']) && $SAIT_options['SAITNube_PedidoObs_enabled'] === '1';
-			$Direnvio_activo = isset($SAIT_options['SAITNube_PedidoDirenvio_enabled']) && $SAIT_options['SAITNube_PedidoDirenvio_enabled'] === '1';
-			$FuncionPersonalizadaPedido_activo = isset($SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled']) && $SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled'] === '1';
-			if ($Obs_activo) {
-				$pedido->obs = trim($order->get_customer_note());
-			}
-			if ($Direnvio_activo) {
-				$pedido->direnvio = self::SAIT_getDirEnvio($order);
-			}
+		$options = SAIT_WOOCOMMERCE()->settings()->all();
+		$builder = new SAIT_WOOCOMMERCE_OrderBuilder($options);
+		$pedido = $builder->build(
+			$order,
+			$formapago,
+			self::SAIT_resolveItemUnits($order, 'P'),
+			SAIT_WOOCOMMERCE()->customer_resolver()->resolve($order)
+		);
+		$pedido = self::SAIT_customizeDocument($pedido, $order, $options);
 
-				
-			
-			SAIT_WOOCOMMERCE()->logger()->info(
-				'Preparando pedido para SAIT.',
-				array(
-					'order_id'      => $order->get_id(),
-					'document_type' => 'P',
-					'item_count'    => count($order->get_items()),
-				)
-			);
-			foreach ( $order->get_items() as $item_id => $item ) {
-					$art = new stdClass();
-					$art->cant = $item->get_quantity();
-					$product = $item->get_product();
-					$art->numart = $product->get_sku();
-					$api_response = null;
-					$api_result = null;
-					$intentos = 0;
-					$max_intentos = 3;
-					while (!isset($api_result["unidad"]) && $intentos < $max_intentos) {
-							if ($intentos > 0) {
-									usleep($intentos * 500000); // 0.5s, 1s, 1.5s
-							}
-							$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
-							$api_result = SAIT_UTILS::SAIT_getResult($api_response);
-							$intentos++;
-					}
-					if (!isset($api_result['unidad'])) {
-						SAIT_WOOCOMMERCE()->logger()->warning(
-							'No se obtuvo la unidad del articulo para el pedido.',
-							array(
-								'order_id' => $order->get_id(),
-								'sku'      => $art->numart,
-								'attempt'  => $intentos,
-							)
-						);
-					}
-					$art->unidad = isset($api_result["unidad"]) ? $api_result["unidad"] : "";
-					$art->preciopub =  (float)$product->get_regular_price();
-					$art->precio = (float)$product->get_regular_price();
-					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
-					$pedido->items[] = $art;
-			}
-		self::SAIT_applyCustomer($pedido, $order);
-
-		if ($FuncionPersonalizadaPedido_activo) {
-			$pedido = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($pedido,$order);
-		}
-
-		//$api_response =json_decode( wp_remote_retrieve_body( SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos?dryrun=true",$pedido,true)) );
-		//if   ($api_response->result=="OK"){
-			// Enviar pedido sin esperar respuesta
-			//SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,false);
-		//}	
-			return SAIT_UTILS::SAIT_PostNube("/api/v3/pedidos",$pedido,$wait);
+		return SAIT_UTILS::SAIT_PostNube('/api/v3/pedidos', $pedido, $wait);
 	}
 
 	/**
@@ -132,95 +59,18 @@
 	 * del documento y realiza POST a /api/v3/cotizaciones.
 	 */
 public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
-    // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
+	$options = SAIT_WOOCOMMERCE()->settings()->all();
+	$builder = new SAIT_WOOCOMMERCE_QuoteBuilder($options);
+	$cotizacion = $builder->build(
+		$order,
+		$formapago,
+		self::SAIT_resolveItemUnits($order, 'Q'),
+		SAIT_WOOCOMMERCE()->customer_resolver()->resolve($order)
+	);
+	$cotizacion = self::SAIT_customizeDocument($cotizacion, $order, $options);
 
-		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
-			$cotizacion = new stdClass();
-			$cotizacion->numdoc = SAIT_SERIE.strval($order->get_id());
-			$date =	$order->get_date_created();
-			$cotizacion->fecha = $date->date_i18n();
-			$cotizacion->hora = date('H:i:s',$date->getTimestamp());
-			$cotizacion->numcli = "";
-			$cotizacion->numcliev = "";
-			$cotizacion->numalm =  str_pad(SAIT_NUBE_NUMALM,2, " ", STR_PAD_LEFT);
-			// Si tiene NumAlm configurado usar ese.
-			$NumAlm = $SAIT_options['SAITNube_NumAlm'];
-			if (isset($NumAlm) && !is_null($NumAlm)) {
-				$cotizacion->numalm =  str_pad($NumAlm,2, " ", STR_PAD_LEFT);
-			}
-			$cotizacion->formapago = $formapago;
-			$cotizacion->divisa = "P";
-			$cotizacion->tc = 1;
-			$cotizacion->items = [];
-			$cotizacion->fentrega = date("Ymd"); // 20251113
-			$cotizacion->hentrega = date("H:i"); // 15:27
-		
-		$Obs_activo = isset($SAIT_options['SAITNube_PedidoObs_enabled']) && $SAIT_options['SAITNube_PedidoObs_enabled'] === '1';
-		$Direnvio_activo = isset($SAIT_options['SAITNube_PedidoDirenvio_enabled']) && $SAIT_options['SAITNube_PedidoDirenvio_enabled'] === '1';
-		$FuncionPersonalizadaPedido_activo = isset($SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled']) && $SAIT_options['SAITNube_FuncionPersonalizadaPedido_enabled'] === '1';
-		if ($Obs_activo) {
-			$cotizacion->obs = trim($order->get_customer_note());
-		}
-		if ($Direnvio_activo) {
-			$cotizacion->direnvio = self::SAIT_getDirEnvio($order);
-		}
-
-		SAIT_WOOCOMMERCE()->logger()->info(
-			'Preparando cotizacion para SAIT.',
-			array(
-				'order_id'      => $order->get_id(),
-				'document_type' => 'Q',
-				'item_count'    => count($order->get_items()),
-			)
-		);
-
-
-		foreach ( $order->get_items() as $item_id => $item ) {
-				$art = new stdClass();
-				$art->cant = $item->get_quantity();
-				$product = $item->get_product();
-				$art->numart = $product->get_sku();
-				$art->preciopub =  (float)$product->get_regular_price();
-				$api_response = null;
-				$api_result = null;
-				$intentos = 0;
-				$max_intentos = 3;
-				while (!isset($api_result["unidad"]) && $intentos < $max_intentos) {
-						if ($intentos > 0) {
-								usleep($intentos * 500000); // 0.5s, 1s, 1.5s
-						}
-						$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
-						$api_result = SAIT_UTILS::SAIT_getResult($api_response);
-						$intentos++;
-				}
-				if (!isset($api_result['unidad'])) {
-					SAIT_WOOCOMMERCE()->logger()->warning(
-						'No se obtuvo la unidad del articulo para la cotizacion.',
-						array(
-							'order_id' => $order->get_id(),
-							'sku'      => $art->numart,
-							'attempt'  => $intentos,
-						)
-					);
-				}
-				$art->unidad = isset($api_result["unidad"]) ? $api_result["unidad"] : "";
-				$art->precio = (float)$product->get_regular_price();
-				$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
-				$cotizacion->items[] = $art;
-		}
-	self::SAIT_applyCustomer($cotizacion, $order);
-
-	if ($FuncionPersonalizadaPedido_activo) {
-		$cotizacion = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($cotizacion,$order);
+	return SAIT_UTILS::SAIT_PostNube('/api/v3/cotizaciones', $cotizacion, $wait);
 	}
-
-	//$api_response =json_decode( wp_remote_retrieve_body( SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones?dryrun=true",$cotizacion,true)) );
-	//if   ($api_response->result=="OK"){
-		// Enviar cotizacion sin esperar respuesta
-		//SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,false);
-	//}	
-		return SAIT_UTILS::SAIT_PostNube("/api/v3/cotizaciones",$cotizacion,$wait);
-}
 
 
 
@@ -392,23 +242,71 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 	}
 
 	public static function SAIT_calcularPjeDescuentoItem($cantidad,$total,$precio){
-		return round((($precio-($total/$cantidad))/$precio)*100,2);
+		return SAIT_WOOCOMMERCE_DocumentBuilder::discount_percentage($cantidad, $total, $precio);
 	}
 
 	/**
-	 * Aplica al documento una sola representacion de cliente SAIT.
+	 * Consulta las unidades requeridas antes de construir el documento.
 	 *
-	 * @param object   $document Documento en construccion.
 	 * @param WC_Order $order Orden WooCommerce.
-	 * @return void
+	 * @param string   $document_type P para pedido, Q para cotizacion.
+	 * @return array<int|string,string>
 	 */
-	private static function SAIT_applyCustomer($document, $order){
-		$customer = SAIT_WOOCOMMERCE()->customer_resolver()->resolve($order);
-		$document->numcli = $customer['numcli'];
-		$document->numcliev = $customer['numcliev'];
-		if ($customer['clievent'] !== null) {
-			$document->clievent = $customer['clievent'];
+	private static function SAIT_resolveItemUnits($order, $document_type){
+		$units = array();
+		SAIT_WOOCOMMERCE()->logger()->info(
+			$document_type === 'P' ? 'Preparando pedido para SAIT.' : 'Preparando cotizacion para SAIT.',
+			array(
+				'order_id'      => $order->get_id(),
+				'document_type' => $document_type,
+				'item_count'    => count($order->get_items()),
+			)
+		);
+
+		foreach ($order->get_items() as $item_id => $item) {
+			$product = $item->get_product();
+			$sku = $product->get_sku();
+			$result = null;
+			$attempts = 0;
+			while (!isset($result['unidad']) && $attempts < 3) {
+				if ($attempts > 0) {
+					usleep($attempts * 500000);
+				}
+				$response = SAIT_UTILS::SAIT_GetNube('/api/v3/articulos/' . $sku, false);
+				$result = SAIT_UTILS::SAIT_getResult($response);
+				$attempts++;
+			}
+
+			if (!isset($result['unidad'])) {
+				SAIT_WOOCOMMERCE()->logger()->warning(
+					'No se obtuvo la unidad del articulo para el documento.',
+					array(
+						'order_id'      => $order->get_id(),
+						'sku'           => $sku,
+						'attempt'       => $attempts,
+						'document_type' => $document_type,
+					)
+				);
+			}
+
+			$units[$item_id] = isset($result['unidad']) ? $result['unidad'] : '';
 		}
+
+		return $units;
+	}
+
+	/**
+	 * Conserva la personalizacion legacy mientras se extraen los builders.
+	 *
+	 * @return object
+	 */
+	private static function SAIT_customizeDocument($document, $order, $options){
+		$enabled = isset($options['SAITNube_FuncionPersonalizadaPedido_enabled'])
+			&& $options['SAITNube_FuncionPersonalizadaPedido_enabled'] === '1';
+
+		return $enabled
+			? SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($document, $order)
+			: $document;
 	}
 	 
 
@@ -419,38 +317,7 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
  * @return string Direccion en mayusculas con campos separados por ^.
  */
 public static function SAIT_getDirEnvio($order) {
-    // Tomamos datos de shipping, y si no hay, usamos billing
-    $address_1 = trim($order->get_shipping_address_1());
-    $address_2 = trim($order->get_shipping_address_2());
-    $city      = trim($order->get_shipping_city());
-    $state     = trim($order->get_shipping_state());
-    $postcode  = trim($order->get_shipping_postcode());
-    $phone     = trim($order->get_billing_phone());
-
-    if (empty($address_1)) $address_1 = trim($order->get_billing_address_1());
-    if (empty($address_2)) $address_2 = trim($order->get_billing_address_2());
-    if (empty($city))      $city      = trim($order->get_billing_city());
-    if (empty($state))     $state     = trim($order->get_billing_state());
-    if (empty($postcode))  $postcode  = trim($order->get_billing_postcode());
-
-    // Validaciones mínimas
-    if (empty($address_1)) $address_1 = "SIN CALLE";
-    if (empty($address_2)) $address_2 = "SN"; // Número exterior
-    if (empty($city))      $city      = "SIN CIUDAD";
-    if (empty($state))     $state     = "SIN ESTADO";
-    if (empty($postcode))  $postcode  = "00000";
-    if (empty($phone))     $phone     = "SIN TELEFONO";
-
-    // Construir en el orden correcto
-    $dir = "1^WEB^".$address_1 . "^"   // CALLE
-         . $address_2 . "^"   // NUMEXT
-         . "^"    
-         . $city . "^"
-         . $state . "^"
-         . $postcode . "^"
-         . $phone;
-
-    return strtoupper($dir);
+	return SAIT_WOOCOMMERCE_DocumentBuilder::shipping_address($order);
 }
 
 }

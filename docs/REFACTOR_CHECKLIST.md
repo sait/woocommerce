@@ -351,10 +351,10 @@ no se consulta `/clienteseventuales`.
 
 ### Construcción de documentos
 
-- [ ] Crear builders puros para pedido y cotización.
-- [ ] Compartir construcción de artículos, dirección, observaciones y cliente.
+- [x] Crear builders puros para pedido y cotización.
+- [x] Compartir construcción de artículos, dirección, observaciones y cliente.
 - [ ] Separar construcción del payload y envío HTTP.
-- [ ] Comparar payloads con los fixtures de la etapa 0.
+- [x] Comparar payloads con los fixtures de la etapa 0.
 - [ ] Exponer filtros documentados para personalizaciones.
 
 ### Commits

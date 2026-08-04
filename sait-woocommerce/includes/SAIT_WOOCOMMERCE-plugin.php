@@ -229,6 +229,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-sait-client.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-mapping-repository.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-customer-resolver.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-document-builders.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';

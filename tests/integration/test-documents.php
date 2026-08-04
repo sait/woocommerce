@@ -161,6 +161,21 @@ SAIT_UTILS::SAIT_insertClaves('arts', 'FIX-ART-001', $product_id);
 $mapped_user_id = wc_create_new_customer('mapeado.documento@example.test');
 SAIT_UTILS::SAIT_insertClaves('clientes', '123', $mapped_user_id);
 $mapped_order = sait_document_create_order($product, 'mapeado.documento@example.test', $mapped_user_id);
+
+delete_option('sait_test_request_counts');
+$builder_customer = array('numcli' => '  123', 'numcliev' => '', 'clievent' => null);
+$mapped_items = $mapped_order->get_items();
+$order_builder = new SAIT_WOOCOMMERCE_OrderBuilder($options, 1763051220);
+$built_order = json_decode(wp_json_encode($order_builder->build(
+	$mapped_order,
+	'1',
+	array(key($mapped_items) => 'PZA'),
+	$builder_customer
+)), true);
+sait_document_assert_same('20251113', $built_order['fentrega'], 'Fecha determinista del builder.');
+sait_document_assert_same('PZA', $built_order['items'][0]['unidad'], 'Unidad recibida por el builder.');
+sait_document_assert_same(array(), get_option('sait_test_request_counts', array()), 'El builder no debe hacer HTTP.');
+
 $mapped_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($mapped_order, '1', true);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($mapped_response), 'HTTP pedido mapeado.');
 $mapped_request = sait_document_last_request();
