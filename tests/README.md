@@ -98,9 +98,9 @@ controladores:
 sh tests/test-rest.sh
 ```
 
-La prueba conserva como linea base que los endpoints de reenvio son publicos.
-La restriccion de permisos se hara posteriormente en un commit de seguridad,
-con expectativas nuevas y sin ocultarla dentro del refactor mecanico.
+El webhook permanece publico a nivel WordPress y valida el token externo. Los
+dos endpoints de reenvio requieren autenticacion y la capacidad
+`edit_shop_orders`; las pruebas cubren 400, 401, 403, 404 y un reenvio exitoso.
 
 ## Caracterizacion De Documentos
 

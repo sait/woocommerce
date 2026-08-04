@@ -31,7 +31,8 @@ Clase `SAIT_WOOCOMMERCE_REST_Controller`.
 Responsabilidades:
 
 - Registra las rutas del namespace historico `saitplugin/v1`.
-- Conserva los metodos y permisos publicos de 1.2.3.
+- Conserva los metodos de 1.2.3; el webhook es publico y los reenvios requieren
+  la capacidad `edit_shop_orders`.
 - Valida el token y parsea el XML del webhook sin cambiar su contrato.
 - Delega eventos al procesador y reenvios a la clase de pedidos.
 

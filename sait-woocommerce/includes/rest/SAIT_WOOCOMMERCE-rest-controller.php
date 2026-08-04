@@ -46,7 +46,8 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array($this, 'resend_order'),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array($this, 'resend_order_permissions_check'),
+				'args'                => $this->get_resend_order_args(),
 			)
 		);
 
@@ -56,9 +57,64 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array($this, 'resend_order'),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array($this, 'resend_order_permissions_check'),
+				'args'                => $this->get_resend_order_args(),
 			)
 		);
+	}
+
+	/**
+	 * Define el esquema compartido por las rutas de reenvio.
+	 *
+	 * @return array
+	 */
+	private function get_resend_order_args()
+	{
+		return array(
+			'idpedido' => array(
+				'description' => 'ID de la orden WooCommerce que se reenviara a SAIT.',
+				'type'        => 'integer',
+				'minimum'     => 1,
+				'required'    => true,
+			),
+		);
+	}
+
+	/**
+	 * Restringe el reenvio a usuarios que administran ordenes WooCommerce.
+	 *
+	 * @param WP_REST_Request $request Peticion REST.
+	 * @return true|WP_Error
+	 */
+	public function resend_order_permissions_check($request)
+	{
+		if (!is_user_logged_in()) {
+			return new WP_Error(
+				'rest_not_logged_in',
+				'Autenticacion requerida para reenviar pedidos.',
+				array('status' => 401)
+			);
+		}
+
+		if (!current_user_can('edit_shop_orders')) {
+			return new WP_Error(
+				'rest_forbidden',
+				'No tienes permisos para reenviar este pedido.',
+				array('status' => 403)
+			);
+		}
+
+		$order_id = absint($request['idpedido']);
+		$order = $order_id ? wc_get_order($order_id) : false;
+		if ($order && !current_user_can('edit_shop_order', $order_id)) {
+			return new WP_Error(
+				'rest_forbidden_order',
+				'No tienes permisos para editar este pedido.',
+				array('status' => 403)
+			);
+		}
+
+		return true;
 	}
 
 	/**
@@ -86,7 +142,7 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 		$access_token = $request->get_header('x-AccessToken');
 		$sait_options = get_option('opciones_sait');
 		$sait_access_token = $sait_options['SAITNube_AccessToken'];
-		if ($access_token != $sait_access_token) {
+		if (!hash_equals((string) $sait_access_token, (string) $access_token)) {
 			$response = new WP_REST_Response();
 			$response->set_status(401);
 			$response->set_data('Bad token');

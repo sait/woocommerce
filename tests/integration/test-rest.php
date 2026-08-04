@@ -45,18 +45,28 @@ wp_set_current_user(0);
 
 $server = rest_get_server();
 $routes = $server->get_routes();
-$patterns = array(
+$public_patterns = array(
 	'/saitplugin/v1/hello' => 'GET',
 	'/saitplugin/v1/saitevents' => 'POST',
-	'/saitplugin/v1/reenviar-pedido-sait/(?P<idpedido>\d+)' => 'POST',
-	'/saitplugin/v1/testpedido/(?P<idpedido>\d+)' => 'GET',
 );
 
-foreach ($patterns as $pattern => $method) {
+foreach ($public_patterns as $pattern => $method) {
 	sait_rest_assert_true(isset($routes[$pattern]), 'Falta la ruta REST ' . $pattern);
 	$endpoint = $routes[$pattern][0];
 	sait_rest_assert_true(!empty($endpoint['methods'][$method]), 'Metodo incorrecto para ' . $pattern);
 	sait_rest_assert_same('__return_true', $endpoint['permission_callback'], 'Permiso publico actual de ' . $pattern);
+}
+
+$protected_patterns = array(
+	'/saitplugin/v1/reenviar-pedido-sait/(?P<idpedido>\d+)' => 'POST',
+	'/saitplugin/v1/testpedido/(?P<idpedido>\d+)' => 'GET',
+);
+foreach ($protected_patterns as $pattern => $method) {
+	sait_rest_assert_true(isset($routes[$pattern]), 'Falta la ruta REST ' . $pattern);
+	$endpoint = $routes[$pattern][0];
+	sait_rest_assert_true(!empty($endpoint['methods'][$method]), 'Metodo incorrecto para ' . $pattern);
+	sait_rest_assert_true(is_callable($endpoint['permission_callback']), 'Falta callback de permisos en ' . $pattern);
+	sait_rest_assert_true(isset($endpoint['args']['idpedido']), 'Falta esquema idpedido en ' . $pattern);
 }
 
 $namespaces = $server->get_namespaces();
@@ -87,6 +97,27 @@ sait_rest_assert_same('OK', $unknown_event->get_data(), 'Respuesta de evento des
 $event_wrong_method = sait_rest_request('GET', '/saitplugin/v1/saitevents');
 sait_rest_assert_same(404, $event_wrong_method->get_status(), 'GET no permitido en saitevents.');
 
+$resend_anonymous = sait_rest_request('POST', '/saitplugin/v1/reenviar-pedido-sait/999999999');
+sait_rest_assert_same(401, $resend_anonymous->get_status(), 'Reenvio anonimo.');
+
+$subscriber_id = username_exists('sait_rest_subscriber');
+if (!$subscriber_id) {
+	$subscriber_id = wp_create_user('sait_rest_subscriber', 'fixture-password', 'rest.subscriber@example.test');
+}
+$subscriber = get_user_by('id', $subscriber_id);
+$subscriber->set_role('subscriber');
+wp_set_current_user($subscriber_id);
+$resend_forbidden = sait_rest_request('POST', '/saitplugin/v1/reenviar-pedido-sait/999999999');
+sait_rest_assert_same(403, $resend_forbidden->get_status(), 'Reenvio sin capacidad.');
+
+$admin_id = username_exists('sait_rest_admin');
+if (!$admin_id) {
+	$admin_id = wp_create_user('sait_rest_admin', 'fixture-password', 'rest.admin@example.test');
+}
+$admin = get_user_by('id', $admin_id);
+$admin->set_role('administrator');
+wp_set_current_user($admin_id);
+
 $resend = sait_rest_request('POST', '/saitplugin/v1/reenviar-pedido-sait/999999999');
 sait_rest_assert_same(404, $resend->get_status(), 'Orden inexistente en reenvio POST.');
 sait_rest_assert_same('Pedido no existe', $resend->get_data(), 'Mensaje de orden inexistente.');
@@ -98,7 +129,20 @@ sait_rest_assert_same('Pedido no existe', $legacy->get_data(), 'Mensaje del alia
 $invalid_id = sait_rest_request('POST', '/saitplugin/v1/reenviar-pedido-sait/no-numerico');
 sait_rest_assert_same(404, $invalid_id->get_status(), 'ID no numerico no coincide con la ruta.');
 
+$zero_id = sait_rest_request('POST', '/saitplugin/v1/reenviar-pedido-sait/0');
+sait_rest_assert_same(400, $zero_id->get_status(), 'ID cero no cumple el esquema.');
+
+$order = wc_create_order();
+$order->set_billing_first_name('REST');
+$order->set_billing_last_name('Fixture');
+$order->set_billing_email('rest.order@example.test');
+$order->save();
+$success = sait_rest_request('POST', '/saitplugin/v1/reenviar-pedido-sait/' . $order->get_id());
+sait_rest_assert_same(201, $success->get_status(), 'Reenvio autorizado.');
+sait_rest_assert_same('enviado', $success->get_data()['estado'], 'Estado del reenvio autorizado.');
+$order->delete(true);
+
 $options_response = sait_rest_request('OPTIONS', '/saitplugin/v1/reenviar-pedido-sait/1');
 sait_rest_assert_same(200, $options_response->get_status(), 'OPTIONS de reenvio.');
 
-echo "Contrato REST actual caracterizado correctamente.\n";
+echo "Contrato REST seguro validado correctamente.\n";

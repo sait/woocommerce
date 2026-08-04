@@ -175,18 +175,18 @@ Objetivo: estabilizar y proteger el contrato de entrada.
 - [x] Crear controladores REST separados del archivo principal.
 - [x] Conservar temporalmente el namespace `saitplugin/v1`.
 - [x] Usar constantes `WP_REST_Server` para los métodos.
-- [ ] Declarar `args` para IDs y otros parámetros.
-- [ ] Validar y sanitizar mediante el objeto `WP_REST_Request`.
+- [x] Declarar `args` para IDs y otros parámetros.
+- [x] Validar y sanitizar mediante el objeto `WP_REST_Request`.
 - [ ] Normalizar éxitos con `rest_ensure_response()` o `WP_REST_Response`.
 - [ ] Normalizar fallos reales con `WP_Error` y estado explícito.
-- [ ] Mantener `POST /saitevents` público a nivel WordPress únicamente porque
+- [x] Mantener `POST /saitevents` público a nivel WordPress únicamente porque
   utiliza token externo, pero comparar el token de forma segura.
-- [ ] Proteger `POST /reenviar-pedido-sait/{idpedido}` con autenticación,
+- [x] Proteger `POST /reenviar-pedido-sait/{idpedido}` con autenticación,
   capacidad y autorización sobre la orden.
-- [ ] Conservar `/testpedido/{idpedido}` sólo como alias de transición o
-  desactivarlo fuera de desarrollo.
-- [ ] Agregar pruebas para 400, 401, 403, 404 y casos exitosos.
-- [ ] Verificar `OPTIONS` y descubrimiento de rutas.
+- [x] Conservar `/testpedido/{idpedido}` como alias de transicion protegido por
+  los mismos permisos.
+- [x] Agregar pruebas para 400, 401, 403, 404 y casos exitosos.
+- [x] Verificar `OPTIONS` y descubrimiento de rutas.
 
 ### Commit 2.1
 
