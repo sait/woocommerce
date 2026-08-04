@@ -61,11 +61,27 @@ Las llamadas no contempladas al host simulado devuelven `WP_Error`. Los POST a
 pedidos y cotizaciones responden HTTP `201` y guardan el request en la opcion
 `sait_test_last_request` para poder caracterizar el payload.
 
+El mismo MU-plugin intercepta `wp_mail()` para que las pruebas de clientes no
+intenten entregar correos.
+
 La simulacion se verifica con:
 
 ```sh
 sh tests/test-api-mock.sh
 ```
+
+## Caracterizacion De Eventos XML
+
+Los eventos se envian a la ruta REST real del plugin, pero todas sus consultas
+a SAIT se resuelven mediante los fixtures locales:
+
+```sh
+sh tests/test-events.sh
+```
+
+La prueba usa exclusivamente SKUs, terminos y correos con sufijo `Fixture` o
+dominio `example.test`. Al comenzar elimina los datos de una ejecucion previa
+para que pueda repetirse sobre el volumen Docker.
 
 ## Lint PHP
 

@@ -136,10 +136,13 @@ Objetivo: detectar cambios de comportamiento antes de mover código.
   - [ ] Selección de almacenes.
   - [ ] Cálculo de precios e impuestos.
   - [ ] Resolución de cliente normal/eventual/nuevo.
+- [ ] Decidir en un cambio funcional separado si las existencias fraccionarias
+  deben conservar decimales; WooCommerce 9.3.3 guarda actualmente `7.500` como
+  `7` y `9.75` como `9` con la configuracion base.
 - [ ] Agregar pruebas de integración WordPress/WooCommerce para:
   - [x] Activación y creación de tabla.
   - [x] Registro de endpoints.
-  - [ ] Procesamiento de fixtures XML.
+  - [x] Procesamiento de fixtures XML.
   - [ ] Construcción de payloads de pedidos y cotizaciones.
 - [x] Preparar dobles de prueba para evitar llamadas reales a SAIT.
 - [x] Probar que el plugin se carga sin avisos ni errores fatales.

@@ -37,6 +37,7 @@ services:
       - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
       - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
       - ./fixtures:/var/www/html/wp-content/sait-test-fixtures:ro
+      - ./integration:/var/www/html/wp-content/sait-test-integration:ro
     networks:
       - sait_test
 
@@ -62,6 +63,7 @@ services:
       - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
       - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
       - ./fixtures:/var/www/html/wp-content/sait-test-fixtures:ro
+      - ./integration:/var/www/html/wp-content/sait-test-integration:ro
     networks:
       - sait_test
 

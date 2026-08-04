@@ -8,6 +8,9 @@ if (getenv('SAIT_TEST_API_MOCK') !== '1') {
 	return;
 }
 
+// Evita que las pruebas de clientes intenten entregar correos reales.
+add_filter('pre_wp_mail', '__return_true');
+
 /**
  * Construye una respuesta compatible con la WordPress HTTP API.
  *

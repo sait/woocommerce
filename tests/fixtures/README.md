@@ -20,8 +20,9 @@ con distintas precondiciones.
 | Lista configurada | `events/actprecio.xml` | Lista `1` y respuesta `articulo_pesos`. | Precio `116.00` con impuestos. |
 | Articulo en dolares | `events/actprecio.xml` | TC `18.50` y respuesta `articulo_dolares`. | Precio convertido desde el XML. |
 | Precio por volumen | `events/actprecio-volume-only.xml` | Producto local resoluble. | `IGNORADO (ppubv*)`; comportamiento actual. |
-| Existencia unica | `events/actexist.xml` | Almacen configurado `1`. | Stock `7.500`. |
-| Existencia multiple | `events/actexist.xml` | Multi-almacen `1,2`. | Suma respuesta `existencias`. |
+| Existencia unica | `events/actexist.xml` | Almacen configurado `1`. | WooCommerce guarda `7`; trunca `7.500` actualmente. |
+| Existencia multiple | `events/actexist.xml` | Multi-almacen `1,2`. | Suma `9.75`, pero WooCommerce guarda `9` actualmente. |
+| Existencia global | `events/actexisgbl.xml` | Sin almacen base configurado. | Guarda `13`; trunca `13.500` actualmente. |
 | Tipo de cambio | `events/acttc.xml` | TC distinto de `18.50`. | Guarda TC y recalcula articulos en dolares. |
 | Alta de cliente | `events/modcli.xml` | Sin usuario ni mapeo. | `Cli ADD`. |
 | Actualizacion | `events/modcli.xml` | Mapeo con otro correo. | `Cliente actualizado`. |
@@ -38,4 +39,3 @@ codigo actual construye. Las fechas son valores deterministas de ejemplo.
 `expected/document-eventual-existing-target.json` define la regresion que debe
 pasar al recuperar clientes eventuales: si el correo ya existe en SAIT, se
 debe enviar `numcliev` y no volver a enviar `clievent`. Actualmente falla.
-
