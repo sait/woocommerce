@@ -18,6 +18,7 @@ wp() {
 
 cleanup() {
 	compose down -v --remove-orphans >/dev/null 2>&1 || true
+	rm -f "$legacy_zip_host"
 }
 trap cleanup EXIT HUP INT TERM
 

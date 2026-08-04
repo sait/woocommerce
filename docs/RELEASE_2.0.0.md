@@ -37,6 +37,17 @@ Los volúmenes temporales usados por esa prueba tienen el prefijo
 `sait_woocommerce_release_` y se eliminan al terminar. El entorno habitual de
 `tests/docker-compose.yml` no se modifica.
 
+Validación local ejecutada el 4 de agosto de 2026:
+
+- PHPStan sin errores sobre 47 archivos y sin baseline.
+- Suite Docker completa correcta con API simulada.
+- Declaración HPOS reconocida por WooCommerce.
+- Actualización 1.2.3 → 2.0.0 conservando `opciones_sait` y `sait_claves`.
+- Instalación limpia del ZIP 2.0.0 correcta.
+- Estructura y checksums de ambos ZIP correctos.
+
+Esto no marca como realizadas las pruebas sobre una copia real de staging.
+
 ## Previo A Producción
 
 Estos pasos requieren una copia de staging con datos reales y no se sustituyen

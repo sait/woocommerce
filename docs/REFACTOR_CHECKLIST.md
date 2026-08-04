@@ -571,7 +571,8 @@ independiente `1.0.0`.
 - [x] Ejecutar PHP lint, pruebas y PHPStan.
 - [ ] Instalar desde cero en staging.
 - [ ] Actualizar una copia real de una instalación anterior en staging.
-- [ ] Confirmar conservación de `opciones_sait` y `sait_claves`.
+- [x] Confirmar conservación de `opciones_sait` y `sait_claves` en una
+  actualización Docker aislada desde 1.2.3.
 - [x] Probar todos los fixtures XML en la suite local simulada.
 - [x] Probar pedido pagado, sin pago y cotización con API simulada.
 - [x] Probar cliente normal, eventual y nuevo con API simulada.
@@ -581,8 +582,8 @@ independiente `1.0.0`.
 - [x] Probar promociones, sucursal y mínimo de carrito.
 - [x] Revisar logs para confirmar que no contienen secretos.
 - [x] Actualizar documentación, changelog y versión.
-- [ ] Crear el ZIP desde un árbol limpio.
-- [ ] Inspeccionar que el ZIP no incluya tests, `.git`, `.codex` ni copias
+- [x] Crear los ZIP del núcleo 2.0.0 y Papelía 1.0.0 desde un árbol limpio.
+- [x] Inspeccionar que los ZIP no incluyan tests, `.git`, `.codex` ni copias
   históricas.
 - [ ] Respaldar base de datos y plugin antes de producción.
 - [x] Definir plan de rollback en `docs/RELEASE_2.0.0.md`.
