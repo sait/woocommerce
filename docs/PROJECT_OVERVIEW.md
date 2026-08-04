@@ -11,9 +11,10 @@ El plugin vive en `sait-woocommerce/`.
 - `SAIT_WOOCOMMERCE.php` es el punto de entrada del plugin.
 - `includes/SAIT_WOOCOMMERCE-process-events.php` procesa eventos XML enviados por SAIT.
 - `includes/SAIT_WOOCOMMERCE-orders.php` transforma ordenes de WooCommerce en documentos SAIT.
-- `includes/SAIT_UTILS.php` concentra utilidades compartidas, llamadas a SAITNube, tabla de claves, existencias y parte de UI frontend.
+- `includes/SAIT_UTILS.php` conserva utilidades compartidas y adaptadores de integración con SAITNube.
 - `includes/SAIT_WOOCOMMERCE-options.php` define la pagina de configuracion.
-- `includes/SAIT_WOOCOMMERCE-cart.php` recalcula precios/promociones en carrito y bloquea checkout si no se cumple un minimo.
+- `includes/frontend/` separa selector de sucursal, promociones, existencias y mínimo de carrito.
+- `templates/` contiene la presentación PHP de los módulos frontend.
 - `assets/` contiene CSS/JS del modal de seleccion de sucursal.
 
 ## Integracion SAIT -> WooCommerce

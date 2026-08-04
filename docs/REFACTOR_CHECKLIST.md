@@ -470,9 +470,9 @@ Objetivo: retirar UI de `SAIT_UTILS.php` y reducir llamadas remotas en requests.
 
 ### Extracción
 
-- [ ] Crear módulos de selector de sucursal, promociones, existencias y mínimo.
-- [ ] Mover HTML a templates con escape tardío.
-- [ ] Cargar assets sólo cuando la función correspondiente esté habilitada.
+- [x] Crear módulos de selector de sucursal, promociones, existencias y mínimo.
+- [x] Mover HTML a templates con escape tardío.
+- [x] Cargar assets sólo cuando la función correspondiente esté habilitada.
 - [ ] Persistir sucursal de visitantes mediante sesión/cookie, no user ID `0`.
 
 ### Rendimiento

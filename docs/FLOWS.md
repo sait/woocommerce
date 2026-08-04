@@ -236,8 +236,10 @@ El AJAX tambien esta habilitado para usuarios no logueados, pero usa `get_curren
 
 ## Precios Promocionales Y Carrito
 
-`SAIT_WOOCOMMERCE-cart.php` recalcula precios en el hook `woocommerce_before_calculate_totals` si `SAITNube_Promo_enabled === "1"`.
+`SAIT_WOOCOMMERCE_Promotions` recalcula precios en el hook
+`woocommerce_before_calculate_totals` si `SAITNube_Promo_enabled === "1"`.
 
-`SAIT_UTILS.php` tambien cambia el HTML de precios en catalogo/producto si `SAITNube_PromoGlobal_enabled === "1"`.
+El mismo módulo cambia el HTML de precios en catálogo/producto si
+`SAITNube_PromoGlobal_enabled === "1"`.
 
 Ambas rutas consultan SAITNube para obtener unidad y calcular precios.

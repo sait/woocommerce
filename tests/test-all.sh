@@ -6,6 +6,7 @@ sh tests/test-client.sh
 sh tests/test-mappings.sh
 sh tests/test-logger.sh
 sh tests/test-settings.sh
+sh tests/test-frontend-modules.sh
 sh tests/test-product-calculators.sh
 sh tests/test-product-sync.sh
 sh tests/test-rest.sh

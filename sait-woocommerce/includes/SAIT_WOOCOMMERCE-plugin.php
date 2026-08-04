@@ -50,6 +50,18 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_Logger|null */
 	private $logger = null;
 
+	/** @var SAIT_WOOCOMMERCE_BranchSelector|null */
+	private $branch_selector = null;
+
+	/** @var SAIT_WOOCOMMERCE_StockDisplay|null */
+	private $stock_display = null;
+
+	/** @var SAIT_WOOCOMMERCE_Promotions|null */
+	private $promotions = null;
+
+	/** @var SAIT_WOOCOMMERCE_CartMinimum|null */
+	private $cart_minimum = null;
+
 	/**
 	 * @param string $plugin_file Archivo principal del plugin.
 	 */
@@ -243,6 +255,46 @@ class SAIT_WOOCOMMERCE_Plugin
 		return $this->logger;
 	}
 
+	/** @return SAIT_WOOCOMMERCE_BranchSelector */
+	public function branch_selector()
+	{
+		if ($this->branch_selector === null) {
+			$this->branch_selector = new SAIT_WOOCOMMERCE_BranchSelector($this->settings(), $this->plugin_file);
+		}
+
+		return $this->branch_selector;
+	}
+
+	/** @return SAIT_WOOCOMMERCE_StockDisplay */
+	public function stock_display()
+	{
+		if ($this->stock_display === null) {
+			$this->stock_display = new SAIT_WOOCOMMERCE_StockDisplay($this->settings(), $this->plugin_file);
+		}
+
+		return $this->stock_display;
+	}
+
+	/** @return SAIT_WOOCOMMERCE_Promotions */
+	public function promotions()
+	{
+		if ($this->promotions === null) {
+			$this->promotions = new SAIT_WOOCOMMERCE_Promotions($this->settings(), $this->plugin_file);
+		}
+
+		return $this->promotions;
+	}
+
+	/** @return SAIT_WOOCOMMERCE_CartMinimum */
+	public function cart_minimum()
+	{
+		if ($this->cart_minimum === null) {
+			$this->cart_minimum = new SAIT_WOOCOMMERCE_CartMinimum($this->settings(), $this->plugin_file);
+		}
+
+		return $this->cart_minimum;
+	}
+
 	/**
 	 * Registra las rutas REST.
 	 *
@@ -284,47 +336,7 @@ class SAIT_WOOCOMMERCE_Plugin
 	 */
 	public function enqueue_assets()
 	{
-		if (!$this->settings()->is_enabled('SAITNube_Sucursal_enabled') || is_admin()) {
-			return;
-		}
-
-		wp_enqueue_style(
-			'font-awesome',
-			'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-			array(),
-			'6.4.0'
-		);
-		wp_enqueue_style('modal-style', plugin_dir_url($this->plugin_file) . 'assets/css/modal.css');
-		wp_enqueue_script(
-			'sait-modal-script',
-			plugin_dir_url($this->plugin_file) . 'assets/js/modal.js',
-			array('jquery'),
-			'1.0',
-			true
-		);
-		wp_enqueue_script(
-			'sait-personalizado-script',
-			plugins_url('../assets/js/personalizado.js', $this->plugin_file),
-			array('jquery'),
-			'1.0',
-			true
-		);
-		wp_register_script(
-			'modal-script',
-			false,
-			array('sait-personalizado-script'),
-			'1.0',
-			true
-		);
-		wp_enqueue_script('modal-script');
-		wp_localize_script(
-			'sait-modal-script',
-			'sait_woocommerce_ajax',
-			array(
-				'ajax_url' => admin_url('admin-ajax.php'),
-				'nonce'    => wp_create_nonce('sait-woocommerce_nonce'),
-			)
-		);
+		$this->branch_selector()->enqueue_assets();
 	}
 
 	/**
@@ -353,9 +365,13 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-event-router.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
+		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-branch-selector.php';
+		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-stock-display.php';
+		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-promotions.php';
+		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-cart-minimum.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-frontend-compat.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-personalizado.php';
-		require_once $includes . 'SAIT_WOOCOMMERCE-cart.php';
 		require_once $includes . 'rest/SAIT_WOOCOMMERCE-rest-controller.php';
 
 		if (is_admin()) {
@@ -374,7 +390,10 @@ class SAIT_WOOCOMMERCE_Plugin
 		add_action('rest_api_init', array($this, 'register_rest_routes'));
 		add_action('woocommerce_payment_complete', array($this, 'send_order_payment'), 10, 2);
 		add_action('woocommerce_thankyou', array($this, 'send_order_thankyou'), 10, 2);
-		add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
+		$this->branch_selector()->register_hooks();
+		$this->stock_display()->register_hooks();
+		$this->promotions()->register_hooks();
+		$this->cart_minimum()->register_hooks();
 		add_action(
 			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
 			array($this->order_delivery_scheduler(), 'process'),

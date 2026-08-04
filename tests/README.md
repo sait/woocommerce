@@ -105,6 +105,13 @@ sh tests/test-logger.sh
 La prueba confirma que el contexto operativo permitido se conserva y que API
 keys, tokens, correos, nombres y payloads son descartados.
 
+La separación del frontend y el registro condicional de hooks/assets se
+validan con:
+
+```sh
+sh tests/test-frontend-modules.sh
+```
+
 Los calculos puros y el servicio compartido de productos se validan con:
 
 ```sh

@@ -119,14 +119,14 @@ Clase `SAIT_WOOCOMMERCE_Logger`.
 - Sustituye el volcado completo de partidas y los usos directos de
   `error_log()` observados.
 
-Funciones globales:
+Los nombres globales anteriores se conservan como adaptadores en
+`SAIT_WOOCOMMERCE-frontend-compat.php`. Los hooks apuntan a estos módulos:
 
-- `agregar_boton_al_menu($items, $args)`: agrega boton de sucursal al menu `primary`.
-- `agregar_modal_sucursal()`: imprime modal con sucursales desde SAITNube.
-- `guardar_sucursal()`: handler AJAX para guardar sucursal seleccionada.
-- `mostrar_tabla_almacenes()`: muestra existencias por sucursal en producto.
-- `ocultar_productos_sin_precio($query)`: filtra catalogo por `_price > 0`.
-- `sait_precio_promocional_en_producto($price_html, $product)`: reemplaza HTML de precio con precio promocional consultado a SAITNube.
+- `frontend/SAIT_WOOCOMMERCE-branch-selector.php`: menú, modal, AJAX y assets de sucursal.
+- `frontend/SAIT_WOOCOMMERCE-stock-display.php`: tabla de existencias y filtro `_price > 0`.
+- `frontend/SAIT_WOOCOMMERCE-promotions.php`: precios de catálogo, producto y carrito.
+- `frontend/SAIT_WOOCOMMERCE-cart-minimum.php`: aviso de mínimo y bloqueo visual de checkout.
+- `templates/`: modal, tabla, precio promocional y script del mínimo con escape tardío.
 
 ## `includes/SAIT_WOOCOMMERCE-process-events.php`
 
@@ -217,14 +217,11 @@ Responsabilidades:
 - Usa `SAIT_WOOCOMMERCE_Orders::SAIT_reenviarPedido()` para reutilizar el flujo manual existente.
 - Muestra aviso administrativo con el resultado del reenvio.
 
-## `includes/SAIT_WOOCOMMERCE-cart.php`
+## `includes/SAIT_WOOCOMMERCE-frontend-compat.php`
 
-Funciones:
-
-- `calcularpreciosCarrito($cart)`: consulta SAITNube y reemplaza precio de productos en carrito si hay promocion.
-- `display_discounted_price_in_cart($price, $cart_item, $cart_item_key)`: muestra precio con tachado del regular.
-- `sait_minimo_total_carrito()`: agrega error si subtotal no cumple minimo.
-- `sait_bloquear_botones_checkout()`: imprime JS para bloquear botones si subtotal no cumple minimo.
+Conserva las funciones históricas del selector, existencias, promociones y
+mínimo como adaptadores. El comportamiento y los hooks residen en las clases de
+`includes/frontend/`.
 
 ## `includes/SAIT_WOOCOMMERCE-options.php`
 

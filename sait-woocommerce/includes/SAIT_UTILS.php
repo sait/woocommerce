@@ -1,98 +1,74 @@
 <?php
 
 /**
- * 
- * @link       http://sait.mx
- * @since      1.0.3
+ * Utilidades compartidas de integración con SAIT.
  *
- * @package    SAIT_WOOCOMMERCE
- * @subpackage SAIT_WOOCOMMERCE/includes
+ * @since 1.0.3
  */
-
-/**
- *
- * En esta clase estan todas las funciones que se usaran constantemente
- * @since      1.0.3
- * @package    SAIT_WOOCOMMERCE
- * @subpackage SAIT_WOOCOMMERCE/includes
- * @author     Ali Moreno <ali@saitenlinea.com>
- */
-
- class SAIT_UTILS{
-	public static function SAIT_getClientebyemail($email){
+class SAIT_UTILS
+{
+	public static function SAIT_getClientebyemail($email)
+	{
 		if (empty($email) || !is_string($email) || !is_email($email)) {
-				return "";
+			return '';
 		}
-		$api_response = self::SAIT_GetNube("/api/v3/clientes?emailtw=".urlencode($email));
+
+		$api_response = self::SAIT_GetNube('/api/v3/clientes?emailtw=' . urlencode($email));
 		$result = self::SAIT_getResult($api_response);
-		if (empty($result)){
-				return "";
+		if (empty($result)) {
+			return '';
 		}
-		return str_pad($result[0]["numcli"],5, " ", STR_PAD_LEFT);
+
+		return str_pad($result[0]['numcli'], 5, ' ', STR_PAD_LEFT);
 	}
 
-	public static function SAIT_getClienteEventualbyemail($email){
+	public static function SAIT_getClienteEventualbyemail($email)
+	{
 		$numcli = self::SAIT_getClientebyemail($email);
 
-		return strpos($numcli, '-') !== false ? $numcli : "";
+		return strpos($numcli, '-') !== false ? $numcli : '';
 	}
-
 
 	/**
 	 * Ejecuta una consulta GET contra la API configurada de SAIT Nube.
 	 *
-	 * @param string $uri Ruta relativa de la API, por ejemplo /api/v3/articulos/ABC.
-	 * @param bool   $reintentar Permite un segundo intento corto si falla el primero.
-	 * @return array|null JSON decodificado como arreglo asociativo, o null si no hay respuesta valida.
-	 *
-	 * Acciones que realiza: realiza una peticion HTTP bloqueante; sslverify permanece desactivado
-	 * por compatibilidad con instalaciones existentes.
+	 * @param string $uri Ruta relativa de la API.
+	 * @param bool   $reintentar Permite un segundo intento corto.
+	 * @return array|null
 	 */
-	public static function SAIT_GetNube($uri, $reintentar = true){
+	public static function SAIT_GetNube($uri, $reintentar = true)
+	{
 		return SAIT_WOOCOMMERCE()->sait_client()->get_legacy($uri, $reintentar);
 	}
 
 	/**
-	 * Extrae de forma segura el nodo result del contrato JSON de SAIT.
-	 *
-	 * @param array|null $response Respuesta decodificada de SAIT_GetNube().
-	 * @return mixed|null Valor de result, o null si la respuesta no contiene ese nodo.
+	 * @param array|null $response Respuesta decodificada.
+	 * @return mixed|null
 	 */
-	public static function SAIT_getResult($response){
+	public static function SAIT_getResult($response)
+	{
 		return is_array($response) && isset($response['result']) ? $response['result'] : null;
 	}
 
 	/**
-	 * Envia un payload JSON por POST a la API configurada de SAIT Nube.
-	 *
-	 * @param string $uri Ruta relativa de la API.
-	 * @param object|array $bodyObject Datos que se serializan como JSON.
-	 * @param bool $wait Si es true espera y devuelve la respuesta; si es false dispara en segundo plano.
-	 * @return array|WP_Error Respuesta de wp_remote_post() o error de WordPress.
-	 *
-	 * Acciones que realiza: realiza una peticion HTTP POST; sslverify permanece desactivado
-	 * por compatibilidad con instalaciones existentes.
+	 * @param string       $uri Ruta relativa de la API.
+	 * @param object|array $bodyObject Payload.
+	 * @param bool         $wait Esperar respuesta.
+	 * @return array|WP_Error
 	 */
-	public static function SAIT_PostNube($uri,$bodyObject, $wait = false){
+	public static function SAIT_PostNube($uri, $bodyObject, $wait = false)
+	{
 		return SAIT_WOOCOMMERCE()->sait_client()->post($uri, $bodyObject, $wait);
 	}
 
-
-	//
-	// Funciones Claves SAIT
-	// Tabla sait_claves creada en SAIT_WOOCOMMERCE-activator.php
-	//
 	/**
-	 * Busca una relacion entre claves SAIT y IDs de WordPress/WooCommerce.
-	 *
-	 * @param string $tabla Nombre logico de la relacion: arts, clientes, lineas, etc.
-	 * @param string|null $clave Clave proveniente de SAIT.
-	 * @param int|null $wcid ID de WordPress/WooCommerce.
-	 * @return object|null Fila de sait_claves o null si no hay criterios suficientes.
-	 *
-	 * Acciones que realiza: consulta la tabla personalizada {$wpdb->prefix}sait_claves.
+	 * @param string      $tabla Entidad lógica.
+	 * @param string|null $clave Clave SAIT.
+	 * @param int|null    $wcid ID WooCommerce.
+	 * @return object|null
 	 */
-	public static function SAIT_getClaves($tabla,$clave,$wcid){
+	public static function SAIT_getClaves($tabla, $clave, $wcid)
+	{
 		if ($clave !== null) {
 			$mapping = SAIT_WOOCOMMERCE()->mapping_repository()->find_by_sait_key($tabla, $clave);
 			if ($mapping || $wcid === null) {
@@ -106,449 +82,71 @@
 
 		return null;
 	}
-	public static function SAIT_insertClaves($tabla,$clave,$wcid){
+
+	public static function SAIT_insertClaves($tabla, $clave, $wcid)
+	{
 		return SAIT_WOOCOMMERCE()->mapping_repository()->add($tabla, $clave, $wcid);
 	}
 
-	public static function SAIT_deleteClaves($id){
+	public static function SAIT_deleteClaves($id)
+	{
 		return SAIT_WOOCOMMERCE()->mapping_repository()->delete($id);
 	}
 
-	public static function SAIT_response($code,$message){
-		$res = new WP_REST_Response();
-		$res->set_status($code);
-		$res->set_data($message);
-		return $res;
+	public static function SAIT_response($code, $message)
+	{
+		$response = new WP_REST_Response();
+		$response->set_status($code);
+		$response->set_data($message);
+
+		return $response;
 	}
 
-	public static function SAIT_codigo_valido($codigo) {
+	public static function SAIT_codigo_valido($codigo)
+	{
 		$codigo = trim($codigo);
-
-		// Debe contener solo dígitos
 		if (!preg_match('/^\d+$/', $codigo)) {
-		 return "";
+			return '';
 		}
-		// Longitudes válidas para GTIN/UPC/EAN/ISBN
-		$longitudes_validas = [8, 10, 12, 13, 14];
-		$len = strlen($codigo);
-		if (in_array($len, $longitudes_validas, true)) {
-			return $codigo;
-		}
-		return "";
+
+		return in_array(strlen($codigo), array(8, 10, 12, 13, 14), true) ? $codigo : '';
 	}
 
 	/**
 	 * Calcula la existencia disponible para un SKU usando la API SAIT.
 	 *
-	 * @param string $SKU SKU/numart del articulo.
-	 * @return float Existencia redondeada segun almacen unico o suma de almacenes permitidos.
-	 *
-	 * Acciones que realiza: consulta la API de existencias y lee opciones de almacen configuradas.
+	 * @param string $SKU SKU/numart del artículo.
+	 * @return float
 	 */
-	public static function getExistSAIT($SKU) {
+	public static function getExistSAIT($SKU)
+	{
 		$settings = SAIT_WOOCOMMERCE()->settings();
-
-		// Validación temprana para evitar procesamiento innecesario
 		if (!$settings->has_saved_options()) {
 			return 0;
 		}
 
-		$NumAlm = $settings->get('SAITNube_NumAlm', '');
-		$ExistAlm_activo = $settings->is_enabled('SAITNube_ExistAlm_enabled');
-
-		// Procesar almacenes a mostrar solo si está activo
-		$almacenes_a_mostrar = $ExistAlm_activo ? $settings->warehouses() : array();
-
-		// Consulta a la API
-		$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . trim($SKU));
-		$result = SAIT_UTILS::SAIT_getResult($respuesta);
-
-		// Validación rápida de respuesta
+		$default_warehouse = $settings->get('SAITNube_NumAlm', '');
+		$multiple_warehouses = $settings->is_enabled('SAITNube_ExistAlm_enabled');
+		$allowed_warehouses = $multiple_warehouses ? $settings->warehouses() : array();
+		$response = self::SAIT_GetNube('/api/v3/existencias/' . trim($SKU));
+		$result = self::SAIT_getResult($response);
 		if (empty($result)) {
 			return 0;
 		}
 
 		$quantity = 0;
+		foreach ($result as $warehouse) {
+			$warehouse_number = isset($warehouse['numalm']) ? $warehouse['numalm'] : '';
+			$stock = isset($warehouse['existencia']) ? (float) $warehouse['existencia'] : 0;
 
-		// Lógica optimizada para procesar almacenes
-		foreach ($result as $almacen) {
-			$almacenNum = $almacen['numalm'] ?? '';
-			$existencia = (float) ($almacen['existencia'] ?? 0);
-
-			if ($ExistAlm_activo) {
-				// Modo múltiples almacenes
-				if (in_array($almacenNum, $almacenes_a_mostrar)) {
-					$quantity += $existencia;
-				}
-			} else {
-				// Modo único almacén
-				if ($almacenNum == $NumAlm) {
-					$quantity = $existencia;
-					break; // Solo necesitamos uno, podemos salir del bucle
-				}
+			if ($multiple_warehouses && in_array($warehouse_number, $allowed_warehouses)) {
+				$quantity += $stock;
+			} elseif (!$multiple_warehouses && $warehouse_number == $default_warehouse) {
+				$quantity = $stock;
+				break;
 			}
 		}
-    
-    	return round($quantity, 2);
+
+		return round($quantity, 2);
 	}
-	 
- }
-
-// Agregar select de almacen al menu principal.
-function agregar_boton_al_menu($items, $args) {
-	$settings = SAIT_WOOCOMMERCE()->settings();
-	$Sucursal_activo = $settings->is_enabled('SAITNube_Sucursal_enabled');
-
-	if (!$Sucursal_activo) {
-		return $items;
-	}
-	// Solo para el menú principal 
-	if ($args->theme_location == 'primary' ) {
-			$numalm = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
-			$texto_boton = 'Seleccionar Sucursal'; // Texto por defecto
-			
-			// Si hay sucursal seleccionada, obtener su nombre
-			if (!empty($numalm)) {
-					$almacen_default = $settings->get('SAITNube_NumAlm', '');
-					$numalm = !empty($numalm) ? $numalm : $almacen_default;
-					
-					if (!empty($numalm)) {
-							$response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
-							$sucursales = SAIT_UTILS::SAIT_getResult($response) ?? [];
-							
-							foreach ($sucursales as $sucursal) {
-									if (trim($sucursal['numalm']) == $numalm) {
-											$texto_boton = $sucursal['nomalm'];
-											break;
-									}
-							}
-					}
-			}
-
-			// Agregar el botón al menú
-			$items .= '<li class="menu-item menu-item-sucursal">';
-			$items .= '<a href="#" id="sucursal-button" class="sait-sucursal-btn">';
-			$items .= '<i class="fa-solid fa-location-dot"></i> ';
-			$items .= esc_html($texto_boton);
-			$items .= '</a></li>';
-	}
-	return $items;
-}
-add_filter('wp_nav_menu_items', 'agregar_boton_al_menu', 10, 2);
-
-/* Agregar el modal al footer */
-function agregar_modal_sucursal() {
-	$Sucursal_activo = SAIT_WOOCOMMERCE()->settings()->is_enabled('SAITNube_Sucursal_enabled');
-
-	if (!$Sucursal_activo) {
-		return ;
-	}
-    $response = SAIT_UTILS::SAIT_GetNube("/api/v3/almacenes");
-    $sucursales = SAIT_UTILS::SAIT_getResult($response) ?? [];
-    ?>
-    <div id="sucursal-modal">
-        <div class="modal-content">
-            <h2 style="margin-top: 0; color: #2c3e50; text-align: center;">Selecciona tu Sucursal</h2>
-            <ul class="lista-sucursales">
-                <?php foreach ($sucursales as $item): ?>
-                    <li>
-                        <div class="sucursal-opcion" data-id="<?php echo esc_attr(trim($item['numalm'])); ?>">
-                            <strong><?php echo esc_html($item['nomalm']); ?></strong>
-                            <small>
-                                <?php echo esc_html($item['calle'] . ' ' . $item['numext']); ?><br>
-                                <?php echo esc_html($item['colonia'] . ', ' . $item['ciudad']); ?> <br>
-																<?php echo esc_html($item['estado'] . ', ' . $item['cp']); ?> <br>
-                            </small>
-                        </div>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-            <button id="cerrar-modal" class="button">Cerrar</button>
-        </div>
-    </div>
-    <?php
-}
-add_action('wp_footer', 'agregar_modal_sucursal');
-
-// Función para manejar la solicitud AJAX
-function guardar_sucursal() {
-check_ajax_referer('sait-woocommerce_nonce', 'nonce'); // Verificar nonce para seguridad
-
-if (isset($_POST['sucursal_id'])) {
-		$sucursal_id = intval($_POST['sucursal_id']);
-		
-		// Guardar en los metadatos del usuario (requiere que el usuario esté logueado)
-		update_user_meta(get_current_user_id(), 'sucursal_seleccionada', $sucursal_id);
-		// recuperarlo en alguna funcion
-		$sucursal_id = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
-
-		wp_send_json_success($sucursal_id);
-} else {
-		wp_send_json_error('Error al guardar la sucursal.');
-}
-wp_die();
-}
-
-add_action('wp_ajax_guardar_sucursal', 'guardar_sucursal');
-add_action('wp_ajax_nopriv_guardar_sucursal', 'guardar_sucursal');
-
-
-add_action('woocommerce_single_product_summary', 'mostrar_tabla_almacenes', 25);
-
-function mostrar_tabla_almacenes_prueba() {
-    echo '<p style="color: red;">Hook funcionando: tabla de almacenes aparecería aquí.</p>';
-}
-
-function mostrar_tabla_almacenes() {
-	$settings = SAIT_WOOCOMMERCE()->settings();
-	$ExistAlm_activo = $settings->is_enabled('SAITNube_ExistAlm_enabled');
-
-	if (!$ExistAlm_activo) {
-		return ;
-	}
-    global $product;
-    $numart = $product->get_sku();
-
-    $ruta_api = "/api/v3/existencias/" . trim($numart);
-
-	// Llamada a tu función que consulta la API
-	$respuesta = SAIT_UTILS::SAIT_GetNube($ruta_api);
-    $result = SAIT_UTILS::SAIT_getResult($respuesta);
-
-	if (empty($result)) {
-		echo '<p>No hay información de existencias (respuesta vacía o sin resultados).</p>';
-		return;
-	}
-
-	if (is_array($respuesta) && !empty($respuesta['error'])) {
-		echo '<p>Error en la respuesta de la API: ' . esc_html($respuesta['error']) . '</p>';
-		return;
-	}
-	$almacenes = $result;
-
-	echo '<h3>Existencias por sucursal</h3>';
-
-	echo '<style>
-	.tabla-almacenes {
-		width: auto;
-		border-collapse: collapse;
-		margin-top: 10px;
-	}
-	.tabla-almacenes th, .tabla-almacenes td {
-		border: 1px solid #ccc;
-		padding: 4px 8px;
-		text-align: left;
-	}
-	.tabla-almacenes th {
-		background-color: #f0f0f0;
-	}
-	</style>';
-
-	echo '<table class="tabla-almacenes">';
-	echo '<tr><th>Sucursal</th><th>Existencia</th></tr>';
-
-	$almacenes_a_mostrar = $settings->warehouses();
-
-	foreach ($almacenes as $almacen) {
-		if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
-			echo '<tr>';
-			echo '<td>' . esc_html(trim($almacen['nomalm'])) . '</td>';
-			echo '<td>' . esc_html(round($almacen['existencia'], 2)) . '</td>';
-			echo '</tr>';
-		}
-	}
-
-	echo '</table>';
-}
-
-add_action( 'woocommerce_product_query', 'ocultar_productos_sin_precio' );
-function ocultar_productos_sin_precio( $query ) {
-   
-		$OcultarSinPrecio = SAIT_WOOCOMMERCE()->settings()->is_enabled('SAITNube_OcultarSinPrecio_enabled');
-
-		if (!$OcultarSinPrecio) {
-			return ;
-		}
-	
-    // Solo front evitar Admin/REST
-    if ( is_admin() || ( defined('REST_REQUEST') && REST_REQUEST ) ) return;
-
-    // Aplicar solo al catálogo
-    if ( ! is_shop() && ! is_product_taxonomy() && ! is_search() ) return;
-
-    $meta_query = $query->get( 'meta_query' );
-
-    if ( ! $meta_query ) {
-        $meta_query = [];
-    }
-
-    // Precio mayor a 0
-    $meta_query[] = array(
-        'key' => '_price',
-        'value' => 0,
-        'compare' => '>',
-        'type' => 'NUMERIC'
-    );
-
-    $query->set( 'meta_query', $meta_query );
-}
-
-
-
-add_filter('woocommerce_get_price_html', 'sait_precio_promocional_en_producto', 30, 2);
-function sait_precio_promocional_en_producto($price_html, $product) {
-
-	$settings = SAIT_WOOCOMMERCE()->settings();
-	$Promo_activo = $settings->is_enabled('SAITNube_PromoGlobal_enabled');
-
-    if (!$Promo_activo) {
-        return $price_html;
-    }
-
-		if (is_admin()) {
-				return $price_html;
-		}
-	
-		// SKU
-		$numart = $product->get_sku();
-		if (!$numart) {
-				return $price_html;
-		}
-
-		// Cliente
-		$current_user = wp_get_current_user();
-		// CACHE Datos del cliente (media hora)
-		$current_user_id = get_current_user_id();
-		$cache_cli = 'sait_cli_' . $current_user_id;
-		$cli_cache = get_transient($cache_cli);
-
-		if ($cli_cache !== false) {
-			$numcli = $cli_cache;
-		} else {
-			$clave = SAIT_UTILS::SAIT_getClaves("clientes", null, $current_user_id);
-			$numcli = (isset($clave->clave))
-				? str_pad($clave->clave, 5, " ", STR_PAD_LEFT)
-				: ((!empty($current_user->user_email) && is_email($current_user->user_email))
-						? SAIT_UTILS::SAIT_getClientebyemail($current_user->user_email)
-						: "");
-
-			if (empty($numcli) || strpos($numcli, '-') !== false) {
-				$numcli = "    0";
-			}
-
-			set_transient($cache_cli, $numcli, 1800); // cache media hora
-		}
-
-
-    // Sucursal
-	$sucursal_id = get_user_meta($current_user_id, 'sucursal_seleccionada', true);
-	if (empty($sucursal_id)) {
-		$sucursal_id = $settings->get('SAITNube_NumAlm', '');
-	}
-    $sucursal_id = str_pad($sucursal_id, 2, " ", STR_PAD_LEFT);
-
-    // Unidad
-		// CACHE Artículo por SKU (24 horas)
-		$cache_art = 'sait_art_' . $numart;
-		$api_art = get_transient($cache_art);
-
-		if ($api_art === false) {
-			$api_art = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/" . $numart);
-			$api_art_result = SAIT_UTILS::SAIT_getResult($api_art);
-			if (!isset($api_art_result["unidad"])) {
-					usleep(500000);
-					$api_art = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/" . $numart, false);
-					$api_art_result = SAIT_UTILS::SAIT_getResult($api_art);
-			}
-			if (!empty($api_art)) {
-					set_transient($cache_art, $api_art, 86400);
-			}
-		} else {
-			$api_art_result = SAIT_UTILS::SAIT_getResult($api_art);
-	}
-	if (!isset($api_art_result["unidad"])) {
-			return $price_html;
-	}
-	$unidad = $api_art_result["unidad"];
-
-    // --------------------------------------------
-    //  TRANSIENT KEY (cache por producto + cliente + sucursal)
-    // --------------------------------------------
-    $cache_key = 'sait_precio_' . md5($numart . '_' . $numcli . '_' . $sucursal_id);
-    $cached = get_transient($cache_key);
-
-    if ($cached !== false) {
-        $preciopub = $cached['preciopub'];
-        $pje_api = $cached['pje_api'];
-    } else {
-        // Consulta REAL a la API
-        $api_calc = SAIT_UTILS::SAIT_GetNube(
-            "/api/v3/calcularprecios?numart=$numart&unidad=$unidad&cant=1&divisadoc=P&numalm=$sucursal_id&formapago=1&numcli=$numcli"
-        );
-        $api_calc_result = SAIT_UTILS::SAIT_getResult($api_calc);
-
-        if (empty($api_calc_result)) {
-            return $price_html;
-        }
-
-        $preciopub = floatval($api_calc_result["preciopub"]);
-        $pje_api   = floatval($api_calc_result["pjedesc"]);
-
-        // Guardar en caché 15 minutos
-        set_transient($cache_key, [
-            'preciopub' => $preciopub,
-            'pje_api'   => $pje_api
-        ], 900); // 900 = 15 minutos
-    }
-
-    $precio_regular = floatval($product->get_regular_price());
-    $precio_promocional = round($preciopub,2);
-
-    // Si API regresa precio en 0
-    if ($preciopub <= 0) {
-        return $price_html;
-    }
-
-    //   LÓGICA DE DESCUENTO
-    if ($pje_api > 0) {
-
-        // API trae descuento: SE USA
-        $pjedesc = round($pje_api);
-        $precio_promocional = $preciopub * (1 - ($pjedesc / 100));
-
-    } else {
-
-        // API no trae, calcular si aplica
-        if ($precio_regular > 0 && $precio_promocional < $precio_regular) {
-            $pjedesc = round((1 - ($precio_promocional / $precio_regular)) * 100);
-        } else {
-            return $price_html;
-        }
-    }
-
-    if ($pje_api == 0 && $precio_promocional >= $precio_regular) {
-        return $price_html;
-    }
-
-    // Nuevo HTML para el PRECIO
-    $nuevo_html = '
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-        <span style="font-size:22px;color:#cc0000;font-weight:bold;">' . wc_price($precio_promocional) . '</span>
-        <span style="background:#cc0000;color:white;padding:2px 6px;font-size:11px;border-radius:4px;font-weight:bold;">
-            -' . $pjedesc . '%
-        </span>
-    </div>
-    <small style="opacity:0.9;font-size:13px;">
-        Antes: <del style="color:#3c3636;" >' . wc_price($precio_regular) . '</del>
-    </small>
-		';
-	
-   // Solo en página de producto
-    if (is_product()) {
-	 //HTML final 
-		 $product_html = ' <span class="precio-promocion-principal" style="font-size:28px;color:#cc0000;font-weight:bold;"> ' . wc_price($precio_promocional) . ' </span><br> <span style="opacity:0.9; font-size:15px;"> Antes: <del  style="color:#3c3636;"  >' . wc_price($precio_regular) . '</del> </span><br> <span style="background:#cc0000;color:white;padding:3px 8px;border-radius:6px;font-size:13px;"> -' . $pjedesc . '% OFF </span> ';
-		return $product_html;
-    }
- 
-    return $nuevo_html;
 }
