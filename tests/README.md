@@ -86,6 +86,16 @@ Esta prueba cubre respuestas validas, `result: null`, JSON invalido,
 `WP_Error`, estados HTTP no exitosos, configuracion incompleta e inyeccion de
 un cliente falso.
 
+El repositorio de relaciones `sait_claves` se valida con:
+
+```sh
+sh tests/test-mappings.sh
+```
+
+Se prueban busquedas por clave SAIT e ID WooCommerce, metodos de entidades,
+consultas preparadas, adaptadores historicos, eliminacion y prevencion de
+duplicados sin agregar un indice unico.
+
 ## Caracterizacion De Eventos XML
 
 Los eventos se envian a la ruta REST real del plugin, pero todas sus consultas

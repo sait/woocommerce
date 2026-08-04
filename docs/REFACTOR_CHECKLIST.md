@@ -299,12 +299,12 @@ Objetivo: centralizar HTTP, mapeos y logs antes de dividir reglas de negocio.
 
 ### Repositorio de mapeos
 
-- [ ] Crear `MappingRepository` para `sait_claves`.
-- [ ] Separar búsqueda por clave SAIT y por ID de WooCommerce.
-- [ ] Usar `$wpdb->prepare()` en todas las consultas.
-- [ ] Evitar inserciones duplicadas.
-- [ ] No añadir restricción única hasta auditar datos existentes.
-- [ ] Definir métodos de productos, clientes y categorías.
+- [x] Crear `MappingRepository` para `sait_claves`.
+- [x] Separar búsqueda por clave SAIT y por ID de WooCommerce.
+- [x] Usar `$wpdb->prepare()` en todas las consultas.
+- [x] Evitar inserciones duplicadas.
+- [x] No añadir restricción única hasta auditar datos existentes.
+- [x] Definir métodos de productos, clientes y categorías.
 
 ### Logging
 

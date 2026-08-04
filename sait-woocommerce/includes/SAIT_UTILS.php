@@ -99,43 +99,25 @@
 	 * Acciones que realiza: consulta la tabla personalizada {$wpdb->prefix}sait_claves.
 	 */
 	public static function SAIT_getClaves($tabla,$clave,$wcid){
-		global $wpdb;
-		$table_name = $wpdb->prefix . 'sait_claves';
-		$lookup_conditions = array();
-		$values = array($tabla);
-
 		if ($clave !== null) {
-			$lookup_conditions[] = 'clave = %s';
-			$values[] = $clave;
+			$mapping = SAIT_WOOCOMMERCE()->mapping_repository()->find_by_sait_key($tabla, $clave);
+			if ($mapping || $wcid === null) {
+				return $mapping;
+			}
 		}
 
 		if ($wcid !== null) {
-			$lookup_conditions[] = 'wcid = %d';
-			$values[] = $wcid;
+			return SAIT_WOOCOMMERCE()->mapping_repository()->find_by_woocommerce_id($tabla, $wcid);
 		}
 
-		if (empty($lookup_conditions)) {
-			return null;
-		}
-
-		$sql = "SELECT * FROM $table_name WHERE tabla = %s AND (" . implode(' OR ', $lookup_conditions) . ")";
-		return $wpdb->get_row($wpdb->prepare($sql, $values), OBJECT);
+		return null;
 	}
 	public static function SAIT_insertClaves($tabla,$clave,$wcid){
-		global $wpdb;
-		$wpdb->insert( 
-			$wpdb->prefix.'sait_claves', 
-				array( 
-						'tabla' => $tabla,
-						'clave' => $clave,
-						'wcid'  => $wcid
-				)
-		);
+		return SAIT_WOOCOMMERCE()->mapping_repository()->add($tabla, $clave, $wcid);
 	}
 
 	public static function SAIT_deleteClaves($id){
-		global $wpdb;
-		$wpdb->delete( $wpdb->prefix.'sait_claves', array( 'id' => $id ) );
+		return SAIT_WOOCOMMERCE()->mapping_repository()->delete($id);
 	}
 
 	public static function SAIT_response($code,$message){

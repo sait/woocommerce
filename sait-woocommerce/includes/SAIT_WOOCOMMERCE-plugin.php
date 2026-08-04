@@ -20,6 +20,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_SaitClientInterface|null */
 	private $sait_client = null;
 
+	/** @var SAIT_WOOCOMMERCE_MappingRepository|null */
+	private $mapping_repository = null;
+
 	/**
 	 * @param string $plugin_file Archivo principal del plugin.
 	 */
@@ -84,6 +87,18 @@ class SAIT_WOOCOMMERCE_Plugin
 	public function set_sait_client(SAIT_WOOCOMMERCE_SaitClientInterface $client)
 	{
 		$this->sait_client = $client;
+	}
+
+	/**
+	 * @return SAIT_WOOCOMMERCE_MappingRepository
+	 */
+	public function mapping_repository()
+	{
+		if ($this->mapping_repository === null) {
+			$this->mapping_repository = new SAIT_WOOCOMMERCE_MappingRepository();
+		}
+
+		return $this->mapping_repository;
 	}
 
 	/**
@@ -178,6 +193,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		$includes = plugin_dir_path($this->plugin_file) . 'includes/';
 		require_once $includes . 'SAIT_WOOCOMMERCE-settings.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-sait-client.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-mapping-repository.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-personalizado.php';

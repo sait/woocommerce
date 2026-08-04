@@ -49,6 +49,7 @@ Clase `SAIT_WOOCOMMERCE_Plugin`.
 - Mantiene una sola instancia del controlador REST.
 - Mantiene instancias compartidas de configuracion y cliente HTTP, sustituible
   por un cliente falso en pruebas.
+- Mantiene una instancia compartida del repositorio de mapeos.
 
 ## `includes/SAIT_WOOCOMMERCE-lifecycle.php`
 
@@ -89,6 +90,20 @@ Interfaz `SAIT_WOOCOMMERCE_SaitClientInterface` y clase
 - Reintenta GET una vez por transporte o JSON invalido; no reintenta estados
   HTTP ni operaciones POST.
 - Mantiene respuestas POST crudas para los contratos historicos de pedidos.
+
+## `includes/SAIT_WOOCOMMERCE-mapping-repository.php`
+
+Clase `SAIT_WOOCOMMERCE_MappingRepository`.
+
+- Es el unico acceso del plugin a la tabla `sait_claves`.
+- Separa busquedas por clave SAIT y por ID WooCommerce.
+- Expone metodos para productos, clientes y categorias.
+- Usa consultas preparadas y evita repetir una misma `tabla + clave`.
+- Permite claves distintas con el mismo `wcid` y no agrega restricciones
+  unicas antes de auditar los datos existentes.
+
+Los metodos `SAIT_getClaves`, `SAIT_insertClaves` y `SAIT_deleteClaves` de
+`SAIT_UTILS` permanecen como adaptadores de compatibilidad.
 
 Funciones globales:
 
