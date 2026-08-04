@@ -180,6 +180,13 @@ Metodos:
 - Expone los filtros `sait_woocommerce_order_payload`,
   `sait_woocommerce_quote_payload` y `sait_woocommerce_document_payload`.
 
+## `includes/SAIT_WOOCOMMERCE-product-calculators.php`
+
+- `SAIT_WOOCOMMERCE_PriceCalculator`: aplica precio publico, lista con
+  impuestos y conversion por tipo de cambio sin depender de WordPress.
+- `SAIT_WOOCOMMERCE_StockCalculator`: selecciona un almacen o suma varios y
+  distingue una existencia cero valida de una respuesta sin coincidencias.
+
 ## `includes/SAIT_WOOCOMMERCE-order-admin.php`
 
 Clase `SAIT_WOOCOMMERCE_OrderAdmin`.

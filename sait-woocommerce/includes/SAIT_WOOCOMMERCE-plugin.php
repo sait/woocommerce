@@ -252,6 +252,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-customer-resolver.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-document-builders.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-document-service.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-product-calculators.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';

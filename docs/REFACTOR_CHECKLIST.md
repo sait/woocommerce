@@ -373,12 +373,12 @@ Cada línea representa un commit separado.
 Objetivo: aplicar las mismas reglas desde eventos, acciones manuales y lotes.
 
 - [ ] Crear `ProductResolver` que busque por mapeo y luego por SKU.
-- [ ] Crear `PriceCalculator` sin dependencias de WordPress.
-- [ ] Crear `StockCalculator` sin dependencias de WordPress.
+- [x] Crear `PriceCalculator` sin dependencias de WordPress.
+- [x] Crear `StockCalculator` sin dependencias de WordPress.
 - [ ] Crear `ProductSyncService` que coordine repositorio, WooCommerce y SAIT.
-- [ ] Definir explícitamente tratamiento de precios y existencias en cero.
-- [ ] Unificar reglas de lista, impuestos, divisa y tipo de cambio.
-- [ ] Unificar almacén único y múltiples almacenes.
+- [x] Definir explícitamente tratamiento de precios y existencias en cero.
+- [x] Unificar reglas de lista, impuestos, divisa y tipo de cambio en calculadores compartidos.
+- [x] Unificar almacén único y múltiples almacenes en un calculador compartido.
 - [ ] Reutilizar desde `MODART`, `ACTPRECIO`, `ACTEXIST` y sincronización admin.
 - [ ] Mantener metadatos de auditoría uniformes.
 
