@@ -34,17 +34,7 @@
 	 * del pedido y realiza POST a /api/v3/pedidos.
 	 */
 	public static function SAIT_sendPedido( $order,$formapago,$wait = false ){
-		$options = SAIT_WOOCOMMERCE()->settings()->all();
-		$builder = new SAIT_WOOCOMMERCE_OrderBuilder($options);
-		$pedido = $builder->build(
-			$order,
-			$formapago,
-			self::SAIT_resolveItemUnits($order, 'P'),
-			SAIT_WOOCOMMERCE()->customer_resolver()->resolve($order)
-		);
-		$pedido = self::SAIT_customizeDocument($pedido, $order, $options);
-
-		return SAIT_UTILS::SAIT_PostNube('/api/v3/pedidos', $pedido, $wait);
+		return SAIT_WOOCOMMERCE()->document_service()->send_order($order, $formapago, $wait);
 	}
 
 	/**
@@ -59,17 +49,7 @@
 	 * del documento y realiza POST a /api/v3/cotizaciones.
 	 */
 public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
-	$options = SAIT_WOOCOMMERCE()->settings()->all();
-	$builder = new SAIT_WOOCOMMERCE_QuoteBuilder($options);
-	$cotizacion = $builder->build(
-		$order,
-		$formapago,
-		self::SAIT_resolveItemUnits($order, 'Q'),
-		SAIT_WOOCOMMERCE()->customer_resolver()->resolve($order)
-	);
-	$cotizacion = self::SAIT_customizeDocument($cotizacion, $order, $options);
-
-	return SAIT_UTILS::SAIT_PostNube('/api/v3/cotizaciones', $cotizacion, $wait);
+	return SAIT_WOOCOMMERCE()->document_service()->send_quote($order, $formapago, $wait);
 	}
 
 
@@ -245,70 +225,6 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 		return SAIT_WOOCOMMERCE_DocumentBuilder::discount_percentage($cantidad, $total, $precio);
 	}
 
-	/**
-	 * Consulta las unidades requeridas antes de construir el documento.
-	 *
-	 * @param WC_Order $order Orden WooCommerce.
-	 * @param string   $document_type P para pedido, Q para cotizacion.
-	 * @return array<int|string,string>
-	 */
-	private static function SAIT_resolveItemUnits($order, $document_type){
-		$units = array();
-		SAIT_WOOCOMMERCE()->logger()->info(
-			$document_type === 'P' ? 'Preparando pedido para SAIT.' : 'Preparando cotizacion para SAIT.',
-			array(
-				'order_id'      => $order->get_id(),
-				'document_type' => $document_type,
-				'item_count'    => count($order->get_items()),
-			)
-		);
-
-		foreach ($order->get_items() as $item_id => $item) {
-			$product = $item->get_product();
-			$sku = $product->get_sku();
-			$result = null;
-			$attempts = 0;
-			while (!isset($result['unidad']) && $attempts < 3) {
-				if ($attempts > 0) {
-					usleep($attempts * 500000);
-				}
-				$response = SAIT_UTILS::SAIT_GetNube('/api/v3/articulos/' . $sku, false);
-				$result = SAIT_UTILS::SAIT_getResult($response);
-				$attempts++;
-			}
-
-			if (!isset($result['unidad'])) {
-				SAIT_WOOCOMMERCE()->logger()->warning(
-					'No se obtuvo la unidad del articulo para el documento.',
-					array(
-						'order_id'      => $order->get_id(),
-						'sku'           => $sku,
-						'attempt'       => $attempts,
-						'document_type' => $document_type,
-					)
-				);
-			}
-
-			$units[$item_id] = isset($result['unidad']) ? $result['unidad'] : '';
-		}
-
-		return $units;
-	}
-
-	/**
-	 * Conserva la personalizacion legacy mientras se extraen los builders.
-	 *
-	 * @return object
-	 */
-	private static function SAIT_customizeDocument($document, $order, $options){
-		$enabled = isset($options['SAITNube_FuncionPersonalizadaPedido_enabled'])
-			&& $options['SAITNube_FuncionPersonalizadaPedido_enabled'] === '1';
-
-		return $enabled
-			? SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($document, $order)
-			: $document;
-	}
-	 
 
 /**
  * Construye el campo DIR ENVIO esperado por SAIT a partir de shipping/billing.

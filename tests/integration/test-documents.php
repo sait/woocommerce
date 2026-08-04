@@ -176,6 +176,12 @@ sait_document_assert_same('20251113', $built_order['fentrega'], 'Fecha determini
 sait_document_assert_same('PZA', $built_order['items'][0]['unidad'], 'Unidad recibida por el builder.');
 sait_document_assert_same(array(), get_option('sait_test_request_counts', array()), 'El builder no debe hacer HTTP.');
 
+delete_option('sait_test_request_counts');
+$service_document = SAIT_WOOCOMMERCE()->document_service()->build_order($mapped_order, '1');
+$build_counts = get_option('sait_test_request_counts', array());
+sait_document_assert_same('PZA', $service_document->items[0]->unidad, 'El servicio resuelve unidades antes de construir.');
+sait_document_assert_true(!isset($build_counts['POST /api/v3/pedidos']), 'Construir no debe enviar el pedido.');
+
 $mapped_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($mapped_order, '1', true);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($mapped_response), 'HTTP pedido mapeado.');
 $mapped_request = sait_document_last_request();

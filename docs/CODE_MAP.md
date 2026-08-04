@@ -172,6 +172,12 @@ Metodos:
 - `SAIT_WOOCOMMERCE_QuoteBuilder`: construye cotizaciones sin ejecutar HTTP.
 - Ambos comparten partidas, cliente, observaciones y direccion de envio.
 
+## `includes/SAIT_WOOCOMMERCE-document-service.php`
+
+- `build_order()` y `build_quote()`: resuelven dependencias y construyen sin POST.
+- `send_document()`: envia un payload ya construido mediante el cliente SAIT.
+- `send_order()` y `send_quote()`: coordinan ambas operaciones.
+
 ## `includes/SAIT_WOOCOMMERCE-order-admin.php`
 
 Clase `SAIT_WOOCOMMERCE_OrderAdmin`.

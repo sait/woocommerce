@@ -26,6 +26,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_CustomerResolver|null */
 	private $customer_resolver = null;
 
+	/** @var SAIT_WOOCOMMERCE_DocumentService|null */
+	private $document_service = null;
+
 	/** @var SAIT_WOOCOMMERCE_Logger|null */
 	private $logger = null;
 
@@ -94,6 +97,7 @@ class SAIT_WOOCOMMERCE_Plugin
 	{
 		$this->sait_client = $client;
 		$this->customer_resolver = null;
+		$this->document_service = null;
 	}
 
 	/**
@@ -121,6 +125,23 @@ class SAIT_WOOCOMMERCE_Plugin
 		}
 
 		return $this->customer_resolver;
+	}
+
+	/**
+	 * @return SAIT_WOOCOMMERCE_DocumentService
+	 */
+	public function document_service()
+	{
+		if ($this->document_service === null) {
+			$this->document_service = new SAIT_WOOCOMMERCE_DocumentService(
+				$this->settings(),
+				$this->customer_resolver(),
+				$this->sait_client(),
+				$this->logger()
+			);
+		}
+
+		return $this->document_service;
 	}
 
 	/**
@@ -230,6 +251,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-mapping-repository.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-customer-resolver.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-document-builders.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-document-service.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
