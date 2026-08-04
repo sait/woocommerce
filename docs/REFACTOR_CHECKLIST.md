@@ -436,7 +436,7 @@ Objetivo: convertir la clase grande de eventos en router y handlers pequeños.
 - [x] Extraer handler de productos.
 - [x] Extraer handler de precios.
 - [x] Extraer handler de existencias.
-- [ ] Extraer handler de categorías.
+- [x] Extraer handler de categorías.
 - [ ] Extraer handler de clientes.
 - [ ] Extraer handler de tipo de cambio.
 - [ ] Preservar HTTP 200 para eventos recibidos pero no aplicables.
