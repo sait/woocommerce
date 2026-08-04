@@ -282,7 +282,7 @@
 	 * Acciones que realiza: modifica stock de productos WooCommerce ligados en sait_claves.
 	 */
 	public static function ACTEXISGBL($oXml){
-		$SAIT_options=get_option( 'opciones_sait' );
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 		$NumAlm = $SAIT_options['SAITNube_NumAlm'];
 		if (isset($NumAlm) && !is_null($NumAlm)) {
 			return SAIT_UTILS::SAIT_response(200,"STOCK ERR ACTEXISGBL");
@@ -312,11 +312,10 @@
 	 * consulta SAIT Nube, suma almacenes permitidos y cachea el total temporalmente.
 	 */
 	public static function ACTEXIST($oXml){
-		$SAIT_options=get_option( 'opciones_sait' );
-		$NumAlm = $SAIT_options['SAITNube_NumAlm'];
-		
-	    $SAIT_options = get_option('opciones_sait');
-		$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) && $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
+		$settings = SAIT_WOOCOMMERCE()->settings();
+		$NumAlm = $settings->get('SAITNube_NumAlm', '');
+		$ExistAlm_activo = $settings->is_enabled('SAITNube_ExistAlm_enabled');
+		$almacenes_a_mostrar = $ExistAlm_activo ? $settings->warehouses() : array();
 
 		
 		if (!$ExistAlm_activo && (!isset($NumAlm) || is_null($NumAlm))) {
@@ -369,7 +368,6 @@
 						if (!empty($result)) {
 							foreach ($result as $almacen) {
 								// sumar solo las almacenes permitidas
-								$almacenes_a_mostrar = array_map('trim', explode(',', $SAIT_options['SAITNube_ExistAlm']));
 								if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
 									$total += (float) $almacen['existencia'];
 								}
@@ -452,7 +450,7 @@
 
 
 		$cambios = false;
-		$SAIT_options = get_option('opciones_sait');
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 		$preciolista = isset($SAIT_options['SAITNube_PrecioLista']) ? $SAIT_options['SAITNube_PrecioLista'] : "";
 		$TC = isset($SAIT_options['SAITNube_TipoCambio']) ? $SAIT_options['SAITNube_TipoCambio'] : "";
 
@@ -595,14 +593,13 @@
 	 * precios regulares recalculados en productos WooCommerce.
 	 */
 	public static function ACTTC($oXml){
-		$SAIT_options=get_option( 'opciones_sait' );
-		$OldTC = $SAIT_options['SAITNube_TipoCambio'];
+		$settings = SAIT_WOOCOMMERCE()->settings();
+		$OldTC = $settings->get('SAITNube_TipoCambio', '');
 		$NewTC=self::xml_attribute($oXml->action[0]->flds[0],"tc");
 		if ($OldTC == $NewTC){
 			return SAIT_UTILS::SAIT_response(200,"same TC");
 		}
-		$SAIT_options['SAITNube_TipoCambio']=$NewTC;
-		update_option( 'opciones_sait', $SAIT_options );
+		$settings->set('SAITNube_TipoCambio', $NewTC);
 		$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos?divisa=D&statusweb=1&limit=10000");
 		$result = SAIT_UTILS::SAIT_getResult($api_response);
 		if (empty($result)){

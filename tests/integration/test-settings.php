@@ -29,6 +29,8 @@ sait_settings_assert_true(
 sait_settings_assert_same('opciones_sait', SAIT_WOOCOMMERCE_Settings::OPTION_NAME, 'Nombre historico de la opcion.');
 
 $original_options = get_option(SAIT_WOOCOMMERCE_Settings::OPTION_NAME, array());
+update_option(SAIT_WOOCOMMERCE_Settings::OPTION_NAME, array());
+sait_settings_assert_same(false, $settings->has_saved_options(), 'Una opcion vacia no cuenta como configurada.');
 update_option(
 	SAIT_WOOCOMMERCE_Settings::OPTION_NAME,
 	array(
@@ -38,6 +40,7 @@ update_option(
 		'opcion_historica_cliente'  => 'se conserva al leer',
 	)
 );
+sait_settings_assert_same(true, $settings->has_saved_options(), 'Debe detectar configuracion persistida.');
 
 $all = $settings->all();
 sait_settings_assert_same('fixture-key', $settings->get('SAITNube_APIKey'), 'Lectura tipada de API key.');
@@ -49,6 +52,15 @@ sait_settings_assert_same(
 	'se conserva al leer',
 	$all['opcion_historica_cliente'],
 	'Las claves adicionales existentes no deben perderse durante la lectura.'
+);
+
+$settings->set('SAITNube_TipoCambio', '18.5000');
+$stored = get_option(SAIT_WOOCOMMERCE_Settings::OPTION_NAME, array());
+sait_settings_assert_same('18.5000', $stored['SAITNube_TipoCambio'], 'Escritura interna de una clave.');
+sait_settings_assert_same(
+	'se conserva al leer',
+	$stored['opcion_historica_cliente'],
+	'La escritura interna no debe descartar claves adicionales.'
 );
 
 $sanitized = $settings->sanitize(

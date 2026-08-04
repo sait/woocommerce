@@ -35,7 +35,7 @@
 	 */
 	public static function SAIT_sendPedido( $order,$formapago,$wait = false ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
-			$SAIT_options=get_option( 'opciones_sait' );
+			$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 			$pedido = new stdClass();
 			$pedido->numdoc = SAIT_SERIE.strval($order->get_id());
 			$pedido->numcli = "";
@@ -138,7 +138,7 @@
 public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
     // https://wordpress.stackexchange.com/questions/329009/stuck-with-wp-remote-post-sending-data-to-an-external-api-on-user-registration
 
-		$SAIT_options=get_option( 'opciones_sait' );
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 			$cotizacion = new stdClass();
 			$cotizacion->numdoc = SAIT_SERIE.strval($order->get_id());
 			$date =	$order->get_date_created();
@@ -244,7 +244,7 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 		if (!$order) {
 			return SAIT_UTILS::SAIT_response(404, "Pedido no existe");
 		}
-		$SAIT_options=get_option( 'opciones_sait' );
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 		$tipo = $SAIT_options['SAITNube_TipoDoc'];
 		if (self::SAIT_envioAutomaticoDisparado($order)) {
 			return SAIT_UTILS::SAIT_response(200, "SAIT ENVIO YA DISPARADO");
@@ -299,7 +299,7 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 			if (!$order) {
 				return SAIT_UTILS::SAIT_response(404, "Pedido no existe");
 			}
-			$SAIT_options=get_option( 'opciones_sait' );
+			$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 			$tipo = $SAIT_options['SAITNube_TipoDoc'];
 			if ($tipo==="P"){
 				$response = self::SAIT_sendPedido($order,"1",true);

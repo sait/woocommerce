@@ -229,6 +229,7 @@ Objetivo: dejar un archivo principal pequeño y una inicialización predecible.
 - [x] Centralizar defaults, booleanos y lista de almacenes.
 - [x] Mantener Settings API con sanitización por campo.
 - [x] Verificar capacidad `manage_options` y escape tardío de HTML.
+- [x] Usar el servicio compartido en pedidos, eventos, REST, frontend y administracion.
 
 ### Fuente De Categoria De Productos
 

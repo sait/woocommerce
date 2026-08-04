@@ -8,7 +8,7 @@ class SAIT_WOOCOMMERCE_Settings
 	const OPTION_NAME = 'opciones_sait';
 
 	/**
-	 * @return array<string,string>
+	 * @return array<string,mixed>
 	 */
 	public function defaults()
 	{
@@ -18,7 +18,7 @@ class SAIT_WOOCOMMERCE_Settings
 			'SAITNube_AccessToken'                       => '',
 			'SAITNube_TipoDoc'                           => '',
 			'SAITNube_Sucursal_enabled'                  => '0',
-			'SAITNube_NumAlm'                            => '',
+			'SAITNube_NumAlm'                            => null,
 			'SAITNube_OcultarSinPrecio_enabled'          => '0',
 			'SAITNube_ExistAlm_enabled'                  => '0',
 			'SAITNube_ExistAlm'                          => '',
@@ -48,6 +48,18 @@ class SAIT_WOOCOMMERCE_Settings
 	}
 
 	/**
+	 * Indica si la opcion ya contiene configuracion persistida.
+	 *
+	 * @return bool
+	 */
+	public function has_saved_options()
+	{
+		$options = get_option(self::OPTION_NAME, array());
+
+		return is_array($options) && !empty($options);
+	}
+
+	/**
 	 * @param string $key Nombre historico de la opcion.
 	 * @param mixed  $default Valor alternativo para claves no registradas.
 	 * @return mixed
@@ -66,6 +78,25 @@ class SAIT_WOOCOMMERCE_Settings
 	public function is_enabled($key)
 	{
 		return $this->get($key, '0') === '1';
+	}
+
+	/**
+	 * Actualiza una clave interna sin descartar opciones historicas adicionales.
+	 *
+	 * @param string $key Nombre de la opcion.
+	 * @param mixed  $value Valor ya validado por el flujo que lo origina.
+	 * @return bool
+	 */
+	public function set($key, $value)
+	{
+		$options = get_option(self::OPTION_NAME, array());
+		if (!is_array($options)) {
+			$options = array();
+		}
+
+		$options[$key] = $value;
+
+		return update_option(self::OPTION_NAME, $options);
 	}
 
 	/**

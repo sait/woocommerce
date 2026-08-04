@@ -140,8 +140,7 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 	public function process_events($request)
 	{
 		$access_token = $request->get_header('x-AccessToken');
-		$sait_options = get_option('opciones_sait');
-		$sait_access_token = $sait_options['SAITNube_AccessToken'];
+		$sait_access_token = SAIT_WOOCOMMERCE()->settings()->get('SAITNube_AccessToken', '');
 		if (!hash_equals((string) $sait_access_token, (string) $access_token)) {
 			$response = new WP_REST_Response();
 			$response->set_status(401);

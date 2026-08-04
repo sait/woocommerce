@@ -101,11 +101,7 @@ class SAIT_WOOCOMMERCE_Plugin
 	 */
 	public function enqueue_assets()
 	{
-		$sait_options = get_option('opciones_sait');
-		$branch_enabled = isset($sait_options['SAITNube_Sucursal_enabled'])
-			&& $sait_options['SAITNube_Sucursal_enabled'] === '1';
-
-		if (!$branch_enabled || is_admin()) {
+		if (!$this->settings()->is_enabled('SAITNube_Sucursal_enabled') || is_admin()) {
 			return;
 		}
 

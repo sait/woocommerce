@@ -55,7 +55,7 @@
 	 * por compatibilidad con instalaciones existentes.
 	 */
 	public static function SAIT_GetNube($uri, $reintentar = true){
-		$SAIT_options=get_option( 'opciones_sait' );
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 		$url = $SAIT_options['SAITNube_URL'].$uri;
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
@@ -104,7 +104,7 @@
 	 * por compatibilidad con instalaciones existentes.
 	 */
 	public static function SAIT_PostNube($uri,$bodyObject, $wait = false){
-		$SAIT_options=get_option( 'opciones_sait' );
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 		$url = $SAIT_options['SAITNube_URL'].$uri;
 		$apikey = $SAIT_options['SAITNube_APIKey'];
 		$args = array(
@@ -213,24 +213,18 @@
 	 * Acciones que realiza: consulta la API de existencias y lee opciones de almacen configuradas.
 	 */
 	public static function getExistSAIT($SKU) {
-		$SAIT_options = get_option('opciones_sait');
+		$settings = SAIT_WOOCOMMERCE()->settings();
 
 		// Validación temprana para evitar procesamiento innecesario
-		if (empty($SAIT_options)) {
+		if (!$settings->has_saved_options()) {
 			return 0;
 		}
 
-		$NumAlm = $SAIT_options['SAITNube_NumAlm'] ?? '';
-		$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) 
-			&& $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
+		$NumAlm = $settings->get('SAITNube_NumAlm', '');
+		$ExistAlm_activo = $settings->is_enabled('SAITNube_ExistAlm_enabled');
 
 		// Procesar almacenes a mostrar solo si está activo
-		$almacenes_a_mostrar = [];
-		if ($ExistAlm_activo && isset($SAIT_options['SAITNube_ExistAlm'])) {
-			$almacenes_a_mostrar = array_map('trim', 
-				explode(',', $SAIT_options['SAITNube_ExistAlm']));
-			$almacenes_a_mostrar = array_filter($almacenes_a_mostrar); // Eliminar vacíos
-		}
+		$almacenes_a_mostrar = $ExistAlm_activo ? $settings->warehouses() : array();
 
 		// Consulta a la API
 		$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . trim($SKU));
@@ -269,8 +263,8 @@
 
 // Agregar select de almacen al menu principal.
 function agregar_boton_al_menu($items, $args) {
-    $SAIT_options = get_option('opciones_sait');
-	$Sucursal_activo = isset($SAIT_options['SAITNube_Sucursal_enabled']) && $SAIT_options['SAITNube_Sucursal_enabled'] === '1';
+	$settings = SAIT_WOOCOMMERCE()->settings();
+	$Sucursal_activo = $settings->is_enabled('SAITNube_Sucursal_enabled');
 
 	if (!$Sucursal_activo) {
 		return $items;
@@ -282,8 +276,7 @@ function agregar_boton_al_menu($items, $args) {
 			
 			// Si hay sucursal seleccionada, obtener su nombre
 			if (!empty($numalm)) {
-					$SAIT_options = get_option('opciones_sait');
-					$almacen_default = $SAIT_options['SAITNube_NumAlm'] ?? '';
+					$almacen_default = $settings->get('SAITNube_NumAlm', '');
 					$numalm = !empty($numalm) ? $numalm : $almacen_default;
 					
 					if (!empty($numalm)) {
@@ -312,8 +305,7 @@ add_filter('wp_nav_menu_items', 'agregar_boton_al_menu', 10, 2);
 
 /* Agregar el modal al footer */
 function agregar_modal_sucursal() {
-    $SAIT_options = get_option('opciones_sait');
-	$Sucursal_activo = isset($SAIT_options['SAITNube_Sucursal_enabled']) && $SAIT_options['SAITNube_Sucursal_enabled'] === '1';
+	$Sucursal_activo = SAIT_WOOCOMMERCE()->settings()->is_enabled('SAITNube_Sucursal_enabled');
 
 	if (!$Sucursal_activo) {
 		return ;
@@ -375,8 +367,8 @@ function mostrar_tabla_almacenes_prueba() {
 }
 
 function mostrar_tabla_almacenes() {
-    $SAIT_options = get_option('opciones_sait');
-	$ExistAlm_activo = isset($SAIT_options['SAITNube_ExistAlm_enabled']) && $SAIT_options['SAITNube_ExistAlm_enabled'] === '1';
+	$settings = SAIT_WOOCOMMERCE()->settings();
+	$ExistAlm_activo = $settings->is_enabled('SAITNube_ExistAlm_enabled');
 
 	if (!$ExistAlm_activo) {
 		return ;
@@ -422,7 +414,7 @@ function mostrar_tabla_almacenes() {
 	echo '<table class="tabla-almacenes">';
 	echo '<tr><th>Sucursal</th><th>Existencia</th></tr>';
 
-	$almacenes_a_mostrar = array_map('trim', explode(',', $SAIT_options['SAITNube_ExistAlm']));
+	$almacenes_a_mostrar = $settings->warehouses();
 
 	foreach ($almacenes as $almacen) {
 		if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
@@ -439,8 +431,7 @@ function mostrar_tabla_almacenes() {
 add_action( 'woocommerce_product_query', 'ocultar_productos_sin_precio' );
 function ocultar_productos_sin_precio( $query ) {
    
-		$SAIT_options = get_option('opciones_sait');
-		$OcultarSinPrecio = isset($SAIT_options['SAITNube_OcultarSinPrecio_enabled']) && $SAIT_options['SAITNube_OcultarSinPrecio_enabled'] === '1';
+		$OcultarSinPrecio = SAIT_WOOCOMMERCE()->settings()->is_enabled('SAITNube_OcultarSinPrecio_enabled');
 
 		if (!$OcultarSinPrecio) {
 			return ;
@@ -474,8 +465,8 @@ function ocultar_productos_sin_precio( $query ) {
 add_filter('woocommerce_get_price_html', 'sait_precio_promocional_en_producto', 30, 2);
 function sait_precio_promocional_en_producto($price_html, $product) {
 
-    $SAIT_options = get_option('opciones_sait');
-    $Promo_activo = isset($SAIT_options['SAITNube_PromoGlobal_enabled']) && $SAIT_options['SAITNube_PromoGlobal_enabled'] === '1';
+	$settings = SAIT_WOOCOMMERCE()->settings();
+	$Promo_activo = $settings->is_enabled('SAITNube_PromoGlobal_enabled');
 
     if (!$Promo_activo) {
         return $price_html;
@@ -517,10 +508,10 @@ function sait_precio_promocional_en_producto($price_html, $product) {
 
 
     // Sucursal
-    $sucursal_id = get_user_meta($current_user_id, 'sucursal_seleccionada', true);
-    if (empty($sucursal_id)) {
-        $sucursal_id = $SAIT_options['SAITNube_NumAlm'];
-    }
+	$sucursal_id = get_user_meta($current_user_id, 'sucursal_seleccionada', true);
+	if (empty($sucursal_id)) {
+		$sucursal_id = $settings->get('SAITNube_NumAlm', '');
+	}
     $sucursal_id = str_pad($sucursal_id, 2, " ", STR_PAD_LEFT);
 
     // Unidad

@@ -372,7 +372,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 	}
 
 	private static function calculate_price_from_api_row($row) {
-		$SAIT_options = get_option('opciones_sait');
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 		$preciolista = isset($SAIT_options['SAITNube_PrecioLista']) ? trim($SAIT_options['SAITNube_PrecioLista']) : '';
 		$tc = isset($SAIT_options['SAITNube_TipoCambio']) ? (float) $SAIT_options['SAITNube_TipoCambio'] : 0;
 		$price = 0;
@@ -446,8 +446,9 @@ class SAIT_WOOCOMMERCE_ArtSync {
 	}
 
 	private static function calculate_stock_from_sait($numart) {
-		$SAIT_options = get_option('opciones_sait');
-		if (empty($SAIT_options)) {
+		$settings = SAIT_WOOCOMMERCE()->settings();
+		$SAIT_options = $settings->all();
+		if (!$settings->has_saved_options()) {
 			return array(
 				'sincronizado' => false,
 				'existencia' => 0,
@@ -603,7 +604,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 	}
 
 	private static function get_nube_json($uri, $reintentar = true) {
-		$SAIT_options = get_option('opciones_sait');
+		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 		if (empty($SAIT_options['SAITNube_URL']) || empty($SAIT_options['SAITNube_APIKey'])) {
 			return array(
 				'ok' => false,
