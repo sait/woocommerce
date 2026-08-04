@@ -542,8 +542,9 @@ Objetivo: actualizar el núcleo sin sobrescribir reglas particulares.
   sin versionar el directorio local de referencia `papelia/`.
 - [x] Mantener el plugin personalizado fuera del ZIP del núcleo y generar un ZIP
   separado cuando se prepare una entrega de Papelía.
-- [ ] Confirmar si Papelía necesita Checkout Blocks; la referencia y el primer
-  complemento cubren únicamente el checkout clásico.
+- [x] Confirmar el tipo de checkout de Papelía: utiliza el shortcode
+  `[woocommerce_checkout]`, por lo que el complemento sólo necesita soportar
+  el checkout clásico actualmente.
 
 El inventario, contratos, diferencias de seguridad y migración están en
 `docs/CUSTOMIZATIONS.md`.

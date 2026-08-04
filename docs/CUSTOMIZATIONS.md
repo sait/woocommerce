@@ -66,8 +66,9 @@ Conserva los metadatos históricos:
 La tarifa predeterminada y almacenes excluidos se pueden cambiar con
 `sait_papelia_pickup_shipping_method` y
 `sait_papelia_excluded_pickup_warehouses`. El complemento soporta actualmente
-el checkout clásico; Checkout Blocks queda pendiente de una implementación y
-prueba separadas.
+el checkout clásico. Se confirmó que la página de pago de Papelía utiliza el
+shortcode `[woocommerce_checkout]`; Checkout Blocks queda fuera del alcance
+mientras la instalación conserve esa configuración.
 
 Para migrar una instalación Papelía:
 
