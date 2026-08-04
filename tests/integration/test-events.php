@@ -273,6 +273,7 @@ $price = sait_test_send_event('actprecio.xml');
 sait_test_assert_same('PRICE UPD', $price->get_data(), 'Respuesta ACTPRECIO.');
 $product = wc_get_product($product_id);
 sait_test_assert_same(116.0, (float) $product->get_regular_price(), 'Precio publico ACTPRECIO.');
+sait_test_assert_same('ACTPRECIO', $product->get_meta('_sait_art_sync_source'), 'Auditoria ACTPRECIO.');
 
 $volume = sait_test_send_event('actprecio-volume-only.xml');
 sait_test_assert_same('IGNORADO (ppubv*)', $volume->get_data(), 'Precio por volumen actual.');
@@ -281,6 +282,11 @@ sait_test_assert_same(116.0, (float) wc_get_product($product_id)->get_regular_pr
 $single_stock = sait_test_send_event('actexist.xml');
 sait_test_assert_same('STOCK UPD ACTEXIST', $single_stock->get_data(), 'Respuesta ACTEXIST simple.');
 sait_test_assert_same(7.0, (float) wc_get_product($product_id)->get_stock_quantity(), 'Existencia simple normalizada.');
+sait_test_assert_same(
+	'ACTEXIST',
+	wc_get_product($product_id)->get_meta('_sait_existencia_sync_source'),
+	'Auditoria ACTEXIST.'
+);
 
 $options = get_option('opciones_sait');
 $options['SAITNube_ExistAlm_enabled'] = '1';
@@ -315,6 +321,7 @@ sait_test_assert_same('Upd TC', $exchange_rate->get_data(), 'Respuesta ACTTC.');
 $options = get_option('opciones_sait');
 sait_test_assert_same('18.5000', (string) $options['SAITNube_TipoCambio'], 'Tipo de cambio guardado.');
 sait_test_assert_same(214.6, (float) wc_get_product($usd_product_id)->get_regular_price(), 'Precio convertido a pesos.');
+sait_test_assert_same('ACTTC', wc_get_product($usd_product_id)->get_meta('_sait_art_sync_source'), 'Auditoria ACTTC.');
 
 $customer_add = sait_test_send_event('modcli.xml');
 sait_test_assert_same('Cli ADD', $customer_add->get_data(), 'Alta MODCLI.');

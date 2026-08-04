@@ -50,6 +50,110 @@ class SAIT_WOOCOMMERCE_ProductSyncService
 	}
 
 	/**
+	 * Sincroniza solamente el precio recibido por un evento ACTPRECIO.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function sync_price_from_event($numart, $event_row, $source = 'ACTPRECIO')
+	{
+		$options = $this->settings->all();
+		$price_list = isset($options['SAITNube_PrecioLista']) ? trim((string) $options['SAITNube_PrecioLista']) : '';
+		$exchange_rate = isset($options['SAITNube_TipoCambio']) ? (float) $options['SAITNube_TipoCambio'] : 0;
+		$row = $event_row;
+
+		if ($price_list !== '' || $exchange_rate > 0) {
+			$request = $this->sait_client->get('/api/v3/articulos/' . rawurlencode(trim($numart)));
+			if (!empty($request['ok']) && is_array($request['result'])) {
+				$row = array_merge($request['result'], $event_row);
+			}
+		}
+
+		return $this->sync_price_from_row($numart, $row, $source);
+	}
+
+	/**
+	 * Sincroniza solamente precio a partir de una fila ya disponible.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function sync_price_from_row($numart, $row, $source = 'event')
+	{
+		$resolved = $this->resolver->resolve($numart);
+		$product = $resolved['product'];
+		if (!$product) {
+			return array('estado' => 'ignorado', 'mensaje' => 'ART NO EXISTE');
+		}
+
+		$options = $this->settings->all();
+		$calculated = $this->price_calculator->calculate(
+			$row,
+			isset($options['SAITNube_PrecioLista']) ? $options['SAITNube_PrecioLista'] : '',
+			isset($options['SAITNube_TipoCambio']) ? (float) $options['SAITNube_TipoCambio'] : 0
+		);
+		if (!$calculated['valid']) {
+			return array('estado' => 'ignorado', 'mensaje' => 'Precio no valido.');
+		}
+
+		$old_price = (float) $product->get_regular_price();
+		$status = round($old_price, 2) === round($calculated['price'], 2) ? 'sin_cambio' : 'actualizado';
+		if ($status === 'actualizado') {
+			$product->set_regular_price($calculated['price']);
+			$product->set_price($calculated['price']);
+		}
+		$this->save_price_meta($product, $source, $old_price, $calculated['price'], $status);
+		$product->save();
+
+		return array('estado' => $status, 'mensaje' => $status === 'actualizado' ? 'PRICE UPD' : 'NO CAMBIO');
+	}
+
+	/**
+	 * Consulta y calcula la existencia configurada sin modificar un producto.
+	 *
+	 * @return array{matched:bool,stock:float}
+	 */
+	public function get_stock_from_sait($numart)
+	{
+		$options = $this->settings->all();
+		$request = $this->sait_client->get('/api/v3/existencias/' . rawurlencode(trim($numart)));
+		$rows = !empty($request['ok']) && is_array($request['result']) ? $request['result'] : array();
+		$multiple = isset($options['SAITNube_ExistAlm_enabled']) && $options['SAITNube_ExistAlm_enabled'] === '1';
+		$warehouses = $multiple && !empty($options['SAITNube_ExistAlm'])
+			? array_filter(array_map('trim', explode(',', $options['SAITNube_ExistAlm'])))
+			: array();
+
+		return $this->stock_calculator->calculate(
+			$rows,
+			isset($options['SAITNube_NumAlm']) ? $options['SAITNube_NumAlm'] : '',
+			$multiple,
+			$warehouses
+		);
+	}
+
+	/** @return array<string,mixed> */
+	public function sync_stock_from_sait($numart, $source = 'event')
+	{
+		return $this->apply_stock($numart, $this->get_stock_from_sait($numart), $source);
+	}
+
+	/**
+	 * Aplica existencias ya incluidas en un evento de almacen unico.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function sync_stock_from_rows($numart, $rows, $source = 'event')
+	{
+		$options = $this->settings->all();
+		$stock = $this->stock_calculator->calculate(
+			$rows,
+			isset($options['SAITNube_NumAlm']) ? $options['SAITNube_NumAlm'] : '',
+			false,
+			array()
+		);
+
+		return $this->apply_stock($numart, $stock, $source);
+	}
+
+	/**
 	 * Aplica una fila SAIT ya obtenida a un producto local.
 	 *
 	 * @param string $numart Numero de articulo SAIT.
@@ -160,6 +264,30 @@ class SAIT_WOOCOMMERCE_ProductSyncService
 				? 'Existencia actualizada de ' . (float) $old_stock . ' a ' . $new_stock . '.'
 				: 'Existencia sin cambio.',
 		);
+	}
+
+	/** @return array<string,mixed> */
+	private function apply_stock($numart, $stock, $source)
+	{
+		$resolved = $this->resolver->resolve($numart);
+		$product = $resolved['product'];
+		if (!$product) {
+			return array('estado' => 'ignorado', 'mensaje' => 'ART NO EXISTE');
+		}
+		if (!$stock['matched']) {
+			return array('estado' => 'ignorado', 'mensaje' => 'Existencia no disponible.');
+		}
+
+		$old_stock = $product->get_stock_quantity();
+		$status = (float) $old_stock === (float) $stock['stock'] ? 'sin_cambio' : 'actualizado';
+		$product->set_manage_stock(true);
+		if ($status === 'actualizado') {
+			$product->set_stock_quantity($stock['stock']);
+		}
+		$this->save_stock_meta($product, $source, $old_stock, $stock['stock'], $status);
+		$product->save();
+
+		return array('estado' => $status, 'mensaje' => 'STOCK UPD ACTEXIST');
 	}
 
 	private function save_price_meta($product, $source, $old_price, $new_price, $status)

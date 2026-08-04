@@ -221,7 +221,8 @@
 
 				// Si el stock es 0, consultar existencia en SAIT
 				if (empty($current_stock) || $current_stock <= 0) {
-					$sait_stock = SAIT_UTILS::getExistSAIT($numart);
+					$stock_result = SAIT_WOOCOMMERCE()->product_sync_service()->get_stock_from_sait($numart);
+					$sait_stock = $stock_result['matched'] ? $stock_result['stock'] : 0;
 
 					// Si hay existencia en SAIT, actualizar el stock
 					if (!empty($sait_stock) && $sait_stock > 0) {
@@ -262,7 +263,8 @@
 			$product->set_description($obs);
 		}
 
-		$sait_stock = SAIT_UTILS::getExistSAIT($numart);
+		$stock_result = SAIT_WOOCOMMERCE()->product_sync_service()->get_stock_from_sait($numart);
+		$sait_stock = $stock_result['matched'] ? $stock_result['stock'] : 0;
 
 		// Si hay existencia en SAIT, actualizar el stock
 		if (!empty($sait_stock) && $sait_stock > 0) {
@@ -324,9 +326,6 @@
 		$settings = SAIT_WOOCOMMERCE()->settings();
 		$NumAlm = $settings->get('SAITNube_NumAlm', '');
 		$ExistAlm_activo = $settings->is_enabled('SAITNube_ExistAlm_enabled');
-		$almacenes_a_mostrar = $ExistAlm_activo ? $settings->warehouses() : array();
-
-		
 		if (!$ExistAlm_activo && (!isset($NumAlm) || is_null($NumAlm))) {
 			return SAIT_UTILS::SAIT_response(200, "STOCK ERR ACTEXIST Not set");
 		}
@@ -338,62 +337,19 @@
 				return SAIT_UTILS::SAIT_response(200, "STOCK ERR ACTEXIST");
 			}
 
-			$clave = SAIT_UTILS::SAIT_getClaves("arts",$numart,null);
-			$product_id = null;
-
-			// Primero intenta con $clave->wcid
-			if (!empty($clave->wcid)) {
-				$product_id = $clave->wcid;
-			} else {
-				// Si no hay wcid, intenta buscar por sku
-				$product_id = wc_get_product_id_by_sku($numart);
+			$result = $ExistAlm_activo
+				? SAIT_WOOCOMMERCE()->product_sync_service()->sync_stock_from_sait($numart, 'ACTEXIST')
+				: SAIT_WOOCOMMERCE()->product_sync_service()->sync_stock_from_rows(
+					$numart,
+					array(array(
+						'numalm' => $NumAlmEvent,
+						'existencia' => self::xml_attribute($action->flds[0], 'existencia'),
+					)),
+					'ACTEXIST'
+				);
+			if ($result['estado'] === 'ignorado') {
+				return SAIT_UTILS::SAIT_response(200, $result['mensaje']);
 			}
-
-			// Si no hay producto, salte
-			if (empty($product_id)) {
-				return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
-			}
-
-			// Obtén el producto
-			$product = wc_get_product($product_id);
-
-			// Si tampoco existe como producto válido, salte
-			if (!$product) {
-				return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
-			}
-      
-			$quantity = self::xml_attribute($action->flds[0], "existencia");
-			
-			if ($ExistAlm_activo) {
-				    // Clave de caché diferente según sucursal
-					$cache_key = 'sait_stock_' . md5($numart);
-					$total = get_transient($cache_key);
-
-					if ($total === false) {
-						$respuesta = SAIT_UTILS::SAIT_GetNube("/api/v3/existencias/" . $numart);
-						$result = SAIT_UTILS::SAIT_getResult($respuesta);
-						$total = 0;
-
-						if (!empty($result)) {
-							foreach ($result as $almacen) {
-								// sumar solo las almacenes permitidas
-								if (in_array($almacen['numalm'], $almacenes_a_mostrar)) {
-									$total += (float) $almacen['existencia'];
-								}
-							}
-
-						}
-
-						set_transient($cache_key, $total, 120); // caché 2 min
-					}
-					$product->set_stock_quantity(round($total, 2));
-					$product->save();
-					return SAIT_UTILS::SAIT_response(200,"STOCK UPD ACTEXIST");
-			}	
-				
-			// Cambia el stock y guarda
-			$product->set_stock_quantity($quantity);
-			$product->save();
 		}
 		
 		return SAIT_UTILS::SAIT_response(200,"STOCK UPD ACTEXIST");
@@ -431,85 +387,16 @@
 
 
 		
-		$clave  = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
-		$productflds = $oXml->action[0]->flds[0];
-
-		$product_id = null;
-
-		// Primero intenta con $clave->wcid
-		if (!empty($clave->wcid)) {
-			$product_id = $clave->wcid;
-		} else {
-			// Si no existe o no es válido, buscar por SKU
-			$product_id = wc_get_product_id_by_sku($numart);
-		}
-
-		// Si no se encontró producto
-		if (empty($product_id)) {
-			return SAIT_UTILS::SAIT_response(200, "ART NO EXISTE");
-		}
-
-		// Obtener producto
-		$product = wc_get_product($product_id);
-
-		// Si el objeto producto no es válido
-		if (!$product) {
-			return SAIT_UTILS::SAIT_response(200, "ART NO EXISTE");
-		}
-
-
-		$cambios = false;
-		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
-		$preciolista = isset($SAIT_options['SAITNube_PrecioLista']) ? $SAIT_options['SAITNube_PrecioLista'] : "";
-		$TC = isset($SAIT_options['SAITNube_TipoCambio']) ? $SAIT_options['SAITNube_TipoCambio'] : "";
-
-		// Precio desde XML
-		$preciopub_attr = self::xml_attribute($productflds, "preciopub");
-		if ($preciopub_attr !== "" && is_numeric($preciopub_attr) && floatval($preciopub_attr) > 0) {
-			$preciopub = floatval($preciopub_attr);
-			if (floatval($product->get_regular_price()) != $preciopub) {
-				$product->set_regular_price($preciopub);
-				$cambios = true;
+		$row = array();
+		foreach (array('preciopub', 'precio1', 'precio2', 'precio3', 'precio4', 'precio5') as $field) {
+			$value = self::xml_attribute($productflds, $field);
+			if ($value !== '') {
+				$row[$field] = $value;
 			}
 		}
+		$result = SAIT_WOOCOMMERCE()->product_sync_service()->sync_price_from_event($numart, $row, 'ACTPRECIO');
 
-		// Precio desde API solo si es necesario
-		if ($preciolista != "" || $TC != "") {
-			$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$numart);
-			$api_result = SAIT_UTILS::SAIT_getResult($api_response);
-
-			if ($api_result !== null) {
-				// Precio lista
-				if ($preciolista != "") {
-					$precio = floatval($api_result["precio".$preciolista]);
-					if ($precio != 0.0) {
-						$impuesto1 = floatval($api_result["impuesto1"]);
-						$impuesto2 = floatval($api_result["impuesto2"]);
-						$preciopub_api = round($precio * (1 + ($impuesto1 + $impuesto2)/100), 2);
-						if (floatval($product->get_regular_price()) != $preciopub_api) {
-							$product->set_regular_price($preciopub_api);
-							$cambios = true;
-						}
-					}
-				}
-
-				// Tipo de cambio
-				if ($api_result["divisa"] === "D" && $TC != "") {
-					$precio = round(floatval(self::xml_attribute($productflds, "preciopub")) * floatval($TC), 2);
-					if (floatval($product->get_regular_price()) != $precio) {
-						$product->set_regular_price($precio);
-						$cambios = true;
-					}
-				}
-			}
-		}
-
-		if ($cambios) {
-			$product->save();
-			return SAIT_UTILS::SAIT_response(200, "PRICE UPD");
-		}
-
-		return SAIT_UTILS::SAIT_response(200, "NO CAMBIO");
+		return SAIT_UTILS::SAIT_response(200, $result['mensaje']);
 	}
 
 	/**
@@ -615,15 +502,11 @@
 				return SAIT_UTILS::SAIT_response(200,"Upd TC");
 		}
 		foreach ($result as $row) {
-			$clave = SAIT_UTILS::SAIT_getClaves("arts",trim($row["numart"]),null);
-			$product = wc_get_product( $clave->wcid );
-	
-			if ($product===false) {
-				continue;
-			}
-			$precio = strval(round(floatval($row["preciopub"])*floatval($NewTC),2));
-			$product->set_regular_price( $precio );		
-			$product->save();
+			SAIT_WOOCOMMERCE()->product_sync_service()->sync_price_from_row(
+				trim($row['numart']),
+				$row,
+				'ACTTC'
+			);
 		}
 
 		return SAIT_UTILS::SAIT_response(200,"Upd TC");
