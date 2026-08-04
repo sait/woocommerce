@@ -42,8 +42,21 @@ class SAIT_WOOCOMMERCE_DocumentService
 		);
 
 		$document = $this->customize_legacy($document, $order, $options);
+		/**
+		 * Filtra el payload de un pedido antes de enviarlo a SAIT.
+		 *
+		 * @param object   $document Payload construido por el plugin.
+		 * @param WC_Order $order Orden WooCommerce de origen.
+		 */
 		$document = apply_filters('sait_woocommerce_order_payload', $document, $order);
 
+		/**
+		 * Filtra cualquier documento antes de enviarlo a SAIT.
+		 *
+		 * @param object   $document Payload construido por el plugin.
+		 * @param WC_Order $order Orden WooCommerce de origen.
+		 * @param string   $document_type `P` para pedido o `Q` para cotización.
+		 */
 		return apply_filters('sait_woocommerce_document_payload', $document, $order, 'P');
 	}
 
@@ -64,8 +77,15 @@ class SAIT_WOOCOMMERCE_DocumentService
 		);
 
 		$document = $this->customize_legacy($document, $order, $options);
+		/**
+		 * Filtra el payload de una cotización antes de enviarla a SAIT.
+		 *
+		 * @param object   $document Payload construido por el plugin.
+		 * @param WC_Order $order Orden WooCommerce de origen.
+		 */
 		$document = apply_filters('sait_woocommerce_quote_payload', $document, $order);
 
+		/** Este filtro se documenta en build_order(). */
 		return apply_filters('sait_woocommerce_document_payload', $document, $order, 'Q');
 	}
 
@@ -151,7 +171,12 @@ class SAIT_WOOCOMMERCE_DocumentService
 		return $units;
 	}
 
-	/** @return object */
+	/**
+	 * Conserva durante la transición la clase SAIT_PERSONALIZADO y su opción histórica.
+	 * Los complementos nuevos deben usar los filtros públicos de payload.
+	 *
+	 * @return object
+	 */
 	private function customize_legacy($document, $order, $options)
 	{
 		$enabled = isset($options['SAITNube_FuncionPersonalizadaPedido_enabled'])

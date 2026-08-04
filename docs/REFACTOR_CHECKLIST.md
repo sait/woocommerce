@@ -532,18 +532,28 @@ refactor: agregar tipos en limites REST y hooks de SAIT
 
 Objetivo: actualizar el núcleo sin sobrescribir reglas particulares.
 
-- [ ] Inventariar personalizaciones por cliente.
-- [ ] Crear hooks/filtros con contratos documentados.
-- [ ] Mover personalizaciones a un plugin complementario cuando sea posible.
-- [ ] Mantener adaptadores de clases y funciones históricas durante una versión.
+- [x] Inventariar personalizaciones por cliente.
+- [x] Crear hooks/filtros con contratos documentados.
+- [x] Mover personalizaciones a un plugin complementario cuando sea posible.
+- [x] Mantener adaptadores de clases y funciones históricas durante una versión.
 - [ ] Marcar adaptadores obsoletos antes de retirarlos.
-- [ ] No eliminar código sólo porque parezca no utilizado; buscar consumidores.
+- [x] No eliminar código sólo porque parezca no utilizado; buscar consumidores.
+- [x] Crear `personalizados/sait-woocommerce-papelia/` como plugin independiente,
+  sin versionar el directorio local de referencia `papelia/`.
+- [x] Mantener el plugin personalizado fuera del ZIP del núcleo y generar un ZIP
+  separado cuando se prepare una entrega de Papelía.
+- [ ] Confirmar si Papelía necesita Checkout Blocks; la referencia y el primer
+  complemento cubren únicamente el checkout clásico.
+
+El inventario, contratos, diferencias de seguridad y migración están en
+`docs/CUSTOMIZATIONS.md`.
 
 ### Commits
 
 ```text
-feat: agregar puntos de extension para integraciones de clientes
-refactor: sacar personalizaciones de clientes del nucleo del plugin
+feat: agregar plugin complementario de Papelía
+docs: inventariar personalizaciones y contratos de extension
+test: cubrir plugin complementario de Papelía con API simulada
 refactor: agregar adaptadores de compatibilidad para APIs heredadas
 ```
 
