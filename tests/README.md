@@ -50,6 +50,23 @@ Composer y Node no se incorporan en esta etapa: el primer objetivo es
 caracterizar la integracion real. Se reconsideraran cuando las extracciones de
 logica pura necesiten PHPUnit, analisis estatico o herramientas JavaScript.
 
+## API SAIT Simulada
+
+Las pruebas no requieren ni permiten credenciales o endpoints reales de API
+v3. El MU-plugin `tests/mu-plugins/sait-api-mock.php` intercepta únicamente el
+host reservado `https://sait-api.invalid` y responde con
+`tests/fixtures/api/responses.json`.
+
+Las llamadas no contempladas al host simulado devuelven `WP_Error`. Los POST a
+pedidos y cotizaciones responden HTTP `201` y guardan el request en la opcion
+`sait_test_last_request` para poder caracterizar el payload.
+
+La simulacion se verifica con:
+
+```sh
+sh tests/test-api-mock.sh
+```
+
 ## Lint PHP
 
 Desde la raiz del repositorio:

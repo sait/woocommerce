@@ -37,6 +37,8 @@ poder revisarse, probarse y revertirse de manera independiente.
 - [ ] Mantener endpoints, hooks y filtros públicos durante la transición.
 - [ ] Mantener compatible la tabla `sait_claves` hasta contar con una migración.
 - [ ] No añadir dependencias Composer o Node sin aprobarlas explícitamente.
+- [ ] No usar endpoints, credenciales ni datos reales de SAIT en pruebas. Toda
+  llamada API v3 debe usar el host reservado y fixtures JSON locales.
 - [ ] Repetir el triage desde la carpeta del plugin después de cambios de
   estructura importantes:
 
@@ -139,7 +141,7 @@ Objetivo: detectar cambios de comportamiento antes de mover código.
   - [x] Registro de endpoints.
   - [ ] Procesamiento de fixtures XML.
   - [ ] Construcción de payloads de pedidos y cotizaciones.
-- [ ] Preparar dobles de prueba para evitar llamadas reales a SAIT.
+- [x] Preparar dobles de prueba para evitar llamadas reales a SAIT.
 - [x] Probar que el plugin se carga sin avisos ni errores fatales.
 
 ### Commit 1.1

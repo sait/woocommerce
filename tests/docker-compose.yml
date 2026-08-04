@@ -24,6 +24,7 @@ services:
       database:
         condition: service_healthy
     environment:
+      SAIT_TEST_API_MOCK: "1"
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
@@ -34,6 +35,8 @@ services:
     volumes:
       - wordpress_data:/var/www/html
       - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
+      - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+      - ./fixtures:/var/www/html/wp-content/sait-test-fixtures:ro
     networks:
       - sait_test
 
@@ -49,6 +52,7 @@ services:
         condition: service_started
     environment:
       HOME: /tmp
+      SAIT_TEST_API_MOCK: "1"
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
@@ -56,6 +60,8 @@ services:
     volumes:
       - wordpress_data:/var/www/html
       - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
+      - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+      - ./fixtures:/var/www/html/wp-content/sait-test-fixtures:ro
     networks:
       - sait_test
 

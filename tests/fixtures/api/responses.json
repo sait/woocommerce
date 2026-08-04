@@ -21,6 +21,19 @@
       "impuesto2": 0
     }
   },
+  "articulos_dolares": {
+    "result": [
+      {
+        "numart": "FIX-USD-001",
+        "unidad": "PZA",
+        "divisa": "D",
+        "precio1": 10,
+        "preciopub": 11.6,
+        "impuesto1": 16,
+        "impuesto2": 0
+      }
+    ]
+  },
   "existencias": {
     "result": [
       { "numalm": "1", "existencia": 7.5 },
@@ -37,6 +50,19 @@
     "result": [
       { "numcliev": "456" }
     ]
+  },
+  "almacenes": {
+    "result": [
+      { "numalm": "1", "nombre": "Matriz" },
+      { "numalm": "2", "nombre": "Sucursal Fixture" }
+    ]
+  },
+  "calcular_precios": {
+    "result": {
+      "precio": 100,
+      "preciopub": 116,
+      "pjedesc1": 0
+    }
   },
   "sin_resultados": {
     "result": []

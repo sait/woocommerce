@@ -38,6 +38,20 @@ docker compose -f "$compose_file" run --rm wpcli plugin install woocommerce \
 	--activate
 docker compose -f "$compose_file" run --rm wpcli plugin activate sait-woocommerce
 docker compose -f "$compose_file" run --rm wpcli option update woocommerce_custom_orders_table_enabled yes
+docker compose -f "$compose_file" run --rm wpcli eval '
+update_option(
+    "opciones_sait",
+    array(
+        "SAITNube_URL" => "https://sait-api.invalid",
+        "SAITNube_APIKey" => "fixture-api-key",
+        "SAITNube_AccessToken" => "fixture-access-token",
+        "SAITNube_TipoDoc" => "P",
+        "SAITNube_NumAlm" => "1",
+        "SAITNube_PrecioLista" => "",
+        "SAITNube_TipoCambio" => "18.5000"
+    )
+);
+'
 
 docker compose -f "$compose_file" run --rm wpcli core version
 docker compose -f "$compose_file" run --rm wpcli plugin get woocommerce --field=version
