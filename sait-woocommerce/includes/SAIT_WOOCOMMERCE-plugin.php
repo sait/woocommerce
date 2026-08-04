@@ -41,6 +41,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_OrderDeliveryScheduler|null */
 	private $order_delivery_scheduler = null;
 
+	/** @var SAIT_WOOCOMMERCE_EventParser|null */
+	private $event_parser = null;
+
 	/** @var SAIT_WOOCOMMERCE_Logger|null */
 	private $logger = null;
 
@@ -205,6 +208,16 @@ class SAIT_WOOCOMMERCE_Plugin
 		return $this->order_delivery_scheduler;
 	}
 
+	/** @return SAIT_WOOCOMMERCE_EventParser */
+	public function event_parser()
+	{
+		if ($this->event_parser === null) {
+			$this->event_parser = new SAIT_WOOCOMMERCE_EventParser();
+		}
+
+		return $this->event_parser;
+	}
+
 	/**
 	 * @return SAIT_WOOCOMMERCE_Logger
 	 */
@@ -318,6 +331,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-product-sync-service.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-order-delivery-state.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-order-delivery-scheduler.php';
+		require_once $includes . 'events/SAIT_WOOCOMMERCE-event-parser.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';

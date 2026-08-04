@@ -148,18 +148,16 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 			return $response;
 		}
 
-		$xml = $request->get_body();
-		libxml_use_internal_errors(true);
-		$xml_object = simplexml_load_string((string) $xml);
-		if (!$xml_object) {
+		$event = SAIT_WOOCOMMERCE()->event_parser()->parse($request->get_body());
+		if (is_wp_error($event)) {
 			$response = new WP_REST_Response();
-			$response->set_status(500);
-			$response->set_data(json_encode(libxml_get_errors()));
+			$response->set_status((int) $event->get_error_data()['status']);
+			$response->set_data($event->get_error_message());
 			return $response;
 		}
 
 		require_once dirname(__DIR__) . '/SAIT_WOOCOMMERCE-process-events.php';
-		return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($xml_object);
+		return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($event->xml());
 	}
 
 	/**

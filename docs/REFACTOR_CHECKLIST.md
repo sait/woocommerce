@@ -431,7 +431,7 @@ feat: mostrar estado de entrega SAIT en la administracion WooCommerce
 
 Objetivo: convertir la clase grande de eventos en router y handlers pequeños.
 
-- [ ] Crear parser XML que valide estructura y produzca datos normalizados.
+- [x] Crear parser XML que valide sintaxis y normalice el tipo sin alterar campos SAIT.
 - [ ] Mantener un router sin reglas de negocio.
 - [ ] Extraer handler de productos.
 - [ ] Extraer handler de precios.

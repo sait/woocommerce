@@ -90,6 +90,11 @@ sait_rest_assert_same(401, $invalid_token->get_status(), 'Webhook con token inva
 $malformed_xml = sait_rest_request('POST', '/saitplugin/v1/saitevents', '<event', 'fixture-access-token');
 sait_rest_assert_same(500, $malformed_xml->get_status(), 'XML invalido conserva status 500.');
 
+$parsed_event = SAIT_WOOCOMMERCE()->event_parser()->parse('<event type=" MODART " version="2" />');
+sait_rest_assert_true($parsed_event instanceof SAIT_WOOCOMMERCE_Event, 'Parser devuelve evento validado.');
+sait_rest_assert_same('MODART', $parsed_event->type(), 'Parser normaliza el tipo de evento.');
+sait_rest_assert_true($parsed_event->xml() instanceof SimpleXMLElement, 'Parser conserva SimpleXML para handlers.');
+
 $unknown_event = sait_rest_request('POST', '/saitplugin/v1/saitevents', $event_body, 'fixture-access-token');
 sait_rest_assert_same(200, $unknown_event->get_status(), 'Evento desconocido.');
 sait_rest_assert_same('OK', $unknown_event->get_data(), 'Respuesta de evento desconocido.');
