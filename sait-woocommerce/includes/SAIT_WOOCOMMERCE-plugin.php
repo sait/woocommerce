@@ -29,6 +29,12 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_DocumentService|null */
 	private $document_service = null;
 
+	/** @var SAIT_WOOCOMMERCE_ProductResolver|null */
+	private $product_resolver = null;
+
+	/** @var SAIT_WOOCOMMERCE_ProductSyncService|null */
+	private $product_sync_service = null;
+
 	/** @var SAIT_WOOCOMMERCE_Logger|null */
 	private $logger = null;
 
@@ -98,6 +104,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		$this->sait_client = $client;
 		$this->customer_resolver = null;
 		$this->document_service = null;
+		$this->product_sync_service = null;
 	}
 
 	/**
@@ -142,6 +149,32 @@ class SAIT_WOOCOMMERCE_Plugin
 		}
 
 		return $this->document_service;
+	}
+
+	/** @return SAIT_WOOCOMMERCE_ProductResolver */
+	public function product_resolver()
+	{
+		if ($this->product_resolver === null) {
+			$this->product_resolver = new SAIT_WOOCOMMERCE_ProductResolver($this->mapping_repository());
+		}
+
+		return $this->product_resolver;
+	}
+
+	/** @return SAIT_WOOCOMMERCE_ProductSyncService */
+	public function product_sync_service()
+	{
+		if ($this->product_sync_service === null) {
+			$this->product_sync_service = new SAIT_WOOCOMMERCE_ProductSyncService(
+				$this->product_resolver(),
+				$this->sait_client(),
+				$this->settings(),
+				new SAIT_WOOCOMMERCE_PriceCalculator(),
+				new SAIT_WOOCOMMERCE_StockCalculator()
+			);
+		}
+
+		return $this->product_sync_service;
 	}
 
 	/**
@@ -253,6 +286,8 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-document-builders.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-document-service.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-product-calculators.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-product-resolver.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-product-sync-service.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';

@@ -187,6 +187,13 @@ Metodos:
 - `SAIT_WOOCOMMERCE_StockCalculator`: selecciona un almacen o suma varios y
   distingue una existencia cero valida de una respuesta sin coincidencias.
 
+## Resolucion Y Sincronizacion De Productos
+
+- `SAIT_WOOCOMMERCE-product-resolver.php`: busca un producto por mapeo válido
+  y usa el SKU como fallback.
+- `SAIT_WOOCOMMERCE-product-sync-service.php`: consulta SAIT, aplica los
+  calculadores, actualiza el producto y guarda metadatos uniformes.
+
 ## `includes/SAIT_WOOCOMMERCE-order-admin.php`
 
 Clase `SAIT_WOOCOMMERCE_OrderAdmin`.

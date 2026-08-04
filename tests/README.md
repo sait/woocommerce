@@ -105,6 +105,16 @@ sh tests/test-logger.sh
 La prueba confirma que el contexto operativo permitido se conserva y que API
 keys, tokens, correos, nombres y payloads son descartados.
 
+Los calculos puros y el servicio compartido de productos se validan con:
+
+```sh
+sh tests/test-product-calculators.sh
+sh tests/test-product-sync.sh
+```
+
+Estas pruebas cubren precios, impuestos, divisa, almacenes, valores cero,
+resolucion por mapeo/SKU y metadatos uniformes sin usar endpoints reales.
+
 ## Caracterizacion De Eventos XML
 
 Los eventos se envian a la ruta REST real del plugin, pero todas sus consultas
