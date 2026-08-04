@@ -36,6 +36,7 @@ services:
     volumes:
       - wordpress_data:/var/www/html
       - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
+      - ../personalizados/sait-woocommerce-papelia:/var/www/html/wp-content/plugins/sait-woocommerce-papelia:ro
       - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
       - ./fixtures:/var/www/html/wp-content/sait-test-fixtures:ro
       - ./integration:/var/www/html/wp-content/sait-test-integration:ro
@@ -63,6 +64,7 @@ services:
     volumes:
       - wordpress_data:/var/www/html
       - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
+      - ../personalizados/sait-woocommerce-papelia:/var/www/html/wp-content/plugins/sait-woocommerce-papelia:ro
       - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
       - ./fixtures:/var/www/html/wp-content/sait-test-fixtures:ro
       - ./integration:/var/www/html/wp-content/sait-test-integration:ro

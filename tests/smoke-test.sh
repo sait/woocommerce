@@ -22,6 +22,9 @@ woocommerce_version="$(wp plugin get woocommerce --field=version)"
 
 wp plugin is-active woocommerce
 wp plugin is-active sait-woocommerce
+wp plugin is-installed sait-woocommerce-papelia
+papelia_status="$(wp plugin get sait-woocommerce-papelia --field=status)"
+[ "$papelia_status" = "inactive" ]
 
 hpos_enabled="$(wp option get woocommerce_custom_orders_table_enabled)"
 [ "$hpos_enabled" = "yes" ]

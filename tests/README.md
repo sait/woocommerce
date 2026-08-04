@@ -130,6 +130,18 @@ sh tests/test-price-service.sh
 La caché distingue usuario/`numcli`, SKU, sucursal, cantidad, divisa y forma de
 pago. `numcli = "    0"` representa el precio público compartido.
 
+El plugin complementario de Papelía se monta por separado y permanece inactivo
+durante las pruebas del núcleo. Su prueba lo activa temporalmente y valida los
+contratos de payload y stock con un cliente inyectado, sin endpoints reales:
+
+```sh
+sh tests/test-papelia-plugin.sh
+```
+
+La prueba confirma que el complemento modifica `otrosdatos`/`obs`, separa el
+stock total del stock por sucursal, reutiliza transients y no desactiva
+globalmente las validaciones de stock de WooCommerce.
+
 Los calculos puros y el servicio compartido de productos se validan con:
 
 ```sh

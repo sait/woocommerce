@@ -37,6 +37,7 @@ docker compose -f "$compose_file" run --rm wpcli plugin install woocommerce \
 	--version=9.3.3 \
 	--activate
 docker compose -f "$compose_file" run --rm wpcli plugin activate sait-woocommerce
+docker compose -f "$compose_file" run --rm wpcli plugin deactivate sait-woocommerce-papelia >/dev/null 2>&1 || true
 docker compose -f "$compose_file" run --rm wpcli option update woocommerce_custom_orders_table_enabled yes
 docker compose -f "$compose_file" run --rm wpcli eval '
 update_option(
@@ -56,3 +57,4 @@ update_option(
 docker compose -f "$compose_file" run --rm wpcli core version
 docker compose -f "$compose_file" run --rm wpcli plugin get woocommerce --field=version
 docker compose -f "$compose_file" run --rm wpcli plugin get sait-woocommerce --fields=name,status,version
+docker compose -f "$compose_file" run --rm wpcli plugin get sait-woocommerce-papelia --fields=name,status,version

@@ -25,7 +25,25 @@ anonymous_meta() {
 
 work_dir="$(mktemp -d)"
 cookie_file="$work_dir/cookies"
-trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
+
+cleanup() {
+	wp_run eval '
+		$options = get_transient("sait_test_guest_branch_options");
+		if (is_array($options)) {
+			update_option("opciones_sait", $options);
+		}
+		delete_transient("sait_test_guest_branch_options");
+	' >/dev/null 2>&1 || true
+	rm -rf "$work_dir"
+}
+trap cleanup EXIT HUP INT TERM
+
+wp_run eval '
+	$options = get_option("opciones_sait", array());
+	set_transient("sait_test_guest_branch_options", $options, 300);
+	$options["SAITNube_Sucursal_enabled"] = "1";
+	update_option("opciones_sait", $options);
+' >/dev/null
 
 nonce="$(wp_run eval 'echo wp_create_nonce("sait-woocommerce_nonce");')"
 before="$(anonymous_meta)"
