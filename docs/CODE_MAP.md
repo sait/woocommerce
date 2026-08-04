@@ -7,15 +7,12 @@ Archivo principal del plugin.
 Responsabilidades:
 
 - Declara metadatos del plugin.
-- Incluye opciones, utilidades, sincronizacion administrativa de precios, funciones personalizadas y carrito.
-- Incluye acciones administrativas de pedidos.
+- Carga las clases de bootstrap y ciclo de vida.
 - Define constantes por defecto:
   - `SAIT_NUBE_NUMALM = "1"`
   - `SAIT_SERIE = "WO"`
 - Registra activacion.
-- Carga el controlador y registra un unico hook para endpoints REST.
-- Registra hooks de envio de ordenes.
-- Registra assets del modal de sucursal.
+- Conserva adaptadores globales para callbacks historicos.
 
 Funciones:
 
@@ -41,6 +38,24 @@ de compatibilidad y delegan en este controlador.
 - `sendOrderSAIT_payment($order_id)`: envia orden pagada con forma de pago `1`.
 - `sendOrderSAIT_thankyou($order_id)`: envia orden no pagada con forma de pago `2`.
 - `registrar_estilos_scripts()`: carga Font Awesome, CSS/JS del modal y nonce AJAX cuando esta activo selector de sucursal.
+
+## `includes/SAIT_WOOCOMMERCE-plugin.php`
+
+Clase `SAIT_WOOCOMMERCE_Plugin`.
+
+- Carga dependencias compartidas y limita opciones/pedidos administrativos a
+  contexto `is_admin()`.
+- Registra rutas REST, hooks de pedidos y assets frontend.
+- Mantiene una sola instancia del controlador REST.
+
+## `includes/SAIT_WOOCOMMERCE-lifecycle.php`
+
+Clase `SAIT_WOOCOMMERCE_Lifecycle`.
+
+- Crea o actualiza la tabla mediante el activador existente.
+- Guarda `sait_woocommerce_db_version = 1.0.0`.
+- Ejecuta actualizaciones de esquema de forma idempotente.
+- Conserva todos los datos al desactivar.
 
 ## `includes/SAIT_UTILS.php`
 

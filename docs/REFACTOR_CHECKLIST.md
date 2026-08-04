@@ -216,14 +216,14 @@ security: restringir endpoints de reenvio de pedidos SAIT
 
 Objetivo: dejar un archivo principal pequeño y una inicialización predecible.
 
-- [ ] Mantener un único archivo principal con encabezado del plugin.
-- [ ] Registrar activación y desactivación en el nivel superior.
-- [ ] Crear una clase `Plugin` o `Loader` para registrar hooks.
-- [ ] Evitar llamadas HTTP, HTML y trabajo pesado al cargar archivos.
-- [ ] Cargar administración sólo en hooks administrativos.
-- [ ] Crear una versión de esquema guardada en opciones.
-- [ ] Crear rutina idempotente de actualización de esquema.
-- [ ] Definir política explícita de desinstalación; no borrar datos por defecto.
+- [x] Mantener un único archivo principal con encabezado del plugin.
+- [x] Registrar activación y desactivación en el nivel superior.
+- [x] Crear una clase `Plugin` o `Loader` para registrar hooks.
+- [x] Evitar llamadas HTTP, HTML y trabajo pesado al cargar archivos.
+- [x] Cargar administración sólo en contexto administrativo.
+- [x] Crear una versión de esquema guardada en opciones.
+- [x] Crear rutina idempotente de actualización de esquema.
+- [x] Definir politica explicita de desactivacion; no borrar datos.
 - [ ] Crear un objeto `Settings` que encapsule `opciones_sait`.
 - [ ] Mantener los nombres históricos de las opciones.
 - [ ] Centralizar defaults, booleanos y lista de almacenes.
@@ -334,6 +334,10 @@ refactor: centralizar logs saneados de WooCommerce
 Objetivo: eliminar duplicación entre pedidos y cotizaciones.
 
 ### Resolución de clientes
+
+Pendiente de confirmar el contrato actual de API v3: no agregar una consulta
+separada a `/clienteseventuales` si `/clientes` ya devuelve ambos tipos. La
+resolucion eventual no se implementara hasta contar con esa confirmacion.
 
 - [ ] Crear `CustomerResolver`.
 - [ ] Resolver en orden:

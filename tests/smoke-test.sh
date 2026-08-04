@@ -26,6 +26,9 @@ wp plugin is-active sait-woocommerce
 hpos_enabled="$(wp option get woocommerce_custom_orders_table_enabled)"
 [ "$hpos_enabled" = "yes" ]
 
+schema_version="$(wp option get sait_woocommerce_db_version)"
+[ "$schema_version" = "1.0.0" ]
+
 wp eval '
 global $wpdb;
 $table = $wpdb->prefix . "sait_claves";
