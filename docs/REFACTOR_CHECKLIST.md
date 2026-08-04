@@ -143,7 +143,7 @@ Objetivo: detectar cambios de comportamiento antes de mover código.
   - [x] Activación y creación de tabla.
   - [x] Registro de endpoints.
   - [x] Procesamiento de fixtures XML.
-  - [ ] Construcción de payloads de pedidos y cotizaciones.
+  - [x] Construcción de payloads de pedidos y cotizaciones.
 - [x] Preparar dobles de prueba para evitar llamadas reales a SAIT.
 - [x] Probar que el plugin se carga sin avisos ni errores fatales.
 

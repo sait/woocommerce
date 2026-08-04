@@ -2,6 +2,12 @@
 
 Este directorio contiene utilidades ligeras para validar el plugin con Docker.
 
+Después de ejecutar el setup, toda la suite local se lanza con:
+
+```sh
+sh tests/test-all.sh
+```
+
 ## Entorno WordPress Y WooCommerce
 
 El entorno de integracion usa versiones fijas:
@@ -82,6 +88,20 @@ sh tests/test-events.sh
 La prueba usa exclusivamente SKUs, terminos y correos con sufijo `Fixture` o
 dominio `example.test`. Al comenzar elimina los datos de una ejecucion previa
 para que pueda repetirse sobre el volumen Docker.
+
+## Caracterizacion De Documentos
+
+Pedidos y cotizaciones se construyen con ordenes WooCommerce reales dentro del
+volumen de pruebas. El POST se captura localmente y nunca sale a SAIT:
+
+```sh
+sh tests/test-documents.sh
+```
+
+Se cubren cliente mapeado, cliente normal encontrado por correo, eventual
+existente, cliente nuevo, descuentos, observaciones, direccion de envio y
+cotizacion. El eventual existente conserva como expectativa la brecha de
+1.2.3: se vuelve a enviar `clievent` en vez de reutilizar `numcliev`.
 
 ## Lint PHP
 
