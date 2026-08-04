@@ -224,11 +224,11 @@ Objetivo: dejar un archivo principal pequeño y una inicialización predecible.
 - [x] Crear una versión de esquema guardada en opciones.
 - [x] Crear rutina idempotente de actualización de esquema.
 - [x] Definir politica explicita de desactivacion; no borrar datos.
-- [ ] Crear un objeto `Settings` que encapsule `opciones_sait`.
-- [ ] Mantener los nombres históricos de las opciones.
-- [ ] Centralizar defaults, booleanos y lista de almacenes.
-- [ ] Mantener Settings API con sanitización por campo.
-- [ ] Verificar capacidad `manage_options` y escape tardío de HTML.
+- [x] Crear un objeto `Settings` que encapsule `opciones_sait`.
+- [x] Mantener los nombres históricos de las opciones.
+- [x] Centralizar defaults, booleanos y lista de almacenes.
+- [x] Mantener Settings API con sanitización por campo.
+- [x] Verificar capacidad `manage_options` y escape tardío de HTML.
 
 ### Fuente De Categoria De Productos
 

@@ -6,11 +6,15 @@ class SAITSettingsPage
      */
     private $options;
 
+	/** @var SAIT_WOOCOMMERCE_Settings */
+	private $settings;
+
     /**
      * Inicializacion.
      */
-    public function __construct()
+    public function __construct(SAIT_WOOCOMMERCE_Settings $settings)
     {
+		$this->settings = $settings;
         add_action( 'admin_menu', array( $this, 'add_plugin_page' ) );
         add_action( 'admin_init', array( $this, 'page_init' ) );
     }
@@ -35,8 +39,12 @@ class SAITSettingsPage
      */
     public function create_admin_page()
     {
+		if (!current_user_can('manage_options')) {
+			wp_die(esc_html('No tienes permisos para administrar esta configuracion.'));
+		}
+
         // Se trae las opciones de SAIT
-        $this->options = get_option( 'opciones_sait' );
+		$this->options = $this->settings->all();
         ?>
         <div class="wrap">
             <h1>Configuración SAIT</h1>
@@ -65,8 +73,12 @@ class SAITSettingsPage
         // Registramos las opciones de SAIT
         register_setting(
             'opciones_sait_group', // Option group
-            'opciones_sait', // Option name
-            array( $this, 'sanitize' ) // Sanitize
+			SAIT_WOOCOMMERCE_Settings::OPTION_NAME, // Option name
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array($this, 'sanitize'),
+				'default'           => $this->settings->defaults(),
+			)
         );
         // Se define la seccion de configuracion de SAIT Nube
         add_settings_section(
@@ -240,67 +252,7 @@ class SAITSettingsPage
      */
     public function sanitize( $input )
     {
-        $new_input = array();
-        if( isset( $input['SAITNube_APIKey'] ) )
-            $new_input['SAITNube_APIKey'] = sanitize_text_field( $input['SAITNube_APIKey'] );
-
-        if( isset( $input['SAITNube_URL'] ) )
-            $new_input['SAITNube_URL'] = sanitize_text_field( $input['SAITNube_URL'] );
-        
-        if( isset( $input['SAITNube_TipoDoc'] ) )
-            $new_input['SAITNube_TipoDoc'] = sanitize_text_field( $input['SAITNube_TipoDoc'] );
-
-        if( isset( $input['SAITNube_NumAlm'] ) )
-            $new_input['SAITNube_NumAlm'] = sanitize_text_field( $input['SAITNube_NumAlm'] );
-		
-		if (isset($input['SAITNube_Sucursal_enabled'])) {
-			$new_input['SAITNube_Sucursal_enabled'] = sanitize_text_field($input['SAITNube_Sucursal_enabled']);
-		}
-		
-        if (isset($input['SAITNube_OcultarSinPrecio_enabled'])) {
-			$new_input['SAITNube_OcultarSinPrecio_enabled'] = sanitize_text_field($input['SAITNube_OcultarSinPrecio_enabled']);
-		}
-        if (isset($input['SAITNube_ExistAlm_enabled'])) {
-			$new_input['SAITNube_ExistAlm_enabled'] = sanitize_text_field($input['SAITNube_ExistAlm_enabled']);
-		}
-		if( isset( $input['SAITNube_ExistAlm'] ) )
-            $new_input['SAITNube_ExistAlm'] = sanitize_text_field( $input['SAITNube_ExistAlm'] );	
-		
-        if (isset($input['SAITNube_MinimoCarrito_Enabled'])) {
-			$new_input['SAITNube_MinimoCarrito_Enabled'] = sanitize_text_field($input['SAITNube_MinimoCarrito_Enabled']);
-		}
-		if( isset( $input['SAITNube_MinimoCarrito'] ) )
-            $new_input['SAITNube_MinimoCarrito'] = sanitize_text_field( $input['SAITNube_MinimoCarrito'] );	
-		
-        if( isset( $input['SAITNube_TipoCambio'] ) )
-            $new_input['SAITNube_TipoCambio'] = sanitize_text_field( $input['SAITNube_TipoCambio'] );
-        
-		if (isset($input['SAITNube_Promo_enabled'])) {
-			$new_input['SAITNube_Promo_enabled'] = sanitize_text_field($input['SAITNube_Promo_enabled']);
-		}
-
-		if (isset($input['SAITNube_PromoGlobal_enabled'])) {
-			$new_input['SAITNube_PromoGlobal_enabled'] = sanitize_text_field($input['SAITNube_PromoGlobal_enabled']);
-		}
-		
-		if (isset($input['SAITNube_PedidoObs_enabled'])) {
-			$new_input['SAITNube_PedidoObs_enabled'] = sanitize_text_field($input['SAITNube_PedidoObs_enabled']);
-		}
-		
-		if (isset($input['SAITNube_PedidoDirenvio_enabled'])) {
-			$new_input['SAITNube_PedidoDirenvio_enabled'] = sanitize_text_field($input['SAITNube_PedidoDirenvio_enabled']);
-		}
-		
-		if (isset($input['SAITNube_FuncionPersonalizadaPedido_enabled'])) {
-			$new_input['SAITNube_FuncionPersonalizadaPedido_enabled'] = sanitize_text_field($input['SAITNube_FuncionPersonalizadaPedido_enabled']);
-		}
-		
-        if( isset( $input['SAITNube_PrecioLista'] ) )
-            $new_input['SAITNube_PrecioLista'] = sanitize_text_field( $input['SAITNube_PrecioLista'] );
-        
-        if( isset( $input['SAITNube_AccessToken'] ) )
-            $new_input['SAITNube_AccessToken'] = sanitize_text_field( $input['SAITNube_AccessToken'] );
-        return $new_input;
+		return $this->settings->sanitize($input);
     }
 	
 
@@ -555,6 +507,3 @@ class SAITSettingsPage
 	}
 
 }
-
-if( is_admin() )
-    $SAIT_settings_page = new SAITSettingsPage();

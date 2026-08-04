@@ -156,6 +156,15 @@ Responsabilidades:
 - Renderiza inputs y radios.
 - Renderiza la seccion administrativa de sincronizacion de precios cuando la clase esta disponible.
 
+## `includes/SAIT_WOOCOMMERCE-settings.php`
+
+Clase `SAIT_WOOCOMMERCE_Settings`.
+
+- Conserva `opciones_sait` como nombre unico de almacenamiento.
+- Centraliza valores predeterminados y lecturas de claves historicas.
+- Normaliza banderas y listas de almacenes.
+- Sanitiza por lista cerrada los campos aceptados por Settings API.
+
 ## `includes/SAIT_WOOCOMMERCE-art-sync.php`
 
 Clase `SAIT_WOOCOMMERCE_ArtSync`.

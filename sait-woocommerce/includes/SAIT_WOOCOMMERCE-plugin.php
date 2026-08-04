@@ -11,6 +11,12 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_REST_Controller|null */
 	private $rest_controller = null;
 
+	/** @var SAIT_WOOCOMMERCE_Settings|null */
+	private $settings = null;
+
+	/** @var SAITSettingsPage|null */
+	private $settings_page = null;
+
 	/**
 	 * @param string $plugin_file Archivo principal del plugin.
 	 */
@@ -40,6 +46,18 @@ class SAIT_WOOCOMMERCE_Plugin
 		}
 
 		return $this->rest_controller;
+	}
+
+	/**
+	 * @return SAIT_WOOCOMMERCE_Settings
+	 */
+	public function settings()
+	{
+		if ($this->settings === null) {
+			$this->settings = new SAIT_WOOCOMMERCE_Settings();
+		}
+
+		return $this->settings;
 	}
 
 	/**
@@ -136,6 +154,7 @@ class SAIT_WOOCOMMERCE_Plugin
 	private function load_dependencies()
 	{
 		$includes = plugin_dir_path($this->plugin_file) . 'includes/';
+		require_once $includes . 'SAIT_WOOCOMMERCE-settings.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-personalizado.php';
@@ -145,6 +164,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		if (is_admin()) {
 			require_once $includes . 'SAIT_WOOCOMMERCE-options.php';
 			require_once $includes . 'SAIT_WOOCOMMERCE-order-admin.php';
+			$this->settings_page = new SAITSettingsPage($this->settings());
 		}
 	}
 

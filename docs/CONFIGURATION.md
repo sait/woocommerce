@@ -2,6 +2,10 @@
 
 Las opciones se guardan en WordPress bajo la opcion `opciones_sait`.
 
+El servicio `SAIT_WOOCOMMERCE_Settings` centraliza su lectura sin cambiar los
+nombres historicos. Las banderas ausentes se interpretan como desactivadas y
+las listas de almacenes se normalizan sin vacios ni duplicados.
+
 La pagina de administracion esta en:
 
 `Ajustes -> Configuracion SAIT`
