@@ -23,9 +23,8 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 test -f "dist/sait-woocommerce-2.0.0.zip"
-git archive --format=zip --prefix=sait-woocommerce/ --output="$legacy_zip_host" "$legacy_ref":sait-woocommerce
-
 cleanup
+git archive --format=zip --prefix=sait-woocommerce/ --output="$legacy_zip_host" "$legacy_ref":sait-woocommerce
 compose up -d database wordpress
 
 attempt=1
