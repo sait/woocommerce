@@ -222,8 +222,8 @@ docker compose -f tests/docker-compose.yml run --rm -T composer run phpstan
 La configuración comienza en nivel 3 y carga stubs compatibles con WordPress
 6.6.2 y WooCommerce 9.3.3. `vendor/`, las pruebas y sus fixtures quedan fuera
 del análisis; `vendor/` también está excluido de Git y del paquete del plugin.
-La baseline sólo admite hallazgos heredados por mensaje, archivo y cantidad;
-un error nuevo o un aumento en la cantidad hace fallar el comando.
+La baseline inicial se utilizó para revisar la deuda heredada y se eliminó al
+resolver sus 16 hallazgos. Actualmente cualquier error hace fallar el comando.
 
 ## Línea Base Del Frontend
 

@@ -1,3 +1,9 @@
+<?php
+/** @var bool $is_product_page Indica si se renderiza la ficha individual. */
+/** @var float $promotional_price Precio promocional calculado. */
+/** @var float $regular_price Precio regular del producto. */
+/** @var float|int $discount Porcentaje de descuento mostrado. */
+?>
 <?php if ($is_product_page) : ?>
 	<span class="precio-promocion-principal" style="font-size:28px;color:#cc0000;font-weight:bold;">
 		<?php echo wp_kses_post(wc_price($promotional_price)); ?>

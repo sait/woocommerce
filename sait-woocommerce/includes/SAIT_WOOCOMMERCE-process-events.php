@@ -24,7 +24,7 @@
 	/**
 	 * Enruta un evento XML de SAIT al procesador correspondiente.
 	 *
-	 * @param SimpleXMLElement $oXml XML del evento con atributo type.
+	 * @param SAIT_WOOCOMMERCE_Event|SimpleXMLElement $event Evento normalizado o XML con atributo type.
 	 * @return WP_REST_Response Respuesta normalizada para el endpoint REST.
 	 *
 	 * Acciones que realiza: delega en funciones que pueden modificar productos, categorias,
@@ -164,8 +164,11 @@
 	 */
 	public static function xml_attribute($object, $attribute)
 	{
-			if(isset($object[$attribute]))
-					return htmlspecialchars_decode((string) $object[$attribute]);
+		if (isset($object[$attribute])) {
+			return htmlspecialchars_decode((string) $object[$attribute]);
+		}
+
+		return null;
 	}
 
 }

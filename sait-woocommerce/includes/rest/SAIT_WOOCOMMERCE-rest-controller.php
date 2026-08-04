@@ -86,7 +86,7 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 	 * @param WP_REST_Request $request Peticion REST.
 	 * @return true|WP_Error
 	 */
-	public function resend_order_permissions_check($request)
+	public function resend_order_permissions_check(WP_REST_Request $request)
 	{
 		if (!is_user_logged_in()) {
 			return new WP_Error(
@@ -123,7 +123,7 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 	 * @param WP_REST_Request|null $request Peticion REST, no utilizada.
 	 * @return string
 	 */
-	public function hello($request = null)
+	public function hello(?WP_REST_Request $request = null)
 	{
 		require_once dirname(__DIR__) . '/SAIT_WOOCOMMERCE-hello.php';
 		return SAIT_WOOCOMMERCE_Hello::SAIT_helloworld();
@@ -137,7 +137,7 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 	 * @param WP_REST_Request $request Peticion con token y XML.
 	 * @return WP_REST_Response
 	 */
-	public function process_events($request)
+	public function process_events(WP_REST_Request $request)
 	{
 		$access_token = $request->get_header('x-AccessToken');
 		$sait_access_token = SAIT_WOOCOMMERCE()->settings()->get('SAITNube_AccessToken', '');
@@ -166,7 +166,7 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 	 * @param WP_REST_Request $request Peticion con idpedido.
 	 * @return WP_REST_Response
 	 */
-	public function resend_order($request)
+	public function resend_order(WP_REST_Request $request)
 	{
 		require_once dirname(__DIR__) . '/SAIT_WOOCOMMERCE-orders.php';
 		$order_id = absint($request['idpedido']);

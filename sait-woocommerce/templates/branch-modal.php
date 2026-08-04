@@ -1,3 +1,6 @@
+<?php
+/** @var array<int,array<string,mixed>> $branches Sucursales devueltas por SAIT. */
+?>
 <div id="sucursal-modal">
 	<div class="modal-content">
 		<h2 style="margin-top: 0; color: #2c3e50; text-align: center;">Selecciona tu Sucursal</h2>

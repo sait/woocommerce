@@ -1,3 +1,7 @@
+<?php
+/** @var array<int,array<string,mixed>> $warehouses Existencias devueltas por SAIT. */
+/** @var array<int,string> $allowed_warehouses Claves de almacenes configurados. */
+?>
 <h3>Existencias por sucursal</h3>
 <style>
 	.tabla-almacenes {

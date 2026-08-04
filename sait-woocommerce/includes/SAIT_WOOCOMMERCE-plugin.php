@@ -426,8 +426,8 @@ class SAIT_WOOCOMMERCE_Plugin
 	{
 		add_action('plugins_loaded', array('SAIT_WOOCOMMERCE_Lifecycle', 'maybe_upgrade'), 5);
 		add_action('rest_api_init', array($this, 'register_rest_routes'));
-		add_action('woocommerce_payment_complete', array($this, 'send_order_payment'), 10, 2);
-		add_action('woocommerce_thankyou', array($this, 'send_order_thankyou'), 10, 2);
+		add_action('woocommerce_payment_complete', array($this, 'send_order_payment'), 10, 1);
+		add_action('woocommerce_thankyou', array($this, 'send_order_thankyou'), 10, 1);
 		add_action('plugins_loaded', array($this, 'register_frontend_hooks'), 20);
 		add_action(
 			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,

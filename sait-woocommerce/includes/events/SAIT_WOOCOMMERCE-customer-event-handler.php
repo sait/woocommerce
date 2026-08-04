@@ -25,6 +25,7 @@ class SAIT_WOOCOMMERCE_CustomerEventHandler
 				$customer->set_email( $emailtw );
 				$customer->save();
 				$mailer = WC()->mailer();
+				/** @var WC_Email_Customer_New_Account $email */
 				$email = $mailer->emails['WC_Email_Customer_New_Account'];
 				$email->trigger($clave->wcid,null,true);
 				return SAIT_UTILS::SAIT_response(200,"Cliente actualizado");
@@ -55,4 +56,3 @@ class SAIT_WOOCOMMERCE_CustomerEventHandler
 
 	}
 }
-

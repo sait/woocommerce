@@ -19,6 +19,8 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 	/**
 	 * Encola una sola entrega por orden y forma de pago.
 	 *
+	 * @param int|string $order_id ID de la orden WooCommerce.
+	 * @param string     $payment_method Forma de pago SAIT.
 	 * @return array{queued:bool,message:string}
 	 */
 	public function enqueue($order_id, $payment_method)
@@ -59,6 +61,8 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 	/**
 	 * Worker idempotente que confirma la respuesta HTTP antes de marcar sent.
 	 *
+	 * @param int|string $order_id ID recibido por Action Scheduler o WP-Cron.
+	 * @param string     $payment_method Forma de pago SAIT.
 	 * @return void
 	 */
 	public function process($order_id, $payment_method)
@@ -97,7 +101,11 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 			&& $result['estado'] === 'reintento_requerido';
 	}
 
-	/** @return void */
+	/**
+	 * @param array{0:int,1:string} $args Argumentos serializados para el worker.
+	 * @param int $attempts Intentos ya realizados.
+	 * @return void
+	 */
 	private function schedule_retry($args, $attempts)
 	{
 		$delays = array(1 => 60, 2 => 300);
@@ -109,7 +117,10 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 		}
 	}
 
-	/** @return bool */
+	/**
+	 * @param array{0:int,1:string} $args Argumentos serializados para el worker.
+	 * @return bool
+	 */
 	private function is_scheduled($args)
 	{
 		if (function_exists('as_has_scheduled_action')) {

@@ -1,3 +1,6 @@
+<?php
+/** @var float $minimum Monto mínimo configurado. */
+?>
 <script type="text/javascript">
 jQuery(function($) {
 	function bloquearSiNoCumple() {

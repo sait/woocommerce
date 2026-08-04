@@ -31,7 +31,7 @@ class SAIT_WOOCOMMERCE_MappingRepository
 	/**
 	 * @param string $entity Nombre historico de tabla logica.
 	 * @param string $sait_key Clave SAIT.
-	 * @return object|null
+	 * @return object{id:int,tabla:string,clave:string,wcid:int}|null
 	 */
 	public function find_by_sait_key($entity, $sait_key)
 	{
@@ -47,7 +47,7 @@ class SAIT_WOOCOMMERCE_MappingRepository
 	/**
 	 * @param string $entity Nombre historico de tabla logica.
 	 * @param int    $woocommerce_id ID WordPress/WooCommerce.
-	 * @return object|null
+	 * @return object{id:int,tabla:string,clave:string,wcid:int}|null
 	 */
 	public function find_by_woocommerce_id($entity, $woocommerce_id)
 	{
@@ -62,7 +62,7 @@ class SAIT_WOOCOMMERCE_MappingRepository
 
 	/**
 	 * @param string $numart Numero de articulo SAIT.
-	 * @return object|null
+	 * @return object{id:int,tabla:string,clave:string,wcid:int}|null
 	 */
 	public function find_product($numart)
 	{
@@ -71,7 +71,7 @@ class SAIT_WOOCOMMERCE_MappingRepository
 
 	/**
 	 * @param string $numcli Numero de cliente SAIT.
-	 * @return object|null
+	 * @return object{id:int,tabla:string,clave:string,wcid:int}|null
 	 */
 	public function find_customer($numcli)
 	{
@@ -80,7 +80,7 @@ class SAIT_WOOCOMMERCE_MappingRepository
 
 	/**
 	 * @param int $user_id ID de usuario WordPress.
-	 * @return object|null
+	 * @return object{id:int,tabla:string,clave:string,wcid:int}|null
 	 */
 	public function find_customer_by_user_id($user_id)
 	{
@@ -90,7 +90,7 @@ class SAIT_WOOCOMMERCE_MappingRepository
 	/**
 	 * @param string $mapping_table Tabla logica: lineas, familia, catego o deptos.
 	 * @param string $category_key Clave SAIT de la clasificacion.
-	 * @return object|null
+	 * @return object{id:int,tabla:string,clave:string,wcid:int}|null
 	 */
 	public function find_category($mapping_table, $category_key)
 	{
