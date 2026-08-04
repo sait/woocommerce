@@ -155,6 +155,15 @@ clientes nuevos, correos invalidos, descuentos, observaciones, direccion de
 envio y cotizacion. `/clientes` es la unica ruta de busqueda: un `numcli` que
 contiene `-` se envia como `numcliev`.
 
+Los estados persistentes de entrega se validan con:
+
+```sh
+sh tests/test-order-delivery.sh
+```
+
+La prueba cubre `pending`, `sending`, `failed` y `sent`, conteo de intentos,
+HTTP/errores y confirma que un POST no bloqueante no se marque como enviado.
+
 ## Lint PHP
 
 Desde la raiz del repositorio:

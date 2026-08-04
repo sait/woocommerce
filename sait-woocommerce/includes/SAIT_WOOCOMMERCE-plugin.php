@@ -35,6 +35,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_ProductSyncService|null */
 	private $product_sync_service = null;
 
+	/** @var SAIT_WOOCOMMERCE_OrderDeliveryState|null */
+	private $order_delivery_state = null;
+
 	/** @var SAIT_WOOCOMMERCE_Logger|null */
 	private $logger = null;
 
@@ -177,6 +180,16 @@ class SAIT_WOOCOMMERCE_Plugin
 		return $this->product_sync_service;
 	}
 
+	/** @return SAIT_WOOCOMMERCE_OrderDeliveryState */
+	public function order_delivery_state()
+	{
+		if ($this->order_delivery_state === null) {
+			$this->order_delivery_state = new SAIT_WOOCOMMERCE_OrderDeliveryState();
+		}
+
+		return $this->order_delivery_state;
+	}
+
 	/**
 	 * @return SAIT_WOOCOMMERCE_Logger
 	 */
@@ -288,6 +301,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-product-calculators.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-product-resolver.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-product-sync-service.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-order-delivery-state.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';

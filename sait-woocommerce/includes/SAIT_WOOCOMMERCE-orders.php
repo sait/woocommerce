@@ -75,7 +75,9 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 		if (self::SAIT_envioAutomaticoDisparado($order)) {
 			return SAIT_UTILS::SAIT_response(200, "SAIT ENVIO YA DISPARADO");
 		}
+		SAIT_WOOCOMMERCE()->order_delivery_state()->mark_pending($order, $formapago, $tipo, 'automatic');
 		self::SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo);
+		SAIT_WOOCOMMERCE()->order_delivery_state()->mark_sending($order, $formapago, $tipo, 'automatic');
 		if ($tipo==="P"){
 			return self::SAIT_sendPedido($order,$formapago);
 		}else{
@@ -127,6 +129,7 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 			}
 			$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
 			$tipo = $SAIT_options['SAITNube_TipoDoc'];
+			SAIT_WOOCOMMERCE()->order_delivery_state()->mark_sending($order, "1", $tipo, 'manual');
 			if ($tipo==="P"){
 				$response = self::SAIT_sendPedido($order,"1",true);
 			}else{
@@ -159,6 +162,7 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 	 * Acciones que realiza: actualiza metadatos _sait_ultimo_* en la orden y la guarda.
 	 */
 	public static function SAIT_registrarResultadoEnvio($order, $response, $tipo, $formapago, $modo){
+		SAIT_WOOCOMMERCE()->order_delivery_state()->record_response($order, $response);
 		$is_error = is_wp_error($response);
 		$status_code = $is_error ? 0 : (int) wp_remote_retrieve_response_code($response);
 		$message = $is_error ? $response->get_error_message() : wp_remote_retrieve_body($response);
