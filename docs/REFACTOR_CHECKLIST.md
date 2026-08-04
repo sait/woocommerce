@@ -438,7 +438,7 @@ Objetivo: convertir la clase grande de eventos en router y handlers pequeños.
 - [x] Extraer handler de existencias.
 - [x] Extraer handler de categorías.
 - [x] Extraer handler de clientes.
-- [ ] Extraer handler de tipo de cambio.
+- [x] Extraer handler de tipo de cambio.
 - [ ] Preservar HTTP 200 para eventos recibidos pero no aplicables.
 - [ ] Reservar errores HTTP para autenticación, formato o fallos reales.
 - [ ] Ejecutar todos los fixtures después de extraer cada handler.

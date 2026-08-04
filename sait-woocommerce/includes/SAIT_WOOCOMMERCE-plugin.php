@@ -336,6 +336,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-price-stock-event-handler.php';
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-category-event-handler.php';
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-customer-event-handler.php';
+		require_once $includes . 'events/SAIT_WOOCOMMERCE-exchange-rate-event-handler.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
