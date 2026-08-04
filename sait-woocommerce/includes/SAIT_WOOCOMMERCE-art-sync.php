@@ -293,82 +293,11 @@ class SAIT_WOOCOMMERCE_ArtSync {
 	}
 
 	public static function sync_sku($sku, $source = 'manual') {
-		$sku = trim($sku);
-		if ($sku === '') {
-			return array('estado' => 'error', 'mensaje' => 'SKU vacio.');
-		}
-
-		$article_request = self::get_nube_json('/api/v3/articulos/' . rawurlencode($sku));
-		if (empty($article_request['ok'])) {
-			$message = $article_request['status_code'] === 404
-				? 'SAITNube no encontro el articulo.'
-				: 'No se pudo consultar el articulo en SAITNube. ' . $article_request['mensaje'];
-			return array(
-				'estado' => 'error',
-				'mensaje' => $message,
-			);
-		}
-
-		$row = self::extract_item_response($article_request['data']);
-
-		if (empty($row) || !is_array($row)) {
-			$message = $article_request['status_code'] === 404
-				? 'SAITNube no encontro el articulo.'
-				: 'SAITNube respondio, pero no regreso datos del articulo.';
-			return array('estado' => 'error', 'mensaje' => $message);
-		}
-
-		return self::sync_product_from_api_row($sku, $row, $source);
+		return SAIT_WOOCOMMERCE()->product_sync_service()->sync_sku($sku, $source);
 	}
 
 	public static function sync_product_from_api_row($numart, $row, $source = 'manual') {
-		$product = self::get_product_by_numart($numart);
-		if (!$product) {
-			return array('estado' => 'ignorado', 'mensaje' => 'Producto no existe en WooCommerce.');
-		}
-
-		$current_price = (float) $product->get_regular_price();
-		$price = self::calculate_price_from_api_row($row);
-		$price_changed = false;
-		$price_status = 'sin_precio_valido';
-
-		if ($price > 0) {
-			if (round($current_price, 2) === round($price, 2)) {
-				$price_status = 'sin_cambio';
-			} else {
-				$product->set_regular_price($price);
-				$product->set_price($price);
-				$price_changed = true;
-				$price_status = 'actualizado';
-			}
-			self::save_product_sync_meta($product, $source, $current_price, $price, $price_status);
-		}
-
-		$stock_result = self::sync_stock_for_product($product, $numart, $source);
-		$product->save();
-
-		$stock_changed = !empty($stock_result['actualizado']);
-		if ($price_changed || $stock_changed) {
-			return array(
-				'estado' => 'actualizado',
-				'mensaje' => self::build_sync_message($current_price, $price, $price_status, $stock_result),
-				'existencia_actualizada' => $stock_changed,
-			);
-		}
-
-		if ($price_status === 'sin_precio_valido' && empty($stock_result['sincronizado'])) {
-			return array(
-				'estado' => 'ignorado',
-				'mensaje' => 'SAITNube no regreso precio ni existencia validos.',
-				'existencia_actualizada' => false,
-			);
-		}
-
-		return array(
-			'estado' => 'sin_cambio',
-			'mensaje' => self::build_sync_message($current_price, $price, $price_status, $stock_result),
-			'existencia_actualizada' => false,
-		);
+		return SAIT_WOOCOMMERCE()->product_sync_service()->sync_from_row($numart, $row, $source);
 	}
 
 	private static function calculate_price_from_api_row($row) {

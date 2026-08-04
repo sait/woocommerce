@@ -379,7 +379,8 @@ Objetivo: aplicar las mismas reglas desde eventos, acciones manuales y lotes.
 - [x] Definir explícitamente tratamiento de precios y existencias en cero.
 - [x] Unificar reglas de lista, impuestos, divisa y tipo de cambio en calculadores compartidos.
 - [x] Unificar almacén único y múltiples almacenes en un calculador compartido.
-- [ ] Reutilizar desde `MODART`, `ACTPRECIO`, `ACTEXIST` y sincronización admin.
+- [ ] Reutilizar desde `MODART`, `ACTPRECIO` y `ACTEXIST`.
+- [x] Reutilizar desde sincronización administrativa manual y por lotes.
 - [x] Mantener metadatos de auditoría uniformes en el servicio compartido.
 
 ### Cambio funcional aislado

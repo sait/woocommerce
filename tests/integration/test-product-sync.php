@@ -59,7 +59,7 @@ sait_product_sync_assert_same('sku', $by_sku['source'], 'Fallback por SKU.');
 sait_product_sync_assert_same($sku_product_id, $by_sku['product']->get_id(), 'Producto resuelto por SKU.');
 sait_product_sync_assert_same(null, SAIT_UTILS::SAIT_getClaves('arts', 'FIX-USD-001', null), 'Resolver no registra mapeos.');
 
-$result = SAIT_WOOCOMMERCE()->product_sync_service()->sync_sku('FIX-ART-001', 'fixture_service');
+$result = SAIT_WOOCOMMERCE_ArtSync::sync_sku('FIX-ART-001', 'fixture_service');
 sait_product_sync_assert_same('actualizado', $result['estado'], 'Estado de sincronizacion.');
 $synced = wc_get_product($mapped_product_id);
 sait_product_sync_assert_same(116.0, (float) $synced->get_regular_price(), 'Precio sincronizado.');
@@ -69,6 +69,18 @@ sait_product_sync_assert_same('fixture_service', $synced->get_meta('_sait_art_sy
 sait_product_sync_assert_same('fixture_service', $synced->get_meta('_sait_existencia_sync_source'), 'Auditoria de existencia.');
 sait_product_sync_assert_same('actualizado', $synced->get_meta('_sait_art_sync_status'), 'Estado auditado de precio.');
 sait_product_sync_assert_same('actualizado', $synced->get_meta('_sait_existencia_sync_status'), 'Estado auditado de existencia.');
+
+$batch_result = SAIT_WOOCOMMERCE_ArtSync::sync_product_from_api_row(
+	'FIX-ART-001',
+	array('numart' => 'FIX-ART-001', 'preciopub' => 116),
+	'fixture_batch'
+);
+sait_product_sync_assert_same('actualizado', $batch_result['estado'], 'El adaptador de lotes usa el servicio compartido.');
+sait_product_sync_assert_same(
+	'fixture_batch',
+	wc_get_product($mapped_product_id)->get_meta('_sait_art_sync_source'),
+	'Auditoria del adaptador de lotes.'
+);
 
 $synced->delete(true);
 $sku_product->delete(true);
