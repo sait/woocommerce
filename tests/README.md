@@ -112,6 +112,15 @@ validan con:
 sh tests/test-frontend-modules.sh
 ```
 
+La persistencia real por AJAX de una sucursal invitada se verifica con:
+
+```sh
+sh tests/test-guest-branch.sh
+```
+
+La prueba confirma la cookie de sesión WooCommerce y que no cambien las filas
+históricas de `user_id = 0`.
+
 Los calculos puros y el servicio compartido de productos se validan con:
 
 ```sh

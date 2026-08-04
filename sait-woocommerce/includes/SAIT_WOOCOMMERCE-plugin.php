@@ -279,7 +279,11 @@ class SAIT_WOOCOMMERCE_Plugin
 	public function promotions()
 	{
 		if ($this->promotions === null) {
-			$this->promotions = new SAIT_WOOCOMMERCE_Promotions($this->settings(), $this->plugin_file);
+			$this->promotions = new SAIT_WOOCOMMERCE_Promotions(
+				$this->settings(),
+				$this->plugin_file,
+				$this->branch_selector()
+			);
 		}
 
 		return $this->promotions;

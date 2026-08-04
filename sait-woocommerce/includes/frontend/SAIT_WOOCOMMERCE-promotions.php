@@ -11,10 +11,14 @@ class SAIT_WOOCOMMERCE_Promotions
 	/** @var string */
 	private $template_path;
 
-	public function __construct($settings, $plugin_file)
+	/** @var SAIT_WOOCOMMERCE_BranchSelector|null */
+	private $branch_selector;
+
+	public function __construct($settings, $plugin_file, $branch_selector = null)
 	{
 		$this->settings = $settings;
 		$this->template_path = plugin_dir_path($plugin_file) . 'templates/promotion-price.php';
+		$this->branch_selector = $branch_selector;
 	}
 
 	/** @return void */
@@ -65,7 +69,7 @@ class SAIT_WOOCOMMERCE_Promotions
 			set_transient($client_cache_key, $client_number, 1800);
 		}
 
-		$warehouse = get_user_meta($user_id, 'sucursal_seleccionada', true);
+		$warehouse = $this->get_selected_branch();
 		if (empty($warehouse)) {
 			$warehouse = $this->settings->get('SAITNube_NumAlm', '');
 		}
@@ -185,7 +189,7 @@ class SAIT_WOOCOMMERCE_Promotions
 				$client_number = '    0';
 			}
 
-			$warehouse = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+			$warehouse = $this->get_selected_branch();
 			if (empty($warehouse)) {
 				$warehouse = $this->settings->get('SAITNube_NumAlm', '');
 			}
@@ -233,5 +237,15 @@ class SAIT_WOOCOMMERCE_Promotions
 		}
 
 		return $price;
+	}
+
+	/** @return int|string */
+	private function get_selected_branch()
+	{
+		if ($this->branch_selector) {
+			return $this->branch_selector->get_selected_branch();
+		}
+
+		return get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
 	}
 }

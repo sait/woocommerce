@@ -230,9 +230,12 @@ Si `SAITNube_Sucursal_enabled === "1"`:
 - Se agregan CSS/JS del modal.
 - Se agrega boton en menu `primary`.
 - Se imprime modal en `wp_footer`.
-- La seleccion se guarda en user meta `sucursal_seleccionada` por AJAX.
+- Para usuarios autenticados, la selección se guarda en user meta
+  `sucursal_seleccionada` por AJAX.
+- Para visitantes, se guarda en la sesión de WooCommerce y se solicita su
+  cookie de sesión; nunca se escribe el user ID `0`.
 
-El AJAX tambien esta habilitado para usuarios no logueados, pero usa `get_current_user_id()`. En visitantes anonimos esto normalmente sera `0`, por lo que puede no persistir por usuario real.
+Promociones de catálogo y carrito leen la sucursal desde la misma fuente.
 
 ## Precios Promocionales Y Carrito
 

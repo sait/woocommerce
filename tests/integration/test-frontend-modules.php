@@ -37,6 +37,30 @@ class SAIT_Test_Frontend_Settings
 	}
 }
 
+class SAIT_Test_Frontend_Session
+{
+	/** @var array<string, mixed> */
+	public $data = array();
+
+	/** @var bool */
+	public $cookie_requested = false;
+
+	public function get($key, $default = null)
+	{
+		return isset($this->data[$key]) ? $this->data[$key] : $default;
+	}
+
+	public function set($key, $value)
+	{
+		$this->data[$key] = $value;
+	}
+
+	public function set_customer_session_cookie($set)
+	{
+		$this->cookie_requested = (bool) $set;
+	}
+}
+
 $plugin_file = WP_PLUGIN_DIR . '/sait-woocommerce/SAIT_WOOCOMMERCE.php';
 $disabled_settings = new SAIT_Test_Frontend_Settings();
 $disabled_selector = new SAIT_WOOCOMMERCE_BranchSelector($disabled_settings, $plugin_file);
@@ -74,6 +98,49 @@ sait_frontend_assert_true(
 	!wp_script_is('sait-personalizado-script', 'enqueued'),
 	'El selector no debe cargar el script de personalizaciones de checkout.'
 );
+
+$original_user_id = get_current_user_id();
+$original_session = WC()->session;
+$guest_session = new SAIT_Test_Frontend_Session();
+wp_set_current_user(0);
+WC()->session = $guest_session;
+global $wpdb;
+$anonymous_meta_before = $wpdb->get_results(
+	$wpdb->prepare(
+		"SELECT umeta_id, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id",
+		0,
+		'sucursal_seleccionada'
+	),
+	ARRAY_A
+);
+$stored_branch = $selector->persist_selected_branch(2);
+sait_frontend_assert_true($stored_branch === 2, 'Debe devolver la sucursal guardada para el invitado.');
+sait_frontend_assert_true(
+	$guest_session->get(SAIT_WOOCOMMERCE_BranchSelector::SESSION_KEY) === 2,
+	'Debe guardar la sucursal en la sesión WooCommerce del invitado.'
+);
+sait_frontend_assert_true(
+	$guest_session->cookie_requested,
+	'Debe solicitar la cookie de sesión WooCommerce para persistir al invitado.'
+);
+$anonymous_meta_after = $wpdb->get_results(
+	$wpdb->prepare(
+		"SELECT umeta_id, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = %s ORDER BY umeta_id",
+		0,
+		'sucursal_seleccionada'
+	),
+	ARRAY_A
+);
+sait_frontend_assert_true(
+	$anonymous_meta_after === $anonymous_meta_before,
+	'Nunca debe crear ni modificar metadatos de sucursal para el usuario 0.'
+);
+sait_frontend_assert_true(
+	$selector->get_selected_branch() === 2,
+	'Debe leer para promociones la misma sucursal guardada en sesión.'
+);
+WC()->session = $original_session;
+wp_set_current_user($original_user_id);
 
 $stock_settings = new SAIT_Test_Frontend_Settings(
 	array(

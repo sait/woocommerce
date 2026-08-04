@@ -5,6 +5,9 @@
  */
 class SAIT_WOOCOMMERCE_BranchSelector
 {
+	const SESSION_KEY = 'sait_sucursal_seleccionada';
+	const COOKIE_NAME = 'sait_sucursal_seleccionada';
+
 	/** @var SAIT_WOOCOMMERCE_Settings */
 	private $settings;
 
@@ -50,7 +53,7 @@ class SAIT_WOOCOMMERCE_BranchSelector
 			return $items;
 		}
 
-		$warehouse = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+		$warehouse = $this->get_selected_branch();
 		$label = 'Seleccionar Sucursal';
 
 		if (!empty($warehouse)) {
@@ -98,10 +101,72 @@ class SAIT_WOOCOMMERCE_BranchSelector
 		}
 
 		$branch_id = absint(wp_unslash($_POST['sucursal_id']));
-		update_user_meta(get_current_user_id(), 'sucursal_seleccionada', $branch_id);
-		$branch_id = get_user_meta(get_current_user_id(), 'sucursal_seleccionada', true);
+		$branch_id = $this->persist_selected_branch($branch_id);
 
 		wp_send_json_success($branch_id);
+	}
+
+	/**
+	 * Lee la sucursal desde el usuario o la sesión del visitante.
+	 *
+	 * @return int|string
+	 */
+	public function get_selected_branch()
+	{
+		$user_id = get_current_user_id();
+		if ($user_id > 0) {
+			return get_user_meta($user_id, 'sucursal_seleccionada', true);
+		}
+
+		if (function_exists('WC') && WC()->session) {
+			$session_branch = WC()->session->get(self::SESSION_KEY, '');
+			if ($session_branch !== '' && $session_branch !== null) {
+				return $session_branch;
+			}
+		}
+
+		if (isset($_COOKIE[self::COOKIE_NAME])) {
+			return absint(wp_unslash($_COOKIE[self::COOKIE_NAME]));
+		}
+
+		return '';
+	}
+
+	/**
+	 * Persiste la sucursal sin escribir metadatos para el usuario anónimo 0.
+	 *
+	 * @param int $branch_id Número de almacén seleccionado.
+	 * @return int
+	 */
+	public function persist_selected_branch($branch_id)
+	{
+		$branch_id = absint($branch_id);
+		$user_id = get_current_user_id();
+		if ($user_id > 0) {
+			update_user_meta($user_id, 'sucursal_seleccionada', $branch_id);
+			return (int) get_user_meta($user_id, 'sucursal_seleccionada', true);
+		}
+
+		if (function_exists('WC') && WC()->session) {
+			WC()->session->set(self::SESSION_KEY, $branch_id);
+			if (is_callable(array(WC()->session, 'set_customer_session_cookie'))) {
+				WC()->session->set_customer_session_cookie(true);
+			}
+			return $branch_id;
+		}
+
+		if (function_exists('wc_setcookie')) {
+			wc_setcookie(
+				self::COOKIE_NAME,
+				(string) $branch_id,
+				time() + MONTH_IN_SECONDS,
+				is_ssl(),
+				true
+			);
+			$_COOKIE[self::COOKIE_NAME] = (string) $branch_id;
+		}
+
+		return $branch_id;
 	}
 
 	/** @return void */
