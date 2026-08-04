@@ -25,6 +25,7 @@ services:
         condition: service_healthy
     environment:
       SAIT_TEST_API_MOCK: "1"
+      SAIT_TEST_API_LATENCY_MS: "25"
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
@@ -54,6 +55,7 @@ services:
     environment:
       HOME: /tmp
       SAIT_TEST_API_MOCK: "1"
+      SAIT_TEST_API_LATENCY_MS: "25"
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress

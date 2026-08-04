@@ -92,10 +92,37 @@ function sait_test_intercept_api_request($preempt, $args, $url)
 
 	$method = isset($args['method']) ? strtoupper($args['method']) : 'GET';
 	$body = isset($args['body']) ? json_decode($args['body'], true) : null;
+	$latency_ms = max(0, (int) getenv('SAIT_TEST_API_LATENCY_MS'));
+	if ($latency_ms > 0) {
+		usleep($latency_ms * 1000);
+	}
 	$counts = get_option('sait_test_request_counts', array());
 	$count_key = $method . ' ' . $path;
 	$counts[$count_key] = isset($counts[$count_key]) ? $counts[$count_key] + 1 : 1;
 	update_option('sait_test_request_counts', $counts, false);
+	$metrics = get_option(
+		'sait_test_request_metrics',
+		array(
+			'total_calls'         => 0,
+			'total_duration_ms'   => 0,
+			'configured_delay_ms' => $latency_ms,
+			'by_route'            => array(),
+		)
+	);
+	$metrics['total_calls'] = isset($metrics['total_calls']) ? $metrics['total_calls'] + 1 : 1;
+	$metrics['total_duration_ms'] = isset($metrics['total_duration_ms'])
+		? $metrics['total_duration_ms'] + $latency_ms
+		: $latency_ms;
+	$metrics['configured_delay_ms'] = $latency_ms;
+	if (!isset($metrics['by_route']) || !is_array($metrics['by_route'])) {
+		$metrics['by_route'] = array();
+	}
+	if (!isset($metrics['by_route'][$count_key])) {
+		$metrics['by_route'][$count_key] = array('calls' => 0, 'duration_ms' => 0);
+	}
+	$metrics['by_route'][$count_key]['calls']++;
+	$metrics['by_route'][$count_key]['duration_ms'] += $latency_ms;
+	update_option('sait_test_request_metrics', $metrics, false);
 	$headers = isset($args['headers']) && is_array($args['headers']) ? $args['headers'] : array();
 	update_option(
 		'sait_test_last_request',

@@ -462,9 +462,11 @@ Objetivo: retirar UI de `SAIT_UTILS.php` y reducir llamadas remotas en requests.
 ### Medición obligatoria
 
 - [ ] Medir primero catálogo, producto, carrito y checkout en staging.
+- [x] Agregar una línea base local reproducible con fixtures para las cuatro pantallas.
 - [ ] Mantener misma URL, usuario, caché y datos para comparar.
-- [ ] Registrar cantidad y duración de llamadas HTTP a SAIT.
-- [ ] Usar varias muestras y comparar medianas.
+- [x] Fijar URL, visitante, política de caché y datos para comparaciones locales.
+- [x] Registrar cantidad y duración simulada de llamadas HTTP a SAIT en Docker.
+- [x] Usar varias muestras y comparar medianas en la línea base local.
 
 ### Extracción
 

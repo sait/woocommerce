@@ -179,3 +179,26 @@ docker compose -f tests/docker-compose.yml run --rm php php -l sait-woocommerce/
 ```
 
 El contenedor monta el repositorio en `/workspace` y no modifica archivos del plugin.
+
+## Línea Base Del Frontend
+
+La etapa de rendimiento cuenta con un escenario local determinista para
+catálogo, producto, carrito y checkout:
+
+```sh
+sh tests/test-frontend-performance.sh
+```
+
+La prueba usa un único visitante invitado, un producto y una categoría
+exclusivos. Antes de cada muestra limpia sólo los transients `sait_*`, reinicia
+las métricas del mock y conserva el carrito del visitante. Por defecto toma
+cinco muestras y muestra la mediana de TTFB de cada pantalla.
+
+El mock agrega 25 ms controlados por llamada y reporta conteo y duración
+simulada por ruta. Esa latencia no representa un endpoint real: permite
+comparar el antes y el después sin acceder a API v3. Para cambiar la cantidad
+de muestras:
+
+```sh
+SAIT_PERFORMANCE_SAMPLES=7 sh tests/test-frontend-performance.sh
+```
