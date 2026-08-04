@@ -65,24 +65,10 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 	 * evitar duplicados entre hooks de WooCommerce.
 	 */
 	public static function SAIT_sendOrder($id_pedido,$formapago){
-		
-		$order = wc_get_order( $id_pedido );
-		if (!$order) {
-			return SAIT_UTILS::SAIT_response(404, "Pedido no existe");
-		}
-		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
-		$tipo = $SAIT_options['SAITNube_TipoDoc'];
-		if (self::SAIT_envioAutomaticoDisparado($order)) {
-			return SAIT_UTILS::SAIT_response(200, "SAIT ENVIO YA DISPARADO");
-		}
-		SAIT_WOOCOMMERCE()->order_delivery_state()->mark_pending($order, $formapago, $tipo, 'automatic');
-		self::SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo);
-		SAIT_WOOCOMMERCE()->order_delivery_state()->mark_sending($order, $formapago, $tipo, 'automatic');
-		if ($tipo==="P"){
-			return self::SAIT_sendPedido($order,$formapago);
-		}else{
-			return self::SAIT_sendCotizacion($order,$formapago);
-		}
+		$result = SAIT_WOOCOMMERCE()->order_delivery_scheduler()->enqueue($id_pedido, $formapago);
+		$status = $result['message'] === 'Pedido no existe' ? 404 : 200;
+
+		return SAIT_UTILS::SAIT_response($status, $result['message']);
 	}
 
 	/**

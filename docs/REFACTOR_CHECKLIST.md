@@ -408,9 +408,9 @@ Objetivo: distinguir disparo, aceptación y fallo sin duplicar documentos.
 - [x] Definir estados `pending`, `sending`, `sent` y `failed`.
 - [x] Registrar intentos, timestamps, HTTP status y último error.
 - [x] No marcar como enviado un POST no bloqueante sin confirmación.
-- [ ] Programar envíos automáticos con Action Scheduler.
-- [ ] Hacer cada tarea idempotente.
-- [ ] Desduplicar acciones programadas.
+- [x] Programar envíos automáticos con Action Scheduler.
+- [x] Hacer cada tarea idempotente antes de enviar.
+- [x] Desduplicar acciones programadas.
 - [ ] Definir reintentos limitados y backoff.
 - [ ] Mantener disparo manual protegido para recuperación.
 - [x] Considerar HPOS: usar CRUD de `WC_Order`, no acceso directo a posts.

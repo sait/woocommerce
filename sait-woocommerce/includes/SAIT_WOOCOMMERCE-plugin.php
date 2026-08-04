@@ -38,6 +38,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_OrderDeliveryState|null */
 	private $order_delivery_state = null;
 
+	/** @var SAIT_WOOCOMMERCE_OrderDeliveryScheduler|null */
+	private $order_delivery_scheduler = null;
+
 	/** @var SAIT_WOOCOMMERCE_Logger|null */
 	private $logger = null;
 
@@ -190,6 +193,18 @@ class SAIT_WOOCOMMERCE_Plugin
 		return $this->order_delivery_state;
 	}
 
+	/** @return SAIT_WOOCOMMERCE_OrderDeliveryScheduler */
+	public function order_delivery_scheduler()
+	{
+		if ($this->order_delivery_scheduler === null) {
+			$this->order_delivery_scheduler = new SAIT_WOOCOMMERCE_OrderDeliveryScheduler(
+				$this->order_delivery_state()
+			);
+		}
+
+		return $this->order_delivery_scheduler;
+	}
+
 	/**
 	 * @return SAIT_WOOCOMMERCE_Logger
 	 */
@@ -221,7 +236,7 @@ class SAIT_WOOCOMMERCE_Plugin
 	public function send_order_payment($order_id)
 	{
 		$this->load_orders();
-		SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($order_id, '1');
+		$this->order_delivery_scheduler()->enqueue($order_id, '1');
 	}
 
 	/**
@@ -233,7 +248,7 @@ class SAIT_WOOCOMMERCE_Plugin
 	public function send_order_thankyou($order_id)
 	{
 		$this->load_orders();
-		SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($order_id, '2');
+		$this->order_delivery_scheduler()->enqueue($order_id, '2');
 	}
 
 	/**
@@ -302,6 +317,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-product-resolver.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-product-sync-service.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-order-delivery-state.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-order-delivery-scheduler.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
@@ -326,6 +342,12 @@ class SAIT_WOOCOMMERCE_Plugin
 		add_action('woocommerce_payment_complete', array($this, 'send_order_payment'), 10, 2);
 		add_action('woocommerce_thankyou', array($this, 'send_order_thankyou'), 10, 2);
 		add_action('wp_enqueue_scripts', array($this, 'enqueue_assets'));
+		add_action(
+			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+			array($this->order_delivery_scheduler(), 'process'),
+			10,
+			2
+		);
 	}
 
 	/**

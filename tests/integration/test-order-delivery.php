@@ -60,12 +60,54 @@ sait_delivery_assert_same(201, (int) $order->get_meta('_sait_delivery_http_statu
 sait_delivery_assert_same('', $order->get_meta('_sait_delivery_last_error'), 'Error eliminado al enviar.');
 
 $automatic_order = wc_create_order();
+delete_option('sait_test_request_counts');
 SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($automatic_order->get_id(), '1');
 $automatic_order = wc_get_order($automatic_order->get_id());
-sait_delivery_assert_same('sending', $state->status($automatic_order), 'POST no bloqueante no confirma sent.');
-sait_delivery_assert_same(1, absint($automatic_order->get_meta('_sait_delivery_attempts')), 'Intento automatico.');
+sait_delivery_assert_same('pending', $state->status($automatic_order), 'Envio automatico queda pendiente.');
+sait_delivery_assert_same(0, absint($automatic_order->get_meta('_sait_delivery_attempts')), 'Encolar no cuenta como intento.');
+sait_delivery_assert_same(array(), get_option('sait_test_request_counts', array()), 'Encolar no ejecuta HTTP.');
+
+SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($automatic_order->get_id(), '1');
+do_action(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, $automatic_order->get_id(), '1');
+$automatic_order = wc_get_order($automatic_order->get_id());
+sait_delivery_assert_same('sent', $state->status($automatic_order), 'Worker confirma sent con HTTP 201.');
+sait_delivery_assert_same(1, absint($automatic_order->get_meta('_sait_delivery_attempts')), 'Un solo intento automatico.');
+$request_counts = get_option('sait_test_request_counts', array());
+sait_delivery_assert_same(1, $request_counts['POST /api/v3/pedidos'], 'Un solo POST automatico.');
+
+$duplicate_order = wc_create_order();
+SAIT_WOOCOMMERCE()->send_order_payment($duplicate_order->get_id());
+SAIT_WOOCOMMERCE()->send_order_thankyou($duplicate_order->get_id());
+$duplicate_order = wc_get_order($duplicate_order->get_id());
+sait_delivery_assert_same('pending', $state->status($duplicate_order), 'Hooks dejan una entrega pendiente.');
+sait_delivery_assert_same('1', $duplicate_order->get_meta('_sait_delivery_payment_method'), 'Primer hook conserva forma de pago.');
+if (function_exists('as_has_scheduled_action')) {
+	sait_delivery_assert_same(
+		true,
+		(bool) as_has_scheduled_action(
+			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+			array($duplicate_order->get_id(), '1'),
+			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+		),
+		'Accion unica programada.'
+	);
+}
+
+if (function_exists('as_unschedule_all_actions')) {
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		array($automatic_order->get_id(), '1'),
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		array($duplicate_order->get_id(), '1'),
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+}
 
 $order->delete(true);
 $automatic_order->delete(true);
+$duplicate_order->delete(true);
 
 echo "Estados de entrega de documentos SAIT validados correctamente.\n";
