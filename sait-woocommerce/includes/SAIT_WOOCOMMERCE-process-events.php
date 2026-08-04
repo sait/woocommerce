@@ -109,7 +109,7 @@
 		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
 	
 		/*
- 	   $product_id_by_sku = wc_get_product_id_by_sku($numart);
+		$product_id_by_sku = wc_get_product_id_by_sku($numart);
 		if ($product_id_by_sku) {
 				$product = wc_get_product($product_id_by_sku);
 
@@ -177,6 +177,16 @@
 				}
 		}
 		*/
+		if (!isset($clave->wcid)) {
+			$resolved = SAIT_WOOCOMMERCE()->product_resolver()->resolve($numart);
+			if ($resolved['source'] === 'sku' && $resolved['product']) {
+				$product_id = $resolved['product']->get_id();
+				$mapping_id = SAIT_WOOCOMMERCE()->mapping_repository()->add('arts', $numart, $product_id);
+				if ($mapping_id) {
+					$clave = SAIT_WOOCOMMERCE()->mapping_repository()->find_product($numart);
+				}
+			}
+		}
 
 		// Si ya existe el artículo → actualizar
 		if (isset($clave->wcid)) {

@@ -385,9 +385,9 @@ Objetivo: aplicar las mismas reglas desde eventos, acciones manuales y lotes.
 
 ### Cambio funcional aislado
 
-- [ ] Vincular un producto WooCommerce existente por SKU cuando falte el mapeo.
-- [ ] No crear un SKU duplicado.
-- [ ] Registrar el mapeo sólo después de validar el producto.
+- [x] Vincular un producto WooCommerce existente por SKU cuando falte el mapeo.
+- [x] No crear un SKU duplicado.
+- [x] Registrar el mapeo sólo después de validar el producto.
 
 ### Commits
 

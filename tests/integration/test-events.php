@@ -191,17 +191,13 @@ $preexisting = new WC_Product_Simple();
 $preexisting->set_name('Producto preexistente Fixture');
 $preexisting->set_sku('FIX-ART-001');
 $preexisting_id = $preexisting->save();
-$duplicate_sku_error = null;
-try {
-	sait_test_send_event('modart-active.xml');
-} catch (Throwable $error) {
-	$duplicate_sku_error = $error;
-}
-sait_test_assert_true(
-	$duplicate_sku_error instanceof WC_Data_Exception,
-	'La version 1.2.3 debe conservar como brecha el error para un SKU preexistente sin mapeo.'
-);
+$preexisting_response = sait_test_send_event('modart-active.xml');
+sait_test_assert_same('ART UPD', $preexisting_response->get_data(), 'MODART debe vincular el SKU preexistente.');
+$preexisting_mapping = SAIT_UTILS::SAIT_getClaves('arts', 'FIX-ART-001', null);
+sait_test_assert_same($preexisting_id, (int) $preexisting_mapping->wcid, 'Mapeo del SKU preexistente.');
+sait_test_assert_same($preexisting_id, wc_get_product_id_by_sku('FIX-ART-001'), 'MODART no debe duplicar el SKU.');
 wc_get_product($preexisting_id)->delete(true);
+SAIT_UTILS::SAIT_deleteClaves($preexisting_mapping->id);
 
 $article_add = sait_test_send_event('modart-active.xml');
 sait_test_assert_same(200, $article_add->get_status(), 'Status de alta MODART.');

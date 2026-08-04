@@ -15,7 +15,7 @@ con distintas precondiciones.
 | Alta de articulo | `events/modart-active.xml` | SKU y mapeo inexistentes. | `ART ADD`; producto borrador y mapeo `arts`. |
 | Actualizacion | `events/modart-active.xml` | Existe el mapeo `arts`. | `ART UPD`. |
 | Baja | `events/modart-disabled.xml` | Existe el mapeo `arts`. | Producto en papelera y `OK`. |
-| SKU preexistente | `events/modart-active.xml` | Existe SKU, no existe mapeo. | Crea otro producto o falla por SKU duplicado; brecha conocida. |
+| SKU preexistente | `events/modart-active.xml` | Existe SKU, no existe mapeo. | Vincula y actualiza el producto existente sin duplicar el SKU. |
 | Precio publico | `events/actprecio.xml` | Producto local resoluble. | Precio regular `116.00`. |
 | Lista configurada | `events/actprecio.xml` | Lista `1` y respuesta `articulo_pesos`. | Precio `116.00` con impuestos. |
 | Articulo en dolares | `events/actprecio.xml` | TC `18.50` y respuesta `articulo_dolares`. | Precio convertido desde el XML. |
