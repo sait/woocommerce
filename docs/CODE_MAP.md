@@ -177,6 +177,8 @@ Metodos:
 - `build_order()` y `build_quote()`: resuelven dependencias y construyen sin POST.
 - `send_document()`: envia un payload ya construido mediante el cliente SAIT.
 - `send_order()` y `send_quote()`: coordinan ambas operaciones.
+- Expone los filtros `sait_woocommerce_order_payload`,
+  `sait_woocommerce_quote_payload` y `sait_woocommerce_document_payload`.
 
 ## `includes/SAIT_WOOCOMMERCE-order-admin.php`
 

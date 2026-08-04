@@ -41,7 +41,10 @@ class SAIT_WOOCOMMERCE_DocumentService
 			$this->customer_resolver->resolve($order)
 		);
 
-		return $this->customize_legacy($document, $order, $options);
+		$document = $this->customize_legacy($document, $order, $options);
+		$document = apply_filters('sait_woocommerce_order_payload', $document, $order);
+
+		return apply_filters('sait_woocommerce_document_payload', $document, $order, 'P');
 	}
 
 	/**
@@ -60,7 +63,10 @@ class SAIT_WOOCOMMERCE_DocumentService
 			$this->customer_resolver->resolve($order)
 		);
 
-		return $this->customize_legacy($document, $order, $options);
+		$document = $this->customize_legacy($document, $order, $options);
+		$document = apply_filters('sait_woocommerce_quote_payload', $document, $order);
+
+		return apply_filters('sait_woocommerce_document_payload', $document, $order, 'Q');
 	}
 
 	/**

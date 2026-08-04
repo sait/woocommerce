@@ -26,6 +26,27 @@ function sait_document_assert_true($condition, $message)
 	}
 }
 
+function sait_document_filter_order($document, $order)
+{
+	$document->filtro_fixture = 'pedido-' . $order->get_id();
+
+	return $document;
+}
+
+function sait_document_filter_quote($document, $order)
+{
+	$document->filtro_fixture = 'cotizacion-' . $order->get_id();
+
+	return $document;
+}
+
+function sait_document_filter_common($document, $order, $document_type)
+{
+	$document->tipo_fixture = $document_type . '-' . $order->get_id();
+
+	return $document;
+}
+
 function sait_document_last_request()
 {
 	$request = get_option('sait_test_last_request');
@@ -203,11 +224,17 @@ sait_document_assert_same(' -789', $mapped_eventual_payload['numcliev'], 'Eventu
 sait_document_assert_true(!isset($mapped_eventual_payload['clievent']), 'Eventual mapeado no debe enviar clievent.');
 
 $normal_order = sait_document_create_order($product, 'normal.fixture@example.test');
+add_filter('sait_woocommerce_order_payload', 'sait_document_filter_order', 10, 2);
+add_filter('sait_woocommerce_document_payload', 'sait_document_filter_common', 10, 3);
 $normal_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($normal_order, '2', true);
+remove_filter('sait_woocommerce_order_payload', 'sait_document_filter_order', 10);
+remove_filter('sait_woocommerce_document_payload', 'sait_document_filter_common', 10);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($normal_response), 'HTTP cliente normal.');
 $normal_payload = sait_document_last_request()['body'];
 sait_document_assert_same('  123', $normal_payload['numcli'], 'Cliente normal encontrado por correo.');
 sait_document_assert_same('2', $normal_payload['formapago'], 'Forma de pago thankyou.');
+sait_document_assert_same('pedido-' . $normal_order->get_id(), $normal_payload['filtro_fixture'], 'Filtro de pedido.');
+sait_document_assert_same('P-' . $normal_order->get_id(), $normal_payload['tipo_fixture'], 'Filtro comun de pedido.');
 
 $eventual_order = sait_document_create_order($product, 'eventual.fixture@example.test');
 $eventual_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($eventual_order, '1', true);
@@ -237,7 +264,11 @@ $invalid_email_counts = get_option('sait_test_request_counts', array());
 sait_document_assert_true(!isset($invalid_email_counts['GET /api/v3/clientes']), 'Correo invalido no debe consultar clientes.');
 
 $quote_order = sait_document_create_order($product, 'cotizacion.documento@example.test', 0, 232.0);
+add_filter('sait_woocommerce_quote_payload', 'sait_document_filter_quote', 10, 2);
+add_filter('sait_woocommerce_document_payload', 'sait_document_filter_common', 10, 3);
 $quote_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendCotizacion($quote_order, '2', true);
+remove_filter('sait_woocommerce_quote_payload', 'sait_document_filter_quote', 10);
+remove_filter('sait_woocommerce_document_payload', 'sait_document_filter_common', 10);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($quote_response), 'HTTP cotizacion.');
 $quote_request = sait_document_last_request();
 sait_document_assert_same('/api/v3/cotizaciones', $quote_request['path'], 'Endpoint de cotizacion.');
@@ -245,6 +276,8 @@ $quote_payload = $quote_request['body'];
 sait_document_assert_common_payload($quote_payload, $quote_order->get_id(), 0.0);
 sait_document_assert_true(isset($quote_payload['fecha']), 'Cotizacion debe incluir fecha.');
 sait_document_assert_true(isset($quote_payload['hora']), 'Cotizacion debe incluir hora.');
+sait_document_assert_same('cotizacion-' . $quote_order->get_id(), $quote_payload['filtro_fixture'], 'Filtro de cotizacion.');
+sait_document_assert_same('Q-' . $quote_order->get_id(), $quote_payload['tipo_fixture'], 'Filtro comun de cotizacion.');
 
 $request_counts = get_option('sait_test_request_counts', array());
 sait_document_assert_true(!isset($request_counts['GET /api/v3/clienteseventuales']), 'No debe consultarse /clienteseventuales.');

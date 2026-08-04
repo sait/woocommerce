@@ -355,7 +355,7 @@ no se consulta `/clienteseventuales`.
 - [x] Compartir construcción de artículos, dirección, observaciones y cliente.
 - [x] Separar construcción del payload y envío HTTP.
 - [x] Comparar payloads con los fixtures de la etapa 0.
-- [ ] Exponer filtros documentados para personalizaciones.
+- [x] Exponer filtros documentados para personalizaciones.
 
 ### Commits
 
