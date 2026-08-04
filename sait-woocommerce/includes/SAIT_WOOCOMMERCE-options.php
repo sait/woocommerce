@@ -121,6 +121,14 @@ class SAITSettingsPage
             'SAITNube'
         ); 
 
+		add_settings_field(
+			SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY,
+			'Categoria de productos desde SAIT',
+			array($this, 'SAITNube_CategoriaFuente_callback'),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+
 		// Campo para activar o desactivar el modal de Sucursal
 		add_settings_field(
 			'SAITNube_Sucursal_enabled',
@@ -307,6 +315,31 @@ class SAITSettingsPage
             isset( $this->options['SAITNube_TipoDoc'] ) ? esc_attr( $this->options['SAITNube_TipoDoc']) : ''
         );
     }
+
+	/**
+	 * Muestra la clasificacion SAIT usada como categoria WooCommerce.
+	 *
+	 * @return void
+	 */
+	public function SAITNube_CategoriaFuente_callback()
+	{
+		$current = $this->settings->category_source();
+		?>
+		<select
+			id="SAITNube_CategoriaFuente"
+			name="opciones_sait[SAITNube_CategoriaFuente]"
+		>
+			<?php foreach ($this->settings->category_sources() as $value => $source): ?>
+				<option value="<?php echo esc_attr($value); ?>" <?php selected($current, $value); ?>>
+					<?php echo esc_html($source['label']); ?>
+				</option>
+			<?php endforeach; ?>
+		</select>
+		<p class="description">
+			Si no se configura, se conserva Línea por compatibilidad con la versión 1.2.3.
+		</p>
+		<?php
+	}
 
     /** 
      * Obtiene el valor de la opcion y lo imprime

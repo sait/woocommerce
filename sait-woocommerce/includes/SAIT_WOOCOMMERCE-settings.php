@@ -6,6 +6,8 @@
 class SAIT_WOOCOMMERCE_Settings
 {
 	const OPTION_NAME = 'opciones_sait';
+	const CATEGORY_SOURCE_KEY = 'SAITNube_CategoriaFuente';
+	const DEFAULT_CATEGORY_SOURCE = 'linea';
 
 	/**
 	 * @return array<string,mixed>
@@ -17,6 +19,7 @@ class SAIT_WOOCOMMERCE_Settings
 			'SAITNube_URL'                               => '',
 			'SAITNube_AccessToken'                       => '',
 			'SAITNube_TipoDoc'                           => '',
+			self::CATEGORY_SOURCE_KEY                    => self::DEFAULT_CATEGORY_SOURCE,
 			'SAITNube_Sucursal_enabled'                  => '0',
 			'SAITNube_NumAlm'                            => null,
 			'SAITNube_OcultarSinPrecio_enabled'          => '0',
@@ -78,6 +81,59 @@ class SAIT_WOOCOMMERCE_Settings
 	public function is_enabled($key)
 	{
 		return $this->get($key, '0') === '1';
+	}
+
+	/**
+	 * Correspondencia exacta entre MODART y los eventos que crean cada mapeo.
+	 *
+	 * @return array<string,array<string,string>>
+	 */
+	public function category_sources()
+	{
+		return array(
+			'linea' => array(
+				'label'             => 'Línea',
+				'article_attribute' => 'linea',
+				'mapping_table'     => 'lineas',
+				'event_key'         => 'numlin',
+			),
+			'familia' => array(
+				'label'             => 'Familia',
+				'article_attribute' => 'familia',
+				'mapping_table'     => 'familia',
+				'event_key'         => 'numfam',
+			),
+			'categoria' => array(
+				'label'             => 'Categoría',
+				'article_attribute' => 'categoria',
+				'mapping_table'     => 'catego',
+				'event_key'         => 'numcat',
+			),
+			'departamento' => array(
+				'label'             => 'Departamento',
+				'article_attribute' => 'numdep',
+				'mapping_table'     => 'deptos',
+				'event_key'         => 'valdep',
+			),
+		);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function category_source()
+	{
+		return $this->sanitize_category_source($this->get(self::CATEGORY_SOURCE_KEY));
+	}
+
+	/**
+	 * @return array<string,string>
+	 */
+	public function category_source_config()
+	{
+		$sources = $this->category_sources();
+
+		return $sources[$this->category_source()];
 	}
 
 	/**
@@ -158,6 +214,12 @@ class SAIT_WOOCOMMERCE_Settings
 			}
 		}
 
+		if (isset($input[self::CATEGORY_SOURCE_KEY])) {
+			$sanitized[self::CATEGORY_SOURCE_KEY] = $this->sanitize_category_source(
+				wp_unslash($input[self::CATEGORY_SOURCE_KEY])
+			);
+		}
+
 		foreach ($boolean_fields as $key) {
 			if (isset($input[$key])) {
 				$sanitized[$key] = (string) $input[$key] === '1' ? '1' : '0';
@@ -170,5 +232,17 @@ class SAIT_WOOCOMMERCE_Settings
 		}
 
 		return $sanitized;
+	}
+
+	/**
+	 * @param mixed $value Fuente recibida.
+	 * @return string
+	 */
+	private function sanitize_category_source($value)
+	{
+		$value = sanitize_key((string) $value);
+		$sources = $this->category_sources();
+
+		return isset($sources[$value]) ? $value : self::DEFAULT_CATEGORY_SOURCE;
 	}
 }

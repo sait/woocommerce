@@ -19,9 +19,27 @@ La pagina de administracion esta en:
 | `SAITNube_URL` | URL base de SAITNube. Se concatena con rutas como `/api/v3/pedidos`. |
 | `SAITNube_AccessToken` | Token esperado en el header entrante `x-AccessToken` para eventos SAIT. |
 | `SAITNube_TipoDoc` | `P` envia pedidos; otros valores envian cotizaciones. |
+| `SAITNube_CategoriaFuente` | Clasificacion SAIT usada como categoria WooCommerce: `linea`, `familia`, `categoria` o `departamento`. El valor predeterminado es `linea`. |
 | `SAITNube_NumAlm` | Almacen base para existencias y pedidos. |
 | `SAITNube_TipoCambio` | Tipo de cambio guardado por evento `ACTTC`; campo readonly en admin. |
 | `SAITNube_PrecioLista` | Lista de precio SAIT alternativa para actualizar precio WooCommerce. |
+
+### Fuente de categoria de productos
+
+Los nombres del atributo de `MODART` y la clave del evento que crea el mapeo
+no siguen el mismo patron en todos los casos:
+
+| Valor configurado | Atributo en `MODART` | Tabla en `sait_claves` | Clave del evento de catalogo |
+| --- | --- | --- | --- |
+| `linea` | `linea` | `lineas` | `MODLINEA.keys.numlin` |
+| `familia` | `familia` | `familia` | `MODFAMILIA.keys.numfam` |
+| `categoria` | `categoria` | `catego` | `MODCATEGO.keys.numcat` |
+| `departamento` | `numdep` | `deptos` | `MODDEPTO.keys.valdep` |
+
+Si una instalacion actualizada no tiene la opcion, se usa `linea` sin necesidad
+de modificar los datos guardados. Si el atributo seleccionado viene vacio o
+todavia no existe su mapeo, `MODART` conserva las categorias actuales del
+producto.
 
 ## Opciones De Frontend Y Stock
 

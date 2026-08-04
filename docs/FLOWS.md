@@ -47,9 +47,11 @@ Para esos casos no aplicables se usa `200` para confirmar a SAIT que el webhook 
 Archivo: `includes/SAIT_WOOCOMMERCE-process-events.php`
 
 1. Lee `numart` desde `keys`.
-2. Lee campos como `codigo`, `desc`, `linea`, `modelo`, `statusweb`, `obs`.
+2. Lee campos como `codigo`, `desc`, `linea`, `familia`, `categoria`, `numdep`,
+   `modelo`, `statusweb`, `obs`.
 3. Si `statusweb` viene vacio, responde `statusweb null`.
-4. Busca categoria por tabla `lineas` en `sait_claves`.
+4. Busca categoria en `sait_claves` usando la fuente configurada; si la opcion
+   no existe usa `linea` y la tabla `lineas`.
 5. Busca producto mapeado en `sait_claves` con tabla `arts`.
 6. Si `statusweb` es `0`, manda el producto a papelera si existe.
 7. Si ya existe mapeo:

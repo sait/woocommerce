@@ -233,25 +233,25 @@ Objetivo: dejar un archivo principal pequeño y una inicialización predecible.
 
 ### Fuente De Categoria De Productos
 
-- [ ] Agregar a `opciones_sait` un selector para elegir la fuente de la
+- [x] Agregar a `opciones_sait` un selector para elegir la fuente de la
   categoria WooCommerce: linea, familia, categoria o departamento.
-- [ ] Definir el nombre definitivo de la opcion y sanearla mediante una lista
+- [x] Definir el nombre definitivo de la opcion y sanearla mediante una lista
   cerrada de valores permitidos.
-- [ ] Confirmar el valor predeterminado y la migracion antes de implementarlo:
-  la version 1.2.3 observada usa `linea` de forma fija, pero instalaciones
-  anteriores pueden haber esperado `numfam`.
-- [ ] Centralizar la correspondencia entre la opcion, el atributo de `MODART`
+- [x] Confirmar el valor predeterminado y la migracion antes de implementarlo:
+  una opcion ausente usa `linea` para conservar el comportamiento de 1.2.3;
+  `familia` queda disponible de forma explicita para instalaciones anteriores.
+- [x] Centralizar la correspondencia entre la opcion, el atributo de `MODART`
   y la tabla de mapeo de `sait_claves`:
-  - [ ] Linea: atributo `linea`, tabla `lineas`.
-  - [ ] Familia: atributo `familia`, tabla `familia`.
-  - [ ] Categoria: atributo `categoria`, tabla `catego`.
-  - [ ] Departamento: atributo `numdep`, tabla `deptos`.
-- [ ] Hacer que `MODART` asigne `product_cat` usando la fuente configurada.
-- [ ] Definir el comportamiento cuando el atributo o el mapeo no existe, sin
+  - [x] Linea: atributo `linea`, tabla `lineas`; evento con clave `numlin`.
+  - [x] Familia: atributo `familia`, tabla `familia`; evento con clave `numfam`.
+  - [x] Categoria: atributo `categoria`, tabla `catego`; evento con clave `numcat`.
+  - [x] Departamento: atributo `numdep`, tabla `deptos`; evento con clave `valdep`.
+- [x] Hacer que `MODART` asigne `product_cat` usando la fuente configurada.
+- [x] Definir el comportamiento cuando el atributo o el mapeo no existe, sin
   borrar accidentalmente categorias ya asignadas.
-- [ ] Agregar pruebas para las cuatro fuentes, opcion invalida, valor ausente y
+- [x] Agregar pruebas para las cuatro fuentes, opcion invalida, valor ausente y
   mapeo inexistente.
-- [ ] Documentar la opcion y su valor compatible en la guia de configuracion.
+- [x] Documentar la opcion y su valor compatible en la guia de configuracion.
 
 ### Commit 3.1
 

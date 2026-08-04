@@ -155,6 +155,7 @@ $options['SAITNube_ExistAlm_enabled'] = '0';
 $options['SAITNube_ExistAlm'] = '';
 $options['SAITNube_PrecioLista'] = '';
 $options['SAITNube_TipoCambio'] = '17.0000';
+unset($options[SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY]);
 update_option('opciones_sait', $options);
 
 $bad_token = sait_test_send_event('acttc.xml', 'incorrecto');
@@ -213,7 +214,55 @@ sait_test_assert_same(7.0, (float) $product->get_stock_quantity(), 'Stock inicia
 $line_mapping = SAIT_UTILS::SAIT_getClaves('lineas', 'FIX-LIN', null);
 sait_test_assert_true(
 	in_array((int) $line_mapping->wcid, array_map('intval', $product->get_category_ids()), true),
-	'MODART debe usar linea como categoria en 1.2.3.'
+	'MODART debe usar linea cuando la opcion no existe.'
+);
+
+$article_category_cases = array(
+	array('linea', 'lineas', 'FIX-LIN'),
+	array('familia', 'familia', 'FIX-FAM'),
+	array('categoria', 'catego', 'FIX-CAT'),
+	array('departamento', 'deptos', 'FIX-DEP'),
+);
+foreach ($article_category_cases as $case) {
+	SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY, $case[0]);
+	$response = sait_test_send_event('modart-active.xml');
+	sait_test_assert_same('ART UPD', $response->get_data(), 'Actualizacion MODART con fuente ' . $case[0] . '.');
+	$mapping = SAIT_UTILS::SAIT_getClaves($case[1], $case[2], null);
+	$assigned_ids = array_map('intval', wc_get_product($product_id)->get_category_ids());
+	sait_test_assert_same(
+		array((int) $mapping->wcid),
+		$assigned_ids,
+		'MODART debe asignar la fuente ' . $case[0] . '.'
+	);
+}
+
+$categories_before_missing = array_map('intval', wc_get_product($product_id)->get_category_ids());
+SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY, 'familia');
+$missing_attribute_xml = simplexml_load_file(WP_CONTENT_DIR . '/sait-test-fixtures/events/modart-active.xml');
+unset($missing_attribute_xml->action[0]->flds[0]['familia']);
+sait_test_send_xml($missing_attribute_xml);
+sait_test_assert_same(
+	$categories_before_missing,
+	array_map('intval', wc_get_product($product_id)->get_category_ids()),
+	'Un atributo ausente no debe borrar la categoria existente.'
+);
+
+SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY, 'categoria');
+$missing_mapping_xml = simplexml_load_file(WP_CONTENT_DIR . '/sait-test-fixtures/events/modart-active.xml');
+$missing_mapping_xml->action[0]->flds[0]['categoria'] = 'FIX-SIN-MAPEO';
+sait_test_send_xml($missing_mapping_xml);
+sait_test_assert_same(
+	$categories_before_missing,
+	array_map('intval', wc_get_product($product_id)->get_category_ids()),
+	'Un mapeo inexistente no debe borrar la categoria existente.'
+);
+
+SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY, 'invalida');
+sait_test_send_event('modart-active.xml');
+sait_test_assert_same(
+	array((int) $line_mapping->wcid),
+	array_map('intval', wc_get_product($product_id)->get_category_ids()),
+	'Una opcion persistida invalida debe usar linea.'
 );
 
 $article_update = sait_test_send_event('modart-active.xml');

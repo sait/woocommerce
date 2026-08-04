@@ -91,7 +91,6 @@
 		$numart = trim(self::xml_attribute($oKeys, "numart"));
 		$codigo = SAIT_UTILS::SAIT_codigo_valido(trim(self::xml_attribute($oFlds, "codigo")));
 		$desc = trim(self::xml_attribute($oFlds, "desc"));
-		$linea = trim(self::xml_attribute($oFlds, "linea"));
 		$modelo = trim(self::xml_attribute($oFlds, "modelo"));
 		$statusweb = trim(self::xml_attribute($oFlds, "statusweb"));
 		$obs = trim(self::xml_attribute($oFlds, "obs"));
@@ -99,9 +98,13 @@
 		if ( $statusweb === "")  {
 					return SAIT_UTILS::SAIT_response(200, "statusweb null");
 			}
-		// Obtener la categoría una sola vez
-		$clavelinea = SAIT_UTILS::SAIT_getClaves("lineas", $linea, null);
-		$category_id = isset($clavelinea->wcid) ? array($clavelinea->wcid) : array();
+		// Los atributos MODART y las claves de sus eventos no siguen un unico patron.
+		$category_source = SAIT_WOOCOMMERCE()->settings()->category_source_config();
+		$category_key = trim(self::xml_attribute($oFlds, $category_source['article_attribute']));
+		$category_mapping = $category_key === ''
+			? null
+			: SAIT_UTILS::SAIT_getClaves($category_source['mapping_table'], $category_key, null);
+		$category_id = isset($category_mapping->wcid) ? array($category_mapping->wcid) : array();
 		
 		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
 	

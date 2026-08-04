@@ -164,6 +164,8 @@ Clase `SAIT_WOOCOMMERCE_Settings`.
 - Centraliza valores predeterminados y lecturas de claves historicas.
 - Normaliza banderas y listas de almacenes.
 - Sanitiza por lista cerrada los campos aceptados por Settings API.
+- Define el mapa exacto entre fuente de categoria, atributo `MODART`, tabla de
+  `sait_claves` y clave del evento de catalogo.
 
 ## `includes/SAIT_WOOCOMMERCE-art-sync.php`
 
