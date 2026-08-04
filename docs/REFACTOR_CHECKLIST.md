@@ -434,8 +434,8 @@ Objetivo: convertir la clase grande de eventos en router y handlers pequeños.
 - [x] Crear parser XML que valide sintaxis y normalice el tipo sin alterar campos SAIT.
 - [ ] Mantener un router sin reglas de negocio.
 - [x] Extraer handler de productos.
-- [ ] Extraer handler de precios.
-- [ ] Extraer handler de existencias.
+- [x] Extraer handler de precios.
+- [x] Extraer handler de existencias.
 - [ ] Extraer handler de categorías.
 - [ ] Extraer handler de clientes.
 - [ ] Extraer handler de tipo de cambio.
