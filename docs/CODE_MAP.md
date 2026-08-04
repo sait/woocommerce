@@ -13,7 +13,7 @@ Responsabilidades:
   - `SAIT_NUBE_NUMALM = "1"`
   - `SAIT_SERIE = "WO"`
 - Registra activacion.
-- Registra endpoints REST.
+- Carga el controlador y registra un unico hook para endpoints REST.
 - Registra hooks de envio de ordenes.
 - Registra assets del modal de sucursal.
 
@@ -23,6 +23,20 @@ Funciones:
 - `SAIT_helloworld()`: callback REST de prueba.
 - `SAIT_procesEvents($request)`: valida token, parsea XML y delega procesamiento.
 - `SAIT_reenviarPedido($request)`: reenvia una orden usando `idpedido` desde la ruta REST.
+
+## `includes/rest/SAIT_WOOCOMMERCE-rest-controller.php`
+
+Clase `SAIT_WOOCOMMERCE_REST_Controller`.
+
+Responsabilidades:
+
+- Registra las rutas del namespace historico `saitplugin/v1`.
+- Conserva los metodos y permisos publicos de 1.2.3.
+- Valida el token y parsea el XML del webhook sin cambiar su contrato.
+- Delega eventos al procesador y reenvios a la clase de pedidos.
+
+Las funciones REST globales del archivo principal permanecen como adaptadores
+de compatibilidad y delegan en este controlador.
 - `sendOrderSAIT_payment($order_id)`: envia orden pagada con forma de pago `1`.
 - `sendOrderSAIT_thankyou($order_id)`: envia orden no pagada con forma de pago `2`.
 - `registrar_estilos_scripts()`: carga Font Awesome, CSS/JS del modal y nonce AJAX cuando esta activo selector de sucursal.

@@ -172,9 +172,9 @@ Objetivo: estabilizar y proteger el contrato de entrada.
 - [x] Caracterizar namespace, discovery, metodos, permisos publicos actuales,
   token, XML invalido, alias legacy y orden inexistente antes de mover rutas.
 
-- [ ] Crear controladores REST separados del archivo principal.
-- [ ] Conservar temporalmente el namespace `saitplugin/v1`.
-- [ ] Usar constantes `WP_REST_Server` para los métodos.
+- [x] Crear controladores REST separados del archivo principal.
+- [x] Conservar temporalmente el namespace `saitplugin/v1`.
+- [x] Usar constantes `WP_REST_Server` para los métodos.
 - [ ] Declarar `args` para IDs y otros parámetros.
 - [ ] Validar y sanitizar mediante el objeto `WP_REST_Request`.
 - [ ] Normalizar éxitos con `rest_ensure_response()` o `WP_REST_Response`.

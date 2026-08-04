@@ -17,6 +17,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_UTILS.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-art-sync.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-order-admin.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-personalizado.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/rest/SAIT_WOOCOMMERCE-rest-controller.php';
 
 // Incluir archivos necesarios
 require_once plugin_dir_path(__FILE__) . 'includes/SAIT_WOOCOMMERCE-cart.php';
@@ -47,55 +48,35 @@ register_activation_hook( __FILE__, 'activate_SAIT_WOOCOMMERCE' );
 
 // Router del Plugin
 
-add_action( 'rest_api_init', function () {
-	register_rest_route( 'saitplugin/v1', '/hello',
-		array(
-			'methods' => 'GET', 
-			'callback' => 'SAIT_helloworld',
-			'permission_callback' => '__return_true', 
-		)
-	);
-});
+/**
+ * Devuelve la instancia compartida del controlador REST.
+ *
+ * @return SAIT_WOOCOMMERCE_REST_Controller
+ */
+function SAIT_rest_controller() {
+	static $controller = null;
+	if ($controller === null) {
+		$controller = new SAIT_WOOCOMMERCE_REST_Controller();
+	}
+	return $controller;
+}
 
-
-
-add_action( 'rest_api_init', function () {
-	register_rest_route( 'saitplugin/v1', '/saitevents',
-		array(
-			'methods' => 'POST', 
-			'callback' => 'SAIT_procesEvents',
-			'permission_callback' => '__return_true', 
-		)
-	);
-});
-
-
-
-add_action( 'rest_api_init', function () {
-	register_rest_route( 'saitplugin/v1', '/reenviar-pedido-sait/(?P<idpedido>\d+)',
-		array(
-			'methods' => 'POST', 
-			'callback' => 'SAIT_reenviarPedido',
-			'permission_callback' => '__return_true', 
-		)
-	);
-
-	register_rest_route( 'saitplugin/v1', '/testpedido/(?P<idpedido>\d+)',
-		array(
-			'methods' => 'GET', 
-			'callback' => 'SAIT_reenviarPedido',
-			'permission_callback' => '__return_true', 
-		)
-	);
-});
+/**
+ * Registra las rutas REST del plugin.
+ *
+ * @return void
+ */
+function SAIT_register_rest_routes() {
+	SAIT_rest_controller()->register_routes();
+}
+add_action('rest_api_init', 'SAIT_register_rest_routes');
 
 
 // Callbacks del router
 
 
 function SAIT_helloworld(){
-	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-hello.php';
-	return SAIT_WOOCOMMERCE_Hello::SAIT_helloworld();;
+	return SAIT_rest_controller()->hello();
 }
 
 /**
@@ -108,26 +89,7 @@ function SAIT_helloworld(){
  * categorias, clientes, existencias, precios u opciones segun el tipo de evento recibido.
  */
 function SAIT_procesEvents($request){
-	$AccessToken = $request->get_header('x-AccessToken');
-	$SAIT_options=get_option( 'opciones_sait' );
-	$SAITAccessToken = $SAIT_options['SAITNube_AccessToken'];
-	if ($AccessToken != $SAITAccessToken ){
-		$res = new WP_REST_Response();
-		$res->set_status(401);
-		$res->set_data("Bad token");
-		return $res;
-	}
-  $xml = $request->get_body();
-  libxml_use_internal_errors(true);
-  $oXml = simplexml_load_string((string)$xml);
-  if (!$oXml){
-		$res = new WP_REST_Response();
-		$res->set_status(500);
-		$res->set_data(json_encode(libxml_get_errors()));
-		return $res;
-	}
-	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-process-events.php';
-	return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($oXml);
+	return SAIT_rest_controller()->process_events($request);
 }
 
 /**
@@ -139,9 +101,7 @@ function SAIT_procesEvents($request){
  * Acciones que realiza: envia el pedido/cotizacion a la API SAIT y guarda metadatos del ultimo intento.
  */
 function SAIT_reenviarPedido($request){
-	require_once plugin_dir_path( __FILE__ ) . 'includes/SAIT_WOOCOMMERCE-orders.php';
-	$id_pedido = absint($request['idpedido']);
-	return SAIT_WOOCOMMERCE_Orders::SAIT_reenviarPedido($id_pedido);;
+	return SAIT_rest_controller()->resend_order($request);
 }
 
 
