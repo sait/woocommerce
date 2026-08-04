@@ -18,6 +18,7 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 		if ( $statusweb === "")  {
 					return SAIT_UTILS::SAIT_response(200, "statusweb null");
 			}
+		SAIT_WOOCOMMERCE()->price_service()->invalidate_sku($numart);
 		// Los atributos MODART y las claves de sus eventos no siguen un unico patron.
 		$category_source = SAIT_WOOCOMMERCE()->settings()->category_source_config();
 		$category_key = trim(SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($oFlds, $category_source['article_attribute']));
@@ -213,4 +214,3 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 		return SAIT_UTILS::SAIT_response(200, "ART NO CREADO");
 	}
 }
-

@@ -48,6 +48,35 @@ Estas cifras son el punto de comparación para los siguientes commits de la
 etapa. El objetivo no es sólo reducir TTFB: una mejora debe reducir o justificar
 también las llamadas remotas durante el request.
 
+## Resultado Después De Optimizar Precios
+
+Medición fría ejecutada con el mismo comando, volumen, visitante, URLs,
+fixtures, latencia y cinco muestras por pantalla:
+
+| Pantalla | TTFB antes | TTFB después | Llamadas antes | Llamadas después |
+| --- | ---: | ---: | ---: | ---: |
+| Catálogo | 0.186372 s | 0.193145 s | 3 | 3 |
+| Producto | 0.226422 s | 0.227948 s | 4 | 4 |
+| Carrito | 0.383862 s | 0.302674 s | 7 | 5 |
+| Checkout | 0.350125 s | 0.265933 s | 5 | 3 |
+
+Carrito redujo aproximadamente 21% su mediana TTFB y 29% sus llamadas SAIT.
+Checkout redujo aproximadamente 24% su mediana y 40% sus llamadas. Catálogo y
+producto no tenían consultas de precio repetidas en este fixture de un solo
+producto, por lo que conservaron el conteo y quedaron dentro de la variación
+normal del entorno local.
+
+El servicio comparte dentro del request la consulta de artículo y el cálculo
+para un contexto idéntico. Los transients duran 24 horas para la unidad del
+artículo y 15 minutos para el precio. El precio público usa `numcli = "    0"`;
+un cliente identificado incluye usuario y `numcli`, además de SKU, sucursal,
+cantidad, divisa y forma de pago. Una versión no autoload invalida precios ante
+cambios relevantes de configuración o producto sin necesitar un flush global.
+
+El diagnóstico local encontró 35,745 bytes autoload en total y 779 bytes en
+`opciones_sait`; no se justificó migrar opciones. No hay object-cache persistente
+ni extensiones WP-CLI `doctor/profile` en el contenedor.
+
 ## Límites De La Medición
 
 - La duración SAIT es una latencia controlada, no una observación de API v3.

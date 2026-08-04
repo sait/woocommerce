@@ -59,6 +59,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_Promotions|null */
 	private $promotions = null;
 
+	/** @var SAIT_WOOCOMMERCE_PriceService|null */
+	private $price_service = null;
+
 	/** @var SAIT_WOOCOMMERCE_CartMinimum|null */
 	private $cart_minimum = null;
 
@@ -129,6 +132,8 @@ class SAIT_WOOCOMMERCE_Plugin
 		$this->customer_resolver = null;
 		$this->document_service = null;
 		$this->product_sync_service = null;
+		$this->price_service = null;
+		$this->promotions = null;
 	}
 
 	/**
@@ -282,11 +287,25 @@ class SAIT_WOOCOMMERCE_Plugin
 			$this->promotions = new SAIT_WOOCOMMERCE_Promotions(
 				$this->settings(),
 				$this->plugin_file,
-				$this->branch_selector()
+				$this->price_service()
 			);
 		}
 
 		return $this->promotions;
+	}
+
+	/** @return SAIT_WOOCOMMERCE_PriceService */
+	public function price_service()
+	{
+		if ($this->price_service === null) {
+			$this->price_service = new SAIT_WOOCOMMERCE_PriceService(
+				$this->settings(),
+				$this->sait_client(),
+				$this->branch_selector()
+			);
+		}
+
+		return $this->price_service;
 	}
 
 	/** @return SAIT_WOOCOMMERCE_CartMinimum */
@@ -307,6 +326,20 @@ class SAIT_WOOCOMMERCE_Plugin
 	public function register_rest_routes()
 	{
 		$this->rest_controller()->register_routes();
+	}
+
+	/**
+	 * Registra módulos que dependen de funciones cargadas por WooCommerce.
+	 *
+	 * @return void
+	 */
+	public function register_frontend_hooks()
+	{
+		$this->branch_selector()->register_hooks();
+		$this->price_service()->register_hooks();
+		$this->stock_display()->register_hooks();
+		$this->promotions()->register_hooks();
+		$this->cart_minimum()->register_hooks();
 	}
 
 	/**
@@ -370,6 +403,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-branch-selector.php';
+		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-price-service.php';
 		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-stock-display.php';
 		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-promotions.php';
 		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-cart-minimum.php';
@@ -394,10 +428,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		add_action('rest_api_init', array($this, 'register_rest_routes'));
 		add_action('woocommerce_payment_complete', array($this, 'send_order_payment'), 10, 2);
 		add_action('woocommerce_thankyou', array($this, 'send_order_thankyou'), 10, 2);
-		$this->branch_selector()->register_hooks();
-		$this->stock_display()->register_hooks();
-		$this->promotions()->register_hooks();
-		$this->cart_minimum()->register_hooks();
+		add_action('plugins_loaded', array($this, 'register_frontend_hooks'), 20);
 		add_action(
 			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
 			array($this->order_delivery_scheduler(), 'process'),

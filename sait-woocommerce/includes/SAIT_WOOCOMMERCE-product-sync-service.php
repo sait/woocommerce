@@ -102,6 +102,9 @@ class SAIT_WOOCOMMERCE_ProductSyncService
 		}
 		$this->save_price_meta($product, $source, $old_price, $calculated['price'], $status);
 		$product->save();
+		if ($status === 'actualizado' && $source !== 'ACTTC') {
+			SAIT_WOOCOMMERCE()->price_service()->invalidate_sku($numart);
+		}
 
 		return array('estado' => $status, 'mensaje' => $status === 'actualizado' ? 'PRICE UPD' : 'NO CAMBIO');
 	}
@@ -193,6 +196,9 @@ class SAIT_WOOCOMMERCE_ProductSyncService
 		$stock_result = $this->sync_stock($product, $numart, $source, $options);
 		$product->save();
 		$stock_changed = !empty($stock_result['actualizado']);
+		if ($price_changed && $source !== 'ACTTC') {
+			SAIT_WOOCOMMERCE()->price_service()->invalidate_sku($numart);
+		}
 
 		if ($price_changed || $stock_changed) {
 			return array(

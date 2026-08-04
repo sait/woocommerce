@@ -121,6 +121,15 @@ sh tests/test-guest-branch.sh
 La prueba confirma la cookie de sesión WooCommerce y que no cambien las filas
 históricas de `user_id = 0`.
 
+El contexto, padding, caché e invalidación de precios se validan con:
+
+```sh
+sh tests/test-price-service.sh
+```
+
+La caché distingue usuario/`numcli`, SKU, sucursal, cantidad, divisa y forma de
+pago. `numcli = "    0"` representa el precio público compartido.
+
 Los calculos puros y el servicio compartido de productos se validan con:
 
 ```sh

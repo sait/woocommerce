@@ -477,14 +477,14 @@ Objetivo: retirar UI de `SAIT_UTILS.php` y reducir llamadas remotas en requests.
 
 ### Rendimiento
 
-- [ ] Evitar consultas SAIT por cada render de precio.
-- [ ] Definir claves de caché con cliente, SKU, almacén y reglas relevantes.
-- [ ] Definir expiración e invalidación explícitas.
-- [ ] Evitar cachés sin límite.
-- [ ] Agrupar o precargar consultas cuando sea posible.
-- [ ] Mover trabajo remoto pesado fuera del request.
-- [ ] Revisar tamaño y autoload de opciones de estado.
-- [ ] Medir nuevamente antes de declarar mejora.
+- [x] Evitar consultas SAIT por cada render de precio.
+- [x] Definir claves de caché con cliente, SKU, almacén y reglas relevantes.
+- [x] Definir expiración e invalidación explícitas.
+- [x] Evitar cachés sin límite.
+- [x] Agrupar o precargar consultas cuando sea posible.
+- [x] Evaluar trabajo remoto pesado; mantener precio síncrono porque depende del cliente, sucursal y cantidad actuales.
+- [x] Revisar tamaño y autoload de opciones de estado.
+- [x] Medir nuevamente antes de declarar mejora.
 
 ### Commits
 

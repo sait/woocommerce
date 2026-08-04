@@ -125,6 +125,7 @@ Los nombres globales anteriores se conservan como adaptadores en
 - `frontend/SAIT_WOOCOMMERCE-branch-selector.php`: menú, modal, AJAX y assets de sucursal.
 - `frontend/SAIT_WOOCOMMERCE-stock-display.php`: tabla de existencias y filtro `_price > 0`.
 - `frontend/SAIT_WOOCOMMERCE-promotions.php`: precios de catálogo, producto y carrito.
+- `frontend/SAIT_WOOCOMMERCE-price-service.php`: contexto por cliente, padding, memoización, transients e invalidación de precios.
 - `frontend/SAIT_WOOCOMMERCE-cart-minimum.php`: aviso de mínimo y bloqueo visual de checkout.
 - `templates/`: modal, tabla, precio promocional y script del mínimo con escape tardío.
 
