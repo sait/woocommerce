@@ -332,6 +332,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'SAIT_WOOCOMMERCE-order-delivery-state.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-order-delivery-scheduler.php';
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-event-parser.php';
+		require_once $includes . 'events/SAIT_WOOCOMMERCE-product-event-handler.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
