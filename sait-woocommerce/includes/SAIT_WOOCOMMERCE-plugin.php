@@ -44,6 +44,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAIT_WOOCOMMERCE_EventParser|null */
 	private $event_parser = null;
 
+	/** @var SAIT_WOOCOMMERCE_EventRouter|null */
+	private $event_router = null;
+
 	/** @var SAIT_WOOCOMMERCE_Logger|null */
 	private $logger = null;
 
@@ -218,6 +221,16 @@ class SAIT_WOOCOMMERCE_Plugin
 		return $this->event_parser;
 	}
 
+	/** @return SAIT_WOOCOMMERCE_EventRouter */
+	public function event_router()
+	{
+		if ($this->event_router === null) {
+			$this->event_router = new SAIT_WOOCOMMERCE_EventRouter();
+		}
+
+		return $this->event_router;
+	}
+
 	/**
 	 * @return SAIT_WOOCOMMERCE_Logger
 	 */
@@ -337,6 +350,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-category-event-handler.php';
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-customer-event-handler.php';
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-exchange-rate-event-handler.php';
+		require_once $includes . 'events/SAIT_WOOCOMMERCE-event-router.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';

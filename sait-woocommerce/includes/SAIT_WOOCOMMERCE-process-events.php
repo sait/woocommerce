@@ -30,44 +30,13 @@
 	 * Acciones que realiza: delega en funciones que pueden modificar productos, categorias,
 	 * clientes, existencias, precios u opciones del plugin.
 	 */
-	public static function SAIT_processEvent($oXml){
-		$type = self::xml_attribute($oXml,"type");
-		switch ($type) {
-			case "MODART":
-				$res = self::MODART($oXml);
-				break;
-			case "ACTEXISGBL":
-				$res = self::ACTEXISGBL($oXml);
-				break;
-			case "ACTPRECIO":
-				$res = self::ACTPRECIO($oXml);
-				break;
-			case "MODFAMILIA":
-				$res = self::MODFAMILIA($oXml);
-				break;
-			case "MODDEPTO":
-				$res = self::MODDEPTO($oXml);
-				break;
-			case "MODLINEA":
-				$res = self::MODLINEA($oXml);
-				break;
-			case "MODCATEGO":
-				$res = self::MODCATEGO($oXml);
-				break;
-			case "ACTEXIST":
-				$res = self::ACTEXIST($oXml);
-				break;
-			case "ACTTC":
-			 	$res = self::ACTTC($oXml);
-			 	break;
-			case "MODCLI":
-				$res = self::MODCLI($oXml);
-				break;
-			default:
-				$res = SAIT_UTILS::SAIT_response(200,"OK");
-				break;
+	public static function SAIT_processEvent($event){
+		if (!$event instanceof SAIT_WOOCOMMERCE_Event) {
+			$type = self::xml_attribute($event, 'type');
+			$event = new SAIT_WOOCOMMERCE_Event($type, $event);
 		}
-		return $res;
+
+		return SAIT_WOOCOMMERCE()->event_router()->route($event);
 	}
 
 	//

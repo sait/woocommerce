@@ -157,7 +157,7 @@ class SAIT_WOOCOMMERCE_REST_Controller extends WP_REST_Controller
 		}
 
 		require_once dirname(__DIR__) . '/SAIT_WOOCOMMERCE-process-events.php';
-		return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($event->xml());
+		return SAIT_WOOCOMMERCE_ProcessEvents::SAIT_processEvent($event);
 	}
 
 	/**

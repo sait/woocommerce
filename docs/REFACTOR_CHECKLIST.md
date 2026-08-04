@@ -432,16 +432,16 @@ feat: mostrar estado de entrega SAIT en la administracion WooCommerce
 Objetivo: convertir la clase grande de eventos en router y handlers pequeños.
 
 - [x] Crear parser XML que valide sintaxis y normalice el tipo sin alterar campos SAIT.
-- [ ] Mantener un router sin reglas de negocio.
+- [x] Mantener un router sin reglas de negocio.
 - [x] Extraer handler de productos.
 - [x] Extraer handler de precios.
 - [x] Extraer handler de existencias.
 - [x] Extraer handler de categorías.
 - [x] Extraer handler de clientes.
 - [x] Extraer handler de tipo de cambio.
-- [ ] Preservar HTTP 200 para eventos recibidos pero no aplicables.
-- [ ] Reservar errores HTTP para autenticación, formato o fallos reales.
-- [ ] Ejecutar todos los fixtures después de extraer cada handler.
+- [x] Preservar HTTP 200 para eventos recibidos pero no aplicables.
+- [x] Reservar errores HTTP para autenticación, formato o fallos reales.
+- [x] Ejecutar todos los fixtures después de extraer cada handler.
 
 ### Commits
 

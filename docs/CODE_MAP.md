@@ -132,6 +132,9 @@ Funciones globales:
 
 Clase `SAIT_WOOCOMMERCE_ProcessEvents`.
 
+Conserva el punto de entrada y adaptadores historicos; el enrutamiento reside
+en `events/SAIT_WOOCOMMERCE-event-router.php` y la logica en handlers separados.
+
 Metodos:
 
 - `SAIT_processEvent($oXml)`: router por atributo XML `type`.
