@@ -33,6 +33,21 @@ function sait_test_http_response($body, $code = 200)
 }
 
 /**
+ * Construye una respuesta con cuerpo literal para probar JSON invalido.
+ *
+ * @param string $body Cuerpo sin serializar.
+ * @param int    $code Estado HTTP.
+ * @return array
+ */
+function sait_test_raw_http_response($body, $code = 200)
+{
+	$response = sait_test_http_response(null, $code);
+	$response['body'] = $body;
+
+	return $response;
+}
+
+/**
  * Lee el catalogo de respuestas simuladas.
  *
  * @return array
@@ -77,13 +92,22 @@ function sait_test_intercept_api_request($preempt, $args, $url)
 
 	$method = isset($args['method']) ? strtoupper($args['method']) : 'GET';
 	$body = isset($args['body']) ? json_decode($args['body'], true) : null;
+	$counts = get_option('sait_test_request_counts', array());
+	$count_key = $method . ' ' . $path;
+	$counts[$count_key] = isset($counts[$count_key]) ? $counts[$count_key] + 1 : 1;
+	update_option('sait_test_request_counts', $counts, false);
+	$headers = isset($args['headers']) && is_array($args['headers']) ? $args['headers'] : array();
 	update_option(
 		'sait_test_last_request',
 		array(
-			'method' => $method,
-			'path'   => $path,
-			'query'  => $query,
-			'body'   => $body,
+			'method'      => $method,
+			'path'        => $path,
+			'query'       => $query,
+			'body'        => $body,
+			'timeout'     => isset($args['timeout']) ? $args['timeout'] : null,
+			'sslverify'   => isset($args['sslverify']) ? $args['sslverify'] : null,
+			'blocking'    => isset($args['blocking']) ? $args['blocking'] : null,
+			'has_api_key' => !empty($headers['X-sait-api-key']),
 		),
 		false
 	);
@@ -94,6 +118,22 @@ function sait_test_intercept_api_request($preempt, $args, $url)
 
 	if ($method !== 'GET') {
 		return new WP_Error('sait_test_method_not_supported', 'Metodo no simulado: ' . $method);
+	}
+
+	if ($path === '/api/v3/test-result-null') {
+		return sait_test_http_response(array('result' => null));
+	}
+
+	if ($path === '/api/v3/test-invalid-json') {
+		return sait_test_raw_http_response('{invalido');
+	}
+
+	if ($path === '/api/v3/test-http-error') {
+		return sait_test_http_response(array('error' => 'servicio no disponible'), 503);
+	}
+
+	if ($path === '/api/v3/test-wp-error') {
+		return new WP_Error('sait_test_transport_error', 'Fallo de transporte simulado.');
 	}
 
 	if ($path === '/api/v3/articulos/FIX-ART-001' && isset($fixtures['articulo_pesos'])) {

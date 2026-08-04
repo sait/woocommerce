@@ -289,13 +289,13 @@ Objetivo: centralizar HTTP, mapeos y logs antes de dividir reglas de negocio.
 
 ### Cliente SAIT
 
-- [ ] Crear `SaitClient` como único adaptador HTTP.
-- [ ] Centralizar URL, API key, headers, SSL y timeouts.
-- [ ] Normalizar respuesta válida, `result: null`, JSON inválido, `WP_Error` y
+- [x] Crear `SaitClient` como único adaptador HTTP.
+- [x] Centralizar URL, API key, headers, SSL y timeouts.
+- [x] Normalizar respuesta válida, `result: null`, JSON inválido, `WP_Error` y
   estados HTTP no exitosos.
-- [ ] Definir política de reintentos por operación.
-- [ ] Permitir inyectar un cliente falso en pruebas.
-- [ ] Conservar adaptadores temporales para `SAIT_GetNube` y `SAIT_PostNube`.
+- [x] Definir política de reintentos por operación.
+- [x] Permitir inyectar un cliente falso en pruebas.
+- [x] Conservar adaptadores temporales para `SAIT_GetNube` y `SAIT_PostNube`.
 
 ### Repositorio de mapeos
 

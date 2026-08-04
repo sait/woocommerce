@@ -17,6 +17,9 @@ class SAIT_WOOCOMMERCE_Plugin
 	/** @var SAITSettingsPage|null */
 	private $settings_page = null;
 
+	/** @var SAIT_WOOCOMMERCE_SaitClientInterface|null */
+	private $sait_client = null;
+
 	/**
 	 * @param string $plugin_file Archivo principal del plugin.
 	 */
@@ -58,6 +61,29 @@ class SAIT_WOOCOMMERCE_Plugin
 		}
 
 		return $this->settings;
+	}
+
+	/**
+	 * @return SAIT_WOOCOMMERCE_SaitClientInterface
+	 */
+	public function sait_client()
+	{
+		if ($this->sait_client === null) {
+			$this->sait_client = new SAIT_WOOCOMMERCE_SaitClient($this->settings());
+		}
+
+		return $this->sait_client;
+	}
+
+	/**
+	 * Permite sustituir el transporte por un cliente falso en pruebas.
+	 *
+	 * @param SAIT_WOOCOMMERCE_SaitClientInterface $client Cliente inyectado.
+	 * @return void
+	 */
+	public function set_sait_client(SAIT_WOOCOMMERCE_SaitClientInterface $client)
+	{
+		$this->sait_client = $client;
 	}
 
 	/**
@@ -151,6 +177,7 @@ class SAIT_WOOCOMMERCE_Plugin
 	{
 		$includes = plugin_dir_path($this->plugin_file) . 'includes/';
 		require_once $includes . 'SAIT_WOOCOMMERCE-settings.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-sait-client.php';
 		require_once $includes . 'SAIT_UTILS.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-art-sync.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-personalizado.php';

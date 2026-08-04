@@ -76,6 +76,16 @@ La simulacion se verifica con:
 sh tests/test-api-mock.sh
 ```
 
+El cliente HTTP centralizado y su politica de errores/reintentos se validan con:
+
+```sh
+sh tests/test-client.sh
+```
+
+Esta prueba cubre respuestas validas, `result: null`, JSON invalido,
+`WP_Error`, estados HTTP no exitosos, configuracion incompleta e inyeccion de
+un cliente falso.
+
 ## Caracterizacion De Eventos XML
 
 Los eventos se envian a la ruta REST real del plugin, pero todas sus consultas

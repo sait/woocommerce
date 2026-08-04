@@ -47,6 +47,8 @@ Clase `SAIT_WOOCOMMERCE_Plugin`.
   contexto `is_admin()`.
 - Registra rutas REST, hooks de pedidos y assets frontend.
 - Mantiene una sola instancia del controlador REST.
+- Mantiene instancias compartidas de configuracion y cliente HTTP, sustituible
+  por un cliente falso en pruebas.
 
 ## `includes/SAIT_WOOCOMMERCE-lifecycle.php`
 
@@ -74,6 +76,19 @@ Metodos principales:
 - `SAIT_response($code, $message)`: crea `WP_REST_Response`.
 - `SAIT_codigo_valido($codigo)`: valida codigos GTIN/UPC/EAN/ISBN por formato y longitud.
 - `getExistSAIT($SKU)`: obtiene existencia desde SAITNube; puede sumar almacenes configurados.
+
+## `includes/SAIT_WOOCOMMERCE-sait-client.php`
+
+Interfaz `SAIT_WOOCOMMERCE_SaitClientInterface` y clase
+`SAIT_WOOCOMMERCE_SaitClient`.
+
+- Es el unico adaptador que llama a `wp_remote_get()` y `wp_remote_post()`.
+- Centraliza URL, API key, headers, SSL compatible y timeouts.
+- Normaliza GET exitoso, `result: null`, JSON invalido, `WP_Error` y estados
+  HTTP no exitosos.
+- Reintenta GET una vez por transporte o JSON invalido; no reintenta estados
+  HTTP ni operaciones POST.
+- Mantiene respuestas POST crudas para los contratos historicos de pedidos.
 
 Funciones globales:
 

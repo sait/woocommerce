@@ -55,31 +55,7 @@
 	 * por compatibilidad con instalaciones existentes.
 	 */
 	public static function SAIT_GetNube($uri, $reintentar = true){
-		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
-		$url = $SAIT_options['SAITNube_URL'].$uri;
-		$apikey = $SAIT_options['SAITNube_APIKey'];
-		$args = array(
-			'timeout' => 5,
-			'sslverify' => false,
-			'blocking' => true,
-			'headers' => array(
-				'X-sait-api-key' => $apikey,
-				'Content-Type' => 'application/json',
-				'Accept' => 'application/json',
-			),
-		);
-		$resSAIT =  wp_remote_get($url, $args);
-		if ( ! is_wp_error( $resSAIT ) ) {
-    		$data = json_decode( wp_remote_retrieve_body( $resSAIT), true );
-    		if ($data !== null) {
-					return $data;
-				}
-			}
-			if ($reintentar) {
-				usleep(500000);
-				return self::SAIT_GetNube($uri, false);
-			}
-			return null;
+		return SAIT_WOOCOMMERCE()->sait_client()->get_legacy($uri, $reintentar);
 	}
 
 	/**
@@ -104,26 +80,7 @@
 	 * por compatibilidad con instalaciones existentes.
 	 */
 	public static function SAIT_PostNube($uri,$bodyObject, $wait = false){
-		$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
-		$url = $SAIT_options['SAITNube_URL'].$uri;
-		$apikey = $SAIT_options['SAITNube_APIKey'];
-		$args = array(
-		'method' => 'POST',
-		'timeout' => 45,
-		'redirection' => 5,
-		'httpversion' => '1.0',
-		'sslverify' => false,
-		'blocking' => $wait ? true : false,
-		'headers' => array(
-			'X-sait-api-key' => $apikey,
-			'Content-Type' => 'application/json',
-			'Accept' => 'application/json',
-		),
-		'body' => json_encode($bodyObject),
-		'cookies' => array()
-		);
-
-		return wp_remote_post($url, $args);
+		return SAIT_WOOCOMMERCE()->sait_client()->post($uri, $bodyObject, $wait);
 	}
 
 

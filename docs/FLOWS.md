@@ -143,6 +143,20 @@ Archivo: `includes/SAIT_WOOCOMMERCE-orders.php`
 9. Aplica funcion personalizada si la bandera esta activa.
 10. Envia a SAITNube.
 
+## Cliente HTTP SAIT
+
+Todas las llamadas salientes pasan por `SAIT_WOOCOMMERCE_SaitClient`.
+
+- GET usa timeout de 5 segundos y puede reintentar una vez ante `WP_Error` o
+  JSON invalido.
+- Los estados HTTP no exitosos no se reintentan automaticamente.
+- POST usa timeout de 45 segundos y no se reintenta para evitar documentos
+  duplicados.
+- `SAIT_GetNube()` y `SAIT_PostNube()` permanecen como adaptadores temporales
+  para el codigo legado.
+- Las pruebas sustituyen el cliente o interceptan `https://sait-api.invalid`;
+  no requieren endpoints ni credenciales reales.
+
 La metadata indica que WooCommerce disparo el envio automatico; no confirma que SAITNube lo haya recibido, porque el POST se hace sin esperar respuesta.
 
 El endpoint manual `reenviar-pedido-sait/{idpedido}` no usa este bloqueo, para permitir recuperacion cuando SAITNube/API no estuvo disponible. Ese reenvio espera respuesta de SAITNube y guarda metadata del ultimo resultado:

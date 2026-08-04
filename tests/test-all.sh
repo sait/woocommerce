@@ -2,6 +2,7 @@
 set -eu
 
 sh tests/test-api-mock.sh
+sh tests/test-client.sh
 sh tests/test-settings.sh
 sh tests/test-rest.sh
 sh tests/test-events.sh
