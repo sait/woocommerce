@@ -7,6 +7,7 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 {
 	const ACTION = 'sait_woocommerce_send_order_document';
 	const GROUP = 'sait-woocommerce';
+	const MAX_ATTEMPTS = 3;
 
 	private $state;
 
@@ -73,13 +74,39 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 		$response = $document_type === 'P'
 			? SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($order, $payment_method, true)
 			: SAIT_WOOCOMMERCE_Orders::SAIT_sendCotizacion($order, $payment_method, true);
-		SAIT_WOOCOMMERCE_Orders::SAIT_registrarResultadoEnvio(
+		$result = SAIT_WOOCOMMERCE_Orders::SAIT_registrarResultadoEnvio(
 			$order,
 			$response,
 			$document_type,
 			$payment_method,
 			'automatic'
 		);
+		$order = wc_get_order($order_id);
+		$attempts = $order ? absint($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_ATTEMPTS)) : 0;
+		if ($order && $this->should_retry($result, $attempts)) {
+			$this->state->mark_pending($order, $payment_method, $document_type, 'automatic_retry');
+			$this->schedule_retry(array((int) $order_id, (string) $payment_method), $attempts);
+		}
+	}
+
+	/** @return bool */
+	private function should_retry($result, $attempts)
+	{
+		return $attempts < self::MAX_ATTEMPTS
+			&& isset($result['estado'])
+			&& $result['estado'] === 'reintento_requerido';
+	}
+
+	/** @return void */
+	private function schedule_retry($args, $attempts)
+	{
+		$delays = array(1 => 60, 2 => 300);
+		$delay = isset($delays[$attempts]) ? $delays[$attempts] : 300;
+		if (function_exists('as_schedule_single_action')) {
+			as_schedule_single_action(time() + $delay, self::ACTION, $args, self::GROUP, true);
+		} else {
+			wp_schedule_single_event(time() + $delay, self::ACTION, $args);
+		}
 	}
 
 	/** @return bool */

@@ -75,6 +75,66 @@ sait_delivery_assert_same(1, absint($automatic_order->get_meta('_sait_delivery_a
 $request_counts = get_option('sait_test_request_counts', array());
 sait_delivery_assert_same(1, $request_counts['POST /api/v3/pedidos'], 'Un solo POST automatico.');
 
+$retry_order = wc_create_order();
+$retry_args = array($retry_order->get_id(), '1');
+update_option('sait_test_post_responses', array(503, 201), false);
+SAIT_WOOCOMMERCE()->order_delivery_scheduler()->enqueue($retry_order->get_id(), '1');
+if (function_exists('as_unschedule_all_actions')) {
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		$retry_args,
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+}
+do_action(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, $retry_order->get_id(), '1');
+$retry_order = wc_get_order($retry_order->get_id());
+sait_delivery_assert_same('pending', $state->status($retry_order), 'HTTP 503 programa reintento.');
+sait_delivery_assert_same(1, absint($retry_order->get_meta('_sait_delivery_attempts')), 'Primer intento fallido.');
+if (function_exists('as_has_scheduled_action')) {
+	sait_delivery_assert_same(
+		true,
+		(bool) as_has_scheduled_action(
+			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+			$retry_args,
+			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+		),
+		'Reintento con backoff programado.'
+	);
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		$retry_args,
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+}
+do_action(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, $retry_order->get_id(), '1');
+$retry_order = wc_get_order($retry_order->get_id());
+sait_delivery_assert_same('sent', $state->status($retry_order), 'Reintento confirmado.');
+sait_delivery_assert_same(2, absint($retry_order->get_meta('_sait_delivery_attempts')), 'Segundo intento exitoso.');
+
+$exhausted_order = wc_create_order();
+update_option('sait_test_post_responses', array(503, 503, 503), false);
+SAIT_WOOCOMMERCE()->order_delivery_scheduler()->enqueue($exhausted_order->get_id(), '1');
+if (function_exists('as_unschedule_all_actions')) {
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		array($exhausted_order->get_id(), '1'),
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+}
+do_action(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, $exhausted_order->get_id(), '1');
+if (function_exists('as_unschedule_all_actions')) {
+	as_unschedule_all_actions(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, array($exhausted_order->get_id(), '1'), SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP);
+}
+do_action(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, $exhausted_order->get_id(), '1');
+if (function_exists('as_unschedule_all_actions')) {
+	as_unschedule_all_actions(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, array($exhausted_order->get_id(), '1'), SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP);
+}
+do_action(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, $exhausted_order->get_id(), '1');
+$exhausted_order = wc_get_order($exhausted_order->get_id());
+sait_delivery_assert_same('failed', $state->status($exhausted_order), 'Tres fallos agotan reintentos.');
+sait_delivery_assert_same(3, absint($exhausted_order->get_meta('_sait_delivery_attempts')), 'Limite de tres intentos.');
+delete_option('sait_test_post_responses');
+
 $duplicate_order = wc_create_order();
 SAIT_WOOCOMMERCE()->send_order_payment($duplicate_order->get_id());
 SAIT_WOOCOMMERCE()->send_order_thankyou($duplicate_order->get_id());
@@ -104,10 +164,22 @@ if (function_exists('as_unschedule_all_actions')) {
 		array($duplicate_order->get_id(), '1'),
 		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
 	);
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		$retry_args,
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		array($exhausted_order->get_id(), '1'),
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
 }
 
 $order->delete(true);
 $automatic_order->delete(true);
 $duplicate_order->delete(true);
+$retry_order->delete(true);
+$exhausted_order->delete(true);
 
 echo "Estados de entrega de documentos SAIT validados correctamente.\n";

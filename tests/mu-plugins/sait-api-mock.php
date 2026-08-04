@@ -113,6 +113,19 @@ function sait_test_intercept_api_request($preempt, $args, $url)
 	);
 
 	if ($method === 'POST' && in_array($path, array('/api/v3/pedidos', '/api/v3/cotizaciones'), true)) {
+		$queued_responses = get_option('sait_test_post_responses', array());
+		if (!empty($queued_responses)) {
+			$next_response = array_shift($queued_responses);
+			update_option('sait_test_post_responses', $queued_responses, false);
+			if ($next_response === 'wp_error') {
+				return new WP_Error('sait_test_post_error', 'Fallo POST simulado.');
+			}
+			$status_code = (int) $next_response;
+			return sait_test_http_response(
+				$status_code === 201 ? array('result' => 'OK') : array('error' => 'fallo simulado'),
+				$status_code
+			);
+		}
 		return sait_test_http_response(array('result' => 'OK'), 201);
 	}
 

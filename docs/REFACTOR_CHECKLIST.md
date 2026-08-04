@@ -411,7 +411,7 @@ Objetivo: distinguir disparo, aceptación y fallo sin duplicar documentos.
 - [x] Programar envíos automáticos con Action Scheduler.
 - [x] Hacer cada tarea idempotente antes de enviar.
 - [x] Desduplicar acciones programadas.
-- [ ] Definir reintentos limitados y backoff.
+- [x] Definir reintentos limitados (3) y backoff (60/300 segundos).
 - [ ] Mantener disparo manual protegido para recuperación.
 - [x] Considerar HPOS: usar CRUD de `WC_Order`, no acceso directo a posts.
 - [ ] Probar que `woocommerce_thankyou` y
