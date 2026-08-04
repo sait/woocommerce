@@ -71,6 +71,19 @@ sait_papelia_assert_true(
 	has_filter('sait_woocommerce_order_payload') !== false,
 	'El complemento debe registrar la personalización del payload de pedidos.'
 );
+sait_papelia_assert_true(
+	has_filter('sait_woocommerce_quote_payload') !== false,
+	'El complemento debe conservar la personalización heredada de cotizaciones.'
+);
+sait_papelia_assert_true(
+	has_filter('sait_woocommerce_legacy_customizer_enabled', '__return_false') !== false,
+	'Papelía debe sustituir el personalizador heredado del núcleo.'
+);
+sait_papelia_assert_same(
+	false,
+	apply_filters('sait_woocommerce_legacy_customizer_enabled', true, null, 'P'),
+	'El complemento debe impedir la doble personalización del payload.'
+);
 sait_papelia_assert_same(
 	false,
 	has_filter('woocommerce_cart_has_stock', '__return_true'),
@@ -120,6 +133,9 @@ $payload = apply_filters('sait_woocommerce_order_payload', (object) array(), $or
 sait_papelia_assert_true(strpos($payload->otrosdatos, 'clinum=     0') !== false, 'El payload debe conservar clinum público de Papelía.');
 sait_papelia_assert_true(strpos($payload->obs, 'Sucursal: 1  Matriz') !== false, 'OBS debe incluir la sucursal elegida.');
 sait_papelia_assert_true(strpos($payload->obs, 'Existencias faltantes') !== false, 'OBS debe avisar faltantes aceptados.');
+$quote_payload = apply_filters('sait_woocommerce_quote_payload', (object) array(), $order);
+sait_papelia_assert_true(isset($quote_payload->otrosdatos), 'La cotización debe conservar otrosdatos de Papelía.');
+sait_papelia_assert_true(isset($quote_payload->obs), 'La cotización debe conservar OBS de Papelía.');
 
 $order->delete(true);
 update_option(SAIT_WOOCOMMERCE_Settings::OPTION_NAME, $original_options);

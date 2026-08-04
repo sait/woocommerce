@@ -11,7 +11,9 @@
 
 /**
  *
- * En esta clase se registraran las funciones personalizadas para clientes.
+ * Adaptador heredado para instalaciones que reemplazaron este archivo.
+ *
+ * @deprecated Usar los filtros sait_woocommerce_*_payload desde un plugin complementario.
  * @since      1.0.3
  * @package    SAIT_WOOCOMMERCE
  * @subpackage SAIT_WOOCOMMERCE/includes
@@ -22,6 +24,9 @@
  class SAIT_PERSONALIZADO{
 
 
+	/**
+	 * @deprecated Usar sait_woocommerce_order_payload o sait_woocommerce_document_payload.
+	 */
 	public static function SAIT_FuncionPersonalizaPostPedido($body,$order) {
 		//$body->otrosdatos =  self::SAIT_getOtrosDatos($order);
 		return $body;

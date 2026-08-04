@@ -65,7 +65,7 @@ producto.
 | --- | --- |
 | `SAITNube_PedidoObs_enabled` | Controla el comportamiento de observaciones del pedido. |
 | `SAITNube_PedidoDirenvio_enabled` | Controla el comportamiento de direccion de envio en el pedido. |
-| `SAITNube_FuncionPersonalizadaPedido_enabled` | Controla el comportamiento de la funcion personalizada de pedido. |
+| `SAITNube_FuncionPersonalizadaPedido_enabled` | Activa el adaptador heredado `SAIT_PERSONALIZADO`; para código nuevo se usan plugins complementarios. |
 
 El comportamiento esperado es que estas opciones se apliquen cuando estan en `1`:
 

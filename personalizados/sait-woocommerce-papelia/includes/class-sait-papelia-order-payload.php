@@ -10,7 +10,9 @@ final class SAIT_Papelia_Order_Payload
 	/** @return void */
 	public function register_hooks()
 	{
+		add_filter('sait_woocommerce_legacy_customizer_enabled', '__return_false');
 		add_filter('sait_woocommerce_order_payload', array($this, 'customize'), 10, 2);
+		add_filter('sait_woocommerce_quote_payload', array($this, 'customize'), 10, 2);
 	}
 
 	/**

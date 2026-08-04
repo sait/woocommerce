@@ -536,7 +536,7 @@ Objetivo: actualizar el núcleo sin sobrescribir reglas particulares.
 - [x] Crear hooks/filtros con contratos documentados.
 - [x] Mover personalizaciones a un plugin complementario cuando sea posible.
 - [x] Mantener adaptadores de clases y funciones históricas durante una versión.
-- [ ] Marcar adaptadores obsoletos antes de retirarlos.
+- [x] Marcar adaptadores obsoletos antes de retirarlos.
 - [x] No eliminar código sólo porque parezca no utilizado; buscar consumidores.
 - [x] Crear `personalizados/sait-woocommerce-papelia/` como plugin independiente,
   sin versionar el directorio local de referencia `papelia/`.
@@ -549,13 +549,18 @@ Objetivo: actualizar el núcleo sin sobrescribir reglas particulares.
 El inventario, contratos, diferencias de seguridad y migración están en
 `docs/CUSTOMIZATIONS.md`.
 
+`SAIT_PERSONALIZADO` permanece operativo durante la transición, está marcado
+como obsoleto en código y administración y no se retirará antes de la versión
+2.0.0. Los complementos pueden sustituirlo mediante
+`sait_woocommerce_legacy_customizer_enabled` sin modificar la opción guardada.
+
 ### Commits
 
 ```text
 feat: agregar plugin complementario de Papelía
 docs: inventariar personalizaciones y contratos de extension
 test: cubrir plugin complementario de Papelía con API simulada
-refactor: agregar adaptadores de compatibilidad para APIs heredadas
+refactor: aislar personalizador heredado de SAIT
 ```
 
 ## Etapa 12: Liberacion Y Despliegue

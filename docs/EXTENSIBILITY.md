@@ -32,3 +32,15 @@ La opcion `SAITNube_FuncionPersonalizadaPedido_enabled` y
 `SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido()` se mantienen por
 compatibilidad. Para codigo nuevo se recomiendan estos filtros porque no exige
 editar archivos del plugin.
+
+El adaptador está marcado como obsoleto y no se retirará antes de la versión
+2.0.0. Un plugin complementario que reemplaza completamente esa lógica debe
+desactivarlo sin cambiar la opción histórica:
+
+```php
+add_filter('sait_woocommerce_legacy_customizer_enabled', '__return_false');
+```
+
+Este filtro recibe también la orden y el tipo de documento (`P` o `Q`). No se
+debe usar para modificar el payload; para eso permanecen los tres filtros
+anteriores.

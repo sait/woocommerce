@@ -41,7 +41,7 @@ class SAIT_WOOCOMMERCE_DocumentService
 			$this->customer_resolver->resolve($order)
 		);
 
-		$document = $this->customize_legacy($document, $order, $options);
+		$document = $this->customize_legacy($document, $order, $options, 'P');
 		/**
 		 * Filtra el payload de un pedido antes de enviarlo a SAIT.
 		 *
@@ -76,7 +76,7 @@ class SAIT_WOOCOMMERCE_DocumentService
 			$this->customer_resolver->resolve($order)
 		);
 
-		$document = $this->customize_legacy($document, $order, $options);
+		$document = $this->customize_legacy($document, $order, $options, 'Q');
 		/**
 		 * Filtra el payload de una cotización antes de enviarla a SAIT.
 		 *
@@ -177,10 +177,23 @@ class SAIT_WOOCOMMERCE_DocumentService
 	 *
 	 * @return object
 	 */
-	private function customize_legacy($document, $order, $options)
+	private function customize_legacy($document, $order, $options, $document_type)
 	{
 		$enabled = isset($options['SAITNube_FuncionPersonalizadaPedido_enabled'])
 			&& $options['SAITNube_FuncionPersonalizadaPedido_enabled'] === '1';
+		/**
+		 * Permite que un complemento sustituya el personalizador heredado.
+		 *
+		 * @param bool     $enabled Indica si la opción histórica está activa.
+		 * @param WC_Order $order Orden WooCommerce de origen.
+		 * @param string   $document_type `P` para pedido o `Q` para cotización.
+		 */
+		$enabled = (bool) apply_filters(
+			'sait_woocommerce_legacy_customizer_enabled',
+			$enabled,
+			$order,
+			$document_type
+		);
 
 		return $enabled
 			? SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($document, $order)

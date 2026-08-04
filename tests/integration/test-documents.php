@@ -203,6 +203,25 @@ $build_counts = get_option('sait_test_request_counts', array());
 sait_document_assert_same('PZA', $service_document->items[0]->unidad, 'El servicio resuelve unidades antes de construir.');
 sait_document_assert_true(!isset($build_counts['POST /api/v3/pedidos']), 'Construir no debe enviar el pedido.');
 
+$legacy_gate_calls = 0;
+$legacy_gate = function ($enabled, $order, $document_type) use (&$legacy_gate_calls, $mapped_order) {
+	sait_document_assert_same(true, $enabled, 'La opción heredada debe llegar activa al filtro de compatibilidad.');
+	sait_document_assert_same($mapped_order->get_id(), $order->get_id(), 'El filtro heredado debe recibir la orden.');
+	sait_document_assert_same('P', $document_type, 'El filtro heredado debe identificar el pedido.');
+	$legacy_gate_calls++;
+	return false;
+};
+$legacy_options = get_option('opciones_sait', array());
+$legacy_options['SAITNube_FuncionPersonalizadaPedido_enabled'] = '1';
+update_option('opciones_sait', $legacy_options);
+add_filter('sait_woocommerce_legacy_customizer_enabled', $legacy_gate, 10, 3);
+$legacy_filtered_document = SAIT_WOOCOMMERCE()->document_service()->build_order($mapped_order, '1');
+remove_filter('sait_woocommerce_legacy_customizer_enabled', $legacy_gate, 10);
+$legacy_options['SAITNube_FuncionPersonalizadaPedido_enabled'] = '0';
+update_option('opciones_sait', $legacy_options);
+sait_document_assert_same(1, $legacy_gate_calls, 'El servicio debe exponer una sola puerta para sustituir el adaptador heredado.');
+sait_document_assert_same('WO' . $mapped_order->get_id(), $legacy_filtered_document->numdoc, 'Sustituir el adaptador no debe alterar el constructor base.');
+
 $mapped_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($mapped_order, '1', true);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($mapped_response), 'HTTP pedido mapeado.');
 $mapped_request = sait_document_last_request();

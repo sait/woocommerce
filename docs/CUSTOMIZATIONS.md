@@ -29,8 +29,10 @@ método para pedidos y cotizaciones.
 
 Este adaptador se conserva durante una versión de transición para no romper
 instalaciones que todavía reemplazan ese archivo. No debe recibir reglas de
-clientes nuevas. Antes de retirarlo hay que localizar instalaciones que tengan
-la opción activa y entregarles su plugin complementario.
+clientes nuevas y está marcado como obsoleto en código y administración. No se
+retirará antes de la versión 2.0.0. Antes de retirarlo hay que localizar
+instalaciones que tengan la opción activa y entregarles su plugin
+complementario.
 
 ## Referencia Papelía
 
@@ -74,7 +76,8 @@ Para migrar una instalación Papelía:
 
 1. Instalar y activar `SAIT WooCommerce - Papelía` junto al plugin principal.
 2. Confirmar la instancia real de recogida y los almacenes configurados.
-3. Desactivar `SAITNube_FuncionPersonalizadaPedido_enabled` para no ejecutar el
-   adaptador heredado además del filtro nuevo.
+3. Verificar que el complemento desactive automáticamente el adaptador mediante
+   `sait_woocommerce_legacy_customizer_enabled`; no es necesario cambiar la
+   opción histórica durante la transición.
 4. Probar pedido con entrega, recogida con stock y recogida con faltantes.
 5. Empacar el núcleo y el complemento en ZIP separados.
