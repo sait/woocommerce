@@ -1,0 +1,73 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Callback expects 1 parameter, \$accepted_args is set to 2\.$#'
+			identifier: arguments.count
+			count: 2
+			path: sait-woocommerce/includes/SAIT_WOOCOMMERCE-plugin.php
+
+		-
+			message: '#^Method SAIT_WOOCOMMERCE_ProcessEvents\:\:xml_attribute\(\) should return string\|null but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: sait-woocommerce/includes/SAIT_WOOCOMMERCE-process-events.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$oXml$#'
+			identifier: parameter.notFound
+			count: 1
+			path: sait-woocommerce/includes/SAIT_WOOCOMMERCE-process-events.php
+
+		-
+			message: '#^Call to an undefined method WC_Email\:\:trigger\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: sait-woocommerce/includes/events/SAIT_WOOCOMMERCE-customer-event-handler.php
+
+		-
+			message: '#^Variable \$branches might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: sait-woocommerce/templates/branch-modal.php
+
+		-
+			message: '#^Variable \$minimum might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: sait-woocommerce/templates/cart-minimum-script.php
+
+		-
+			message: '#^Variable \$discount might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: sait-woocommerce/templates/promotion-price.php
+
+		-
+			message: '#^Variable \$is_product_page might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: sait-woocommerce/templates/promotion-price.php
+
+		-
+			message: '#^Variable \$promotional_price might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: sait-woocommerce/templates/promotion-price.php
+
+		-
+			message: '#^Variable \$regular_price might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: sait-woocommerce/templates/promotion-price.php
+
+		-
+			message: '#^Variable \$allowed_warehouses might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: sait-woocommerce/templates/stock-table.php
+
+		-
+			message: '#^Variable \$warehouses might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: sait-woocommerce/templates/stock-table.php

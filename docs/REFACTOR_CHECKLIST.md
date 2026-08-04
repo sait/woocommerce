@@ -507,12 +507,18 @@ Objetivo: impedir nuevas regresiones de tipos sin intentar limpiar todo de golpe
 - [x] Limitar análisis a código propio.
 - [x] Excluir vendor, assets generados y fixtures cuando corresponda.
 - [x] Empezar en un nivel conservador.
-- [ ] Generar una baseline inicial sólo para deuda heredada.
-- [ ] No permitir errores nuevos en la baseline.
+- [x] Generar una baseline inicial sólo para deuda heredada.
+- [x] No permitir errores nuevos en la baseline.
 - [ ] Agregar tipos precisos para callbacks de hooks.
 - [ ] Agregar tipos de parámetros de `WP_REST_Request`.
 - [ ] Documentar shapes de resultados de base de datos y Action Scheduler.
 - [ ] Reducir la baseline módulo por módulo después de cada extracción.
+
+La baseline inicial contiene 16 hallazgos específicos por mensaje, ruta y
+cantidad: cuatro contratos de callbacks/documentación, un método dinámico de
+correo de WooCommerce y once referencias a variables inyectadas en plantillas.
+No contiene patrones generales y cualquier error distinto hace fallar el
+análisis.
 
 ### Commits
 
