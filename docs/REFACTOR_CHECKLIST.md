@@ -16,8 +16,8 @@ poder revisarse, probarse y revertirse de manera independiente.
 - Persistencia propia: tabla `{prefix}sait_claves`.
 - Trabajo asíncrono: Action Scheduler con alternativa WP-Cron en la
   sincronización masiva.
-- Herramientas disponibles: Docker para PHP lint y Node `v24.19.0` mediante
-  `nvm`.
+- Herramientas disponibles: Docker Compose para el entorno de integracion y
+  Node `v24.19.0` mediante `nvm` cuando una etapa futura lo requiera.
 - El triage ejecutado sobre `sait-woocommerce/` clasifica el proyecto como
   `wp-plugin` y detecta `SAIT WooCommerce` versión `1.2.3`.
 - No se detectaron bloques Gutenberg, Abilities API ni integración WP-CLI.
@@ -27,6 +27,9 @@ poder revisarse, probarse y revertirse de manera independiente.
   `/home/ali/.nvm/versions/node/v24.19.0/bin/node`.
 
 ## Reglas Para Cada Etapa
+
+- [ ] Mantener el prefijo de Conventional Commits (`test:`, `refactor:`,
+  `fix:`, etc.) y redactar la descripcion del commit en español.
 
 - [ ] No modificar las copias históricas dentro de `plugins/`.
 - [ ] No mezclar refactorizaciones con cambios de comportamiento.
@@ -42,10 +45,10 @@ poder revisarse, probarse y revertirse de manera independiente.
   node ../.codex/skills/wp-plugin-development/scripts/detect_plugins.mjs
   ```
 
-- [ ] Ejecutar desde `tests/`:
+- [ ] Ejecutar desde la raiz:
 
   ```bash
-  docker compose run --rm php sh tests/php-lint.sh
+  sh tests/smoke-test.sh
   ```
 
 - [ ] Ejecutar desde la raíz:
@@ -105,7 +108,7 @@ regresion objetivo porque la version 1.2.3 no reutiliza actualmente su clave.
 Alcance: documentación de compatibilidad y contratos, sin tocar producción.
 
 ```text
-docs: define supported versions and integration contracts
+docs: definir versiones soportadas y contratos de integracion
 ```
 
 ### Commit 0.2
@@ -113,16 +116,18 @@ docs: define supported versions and integration contracts
 Alcance: fixtures XML/JSON y checklist manual de staging.
 
 ```text
-test: add SAIT integration fixtures and staging baseline
+test: agregar fixtures de integracion SAIT y linea base de staging
 ```
 
 ## Etapa 1: Crear Una Red De Seguridad Ejecutable
 
 Objetivo: detectar cambios de comportamiento antes de mover código.
 
-- [ ] Decidir si se incorporará Composer para pruebas y análisis estático.
-- [ ] Preparar un contenedor reproducible con PHP y extensiones requeridas.
-- [ ] Mantener PHP lint como validación mínima obligatoria.
+- [x] Posponer Composer hasta extraer logica pura que justifique PHPUnit o
+  analisis estatico.
+- [x] Preparar un entorno reproducible con WordPress 6.6.2, WooCommerce 9.3.3
+  y PHP 7.4 mediante Docker Compose.
+- [x] Mantener PHP lint como validación mínima obligatoria.
 - [ ] Agregar pruebas unitarias para lógica pura:
   - [ ] Cálculo de descuentos.
   - [ ] Normalización de configuración.
@@ -130,19 +135,19 @@ Objetivo: detectar cambios de comportamiento antes de mover código.
   - [ ] Cálculo de precios e impuestos.
   - [ ] Resolución de cliente normal/eventual/nuevo.
 - [ ] Agregar pruebas de integración WordPress/WooCommerce para:
-  - [ ] Activación y creación de tabla.
-  - [ ] Registro de endpoints.
+  - [x] Activación y creación de tabla.
+  - [x] Registro de endpoints.
   - [ ] Procesamiento de fixtures XML.
   - [ ] Construcción de payloads de pedidos y cotizaciones.
 - [ ] Preparar dobles de prueba para evitar llamadas reales a SAIT.
-- [ ] Probar que el plugin se carga sin avisos ni errores fatales.
+- [x] Probar que el plugin se carga sin avisos ni errores fatales.
 
 ### Commit 1.1
 
 Alcance: infraestructura de pruebas, sin modificar lógica productiva.
 
 ```text
-test: add reproducible WordPress plugin test harness
+test: agregar entorno reproducible para el plugin de WordPress
 ```
 
 ### Commit 1.2
@@ -150,7 +155,7 @@ test: add reproducible WordPress plugin test harness
 Alcance: pruebas de caracterización del comportamiento actual.
 
 ```text
-test: characterize SAIT events and document payloads
+test: caracterizar eventos SAIT y payloads de documentos
 ```
 
 No continuar si las pruebas sólo pueden pasar llamando servicios productivos.
@@ -180,7 +185,7 @@ Objetivo: estabilizar y proteger el contrato de entrada.
 Alcance: pruebas y esquemas REST sin cambiar permisos todavía.
 
 ```text
-test: cover SAIT REST routes permissions and validation
+test: cubrir permisos y validacion de rutas REST de SAIT
 ```
 
 ### Commit 2.2
@@ -188,7 +193,7 @@ test: cover SAIT REST routes permissions and validation
 Alcance: controladores, esquemas y respuestas normalizadas.
 
 ```text
-refactor: move SAIT REST routes into controllers
+refactor: mover rutas REST de SAIT a controladores
 ```
 
 ### Commit 2.3
@@ -196,7 +201,7 @@ refactor: move SAIT REST routes into controllers
 Alcance: cambio de seguridad independiente y documentado.
 
 ```text
-security: restrict SAIT order resend endpoints
+security: restringir endpoints de reenvio de pedidos SAIT
 ```
 
 ## Etapa 3: Bootstrap, Ciclo De Vida Y Configuracion
@@ -217,26 +222,57 @@ Objetivo: dejar un archivo principal pequeño y una inicialización predecible.
 - [ ] Mantener Settings API con sanitización por campo.
 - [ ] Verificar capacidad `manage_options` y escape tardío de HTML.
 
+### Fuente De Categoria De Productos
+
+- [ ] Agregar a `opciones_sait` un selector para elegir la fuente de la
+  categoria WooCommerce: linea, familia, categoria o departamento.
+- [ ] Definir el nombre definitivo de la opcion y sanearla mediante una lista
+  cerrada de valores permitidos.
+- [ ] Confirmar el valor predeterminado y la migracion antes de implementarlo:
+  la version 1.2.3 observada usa `linea` de forma fija, pero instalaciones
+  anteriores pueden haber esperado `numfam`.
+- [ ] Centralizar la correspondencia entre la opcion, el atributo de `MODART`
+  y la tabla de mapeo de `sait_claves`:
+  - [ ] Linea: atributo `linea`, tabla `lineas`.
+  - [ ] Familia: atributo `familia`, tabla `familia`.
+  - [ ] Categoria: atributo `categoria`, tabla `catego`.
+  - [ ] Departamento: atributo `numdep`, tabla `deptos`.
+- [ ] Hacer que `MODART` asigne `product_cat` usando la fuente configurada.
+- [ ] Definir el comportamiento cuando el atributo o el mapeo no existe, sin
+  borrar accidentalmente categorias ya asignadas.
+- [ ] Agregar pruebas para las cuatro fuentes, opcion invalida, valor ausente y
+  mapeo inexistente.
+- [ ] Documentar la opcion y su valor compatible en la guia de configuracion.
+
 ### Commit 3.1
 
 ```text
-refactor: add plugin loader and lifecycle services
+refactor: agregar cargador y servicios de ciclo de vida del plugin
 ```
 
 ### Commit 3.2
 
 ```text
-refactor: centralize typed access to SAIT settings
+refactor: centralizar acceso tipado a la configuracion SAIT
 ```
 
 ### Commit 3.3
 
 ```text
-refactor: use settings service across plugin modules
+refactor: usar servicio de configuracion en los modulos del plugin
 ```
 
 Hacer el commit 3.3 por módulos si el diff es grande: pedidos, eventos,
 frontend y administración.
+
+### Commit 3.4
+
+Alcance: cambio funcional aislado para elegir la clasificacion SAIT usada como
+categoria del producto.
+
+```text
+feat: permitir configurar la categoria de productos desde SAIT
+```
 
 ## Etapa 4: Extraer Infraestructura Compartida
 
@@ -270,19 +306,19 @@ Objetivo: centralizar HTTP, mapeos y logs antes de dividir reglas de negocio.
 ### Commit 4.1
 
 ```text
-refactor: add centralized SAIT API client
+refactor: agregar cliente centralizado para la API de SAIT
 ```
 
 ### Commit 4.2
 
 ```text
-refactor: add repository for SAIT entity mappings
+refactor: agregar repositorio de mapeos de entidades SAIT
 ```
 
 ### Commit 4.3
 
 ```text
-refactor: centralize sanitized WooCommerce logging
+refactor: centralizar logs saneados de WooCommerce
 ```
 
 ## Etapa 5: Centralizar Clientes Y Documentos
@@ -311,10 +347,10 @@ Objetivo: eliminar duplicación entre pedidos y cotizaciones.
 ### Commits
 
 ```text
-refactor: centralize SAIT customer resolution
-refactor: extract SAIT order and quote payload builders
-refactor: separate SAIT document building from submission
-feat: expose filters for SAIT document customization
+refactor: centralizar resolucion de clientes SAIT
+refactor: extraer constructores de pedidos y cotizaciones SAIT
+refactor: separar construccion y envio de documentos SAIT
+feat: exponer filtros para personalizar documentos SAIT
 ```
 
 Cada línea representa un commit separado.
@@ -342,11 +378,11 @@ Objetivo: aplicar las mismas reglas desde eventos, acciones manuales y lotes.
 ### Commits
 
 ```text
-refactor: centralize SAIT price and stock calculations
-refactor: add shared SAIT product synchronization service
-refactor: use product sync service in admin synchronization
-refactor: use product sync service in SAIT event handlers
-fix: link existing WooCommerce products by SKU during MODART
+refactor: centralizar calculos de precios y existencias SAIT
+refactor: agregar servicio compartido de sincronizacion de productos SAIT
+refactor: usar sincronizacion de productos en procesos administrativos
+refactor: usar sincronizacion de productos en eventos SAIT
+fix: vincular productos WooCommerce existentes por SKU en MODART
 ```
 
 El último commit cambia comportamiento y no debe mezclarse con los anteriores.
@@ -370,10 +406,10 @@ Objetivo: distinguir disparo, aceptación y fallo sin duplicar documentos.
 ### Commits
 
 ```text
-refactor: add explicit SAIT document delivery states
-feat: queue SAIT document submissions with Action Scheduler
-feat: retry failed SAIT submissions with idempotency guards
-feat: show SAIT delivery status in WooCommerce admin
+refactor: agregar estados explicitos de entrega de documentos SAIT
+feat: encolar envios SAIT mediante Action Scheduler
+feat: reintentar envios SAIT fallidos con proteccion de idempotencia
+feat: mostrar estado de entrega SAIT en la administracion WooCommerce
 ```
 
 ## Etapa 8: Separar Manejadores De Eventos
@@ -395,13 +431,13 @@ Objetivo: convertir la clase grande de eventos en router y handlers pequeños.
 ### Commits
 
 ```text
-refactor: add validated SAIT XML event parser
-refactor: extract SAIT product event handler
-refactor: extract SAIT price and stock event handlers
-refactor: extract SAIT category event handler
-refactor: extract SAIT customer event handler
-refactor: extract SAIT exchange rate event handler
-refactor: reduce SAIT event processor to routing
+refactor: agregar parser validado de eventos XML SAIT
+refactor: extraer procesador de eventos de productos SAIT
+refactor: extraer procesadores de precios y existencias SAIT
+refactor: extraer procesador de categorias SAIT
+refactor: extraer procesador de clientes SAIT
+refactor: extraer procesador de tipo de cambio SAIT
+refactor: reducir el procesador de eventos SAIT a enrutamiento
 ```
 
 ## Etapa 9: Separar Frontend Y Medir Rendimiento
@@ -436,10 +472,10 @@ Objetivo: retirar UI de `SAIT_UTILS.php` y reducir llamadas remotas en requests.
 ### Commits
 
 ```text
-test: add storefront performance baselines
-refactor: extract branch selection and storefront modules
-fix: persist branch selection for guest customers
-perf: reduce request-time SAIT API calls
+test: agregar lineas base de rendimiento del frontend
+refactor: extraer seleccion de sucursal y modulos del frontend
+fix: persistir seleccion de sucursal para clientes invitados
+perf: reducir llamadas a la API SAIT durante solicitudes web
 ```
 
 Cada optimización debe incluir medición antes/después en su PR o documentación.
@@ -463,9 +499,9 @@ Objetivo: impedir nuevas regresiones de tipos sin intentar limpiar todo de golpe
 ### Commits
 
 ```text
-build: add WordPress and WooCommerce static analysis tooling
-test: add reviewed PHPStan baseline for legacy code
-refactor: add types to SAIT REST and hook boundaries
+build: agregar herramientas de analisis estatico para WordPress y WooCommerce
+test: agregar linea base revisada de PHPStan para codigo legado
+refactor: agregar tipos en limites REST y hooks de SAIT
 ```
 
 ## Etapa 11: Personalizaciones Y Compatibilidad
@@ -482,9 +518,9 @@ Objetivo: actualizar el núcleo sin sobrescribir reglas particulares.
 ### Commits
 
 ```text
-feat: add extension points for customer integrations
-refactor: move customer customization out of plugin core
-refactor: add compatibility adapters for legacy APIs
+feat: agregar puntos de extension para integraciones de clientes
+refactor: sacar personalizaciones de clientes del nucleo del plugin
+refactor: agregar adaptadores de compatibilidad para APIs heredadas
 ```
 
 ## Etapa 12: Liberacion Y Despliegue
@@ -511,7 +547,7 @@ refactor: add compatibility adapters for legacy APIs
 ### Commit de liberacion
 
 ```text
-chore: prepare SAIT WooCommerce release X.Y.Z
+chore: preparar version X.Y.Z de SAIT WooCommerce
 ```
 
 Crear el tag sólo después de validar exactamente el ZIP que se instalará:

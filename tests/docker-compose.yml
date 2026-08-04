@@ -1,7 +1,82 @@
+name: sait-woocommerce-tests
+
 services:
+  database:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - database_data:/var/lib/mysql
+    networks:
+      - sait_test
+
+  wordpress:
+    image: wordpress:6-php7.4-apache
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: database:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DEBUG: 1
+    ports:
+      - "8888:80"
+    volumes:
+      - wordpress_data:/var/www/html
+      - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
+    networks:
+      - sait_test
+
+  wpcli:
+    image: wordpress:cli-php7.4
+    entrypoint: ["wp"]
+    user: "33:33"
+    working_dir: /var/www/html
+    depends_on:
+      database:
+        condition: service_healthy
+      wordpress:
+        condition: service_started
+    environment:
+      HOME: /tmp
+      WORDPRESS_DB_HOST: database:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+      - ../sait-woocommerce:/var/www/html/wp-content/plugins/sait-woocommerce:ro
+    networks:
+      - sait_test
+
   php:
-    image: php:8.2-cli
+    image: php:7.4-cli
     working_dir: /workspace
     volumes:
-      - ..:/workspace
+      - ..:/workspace:ro
     command: ["php", "-v"]
+    networks:
+      - sait_test
+
+volumes:
+  database_data:
+    name: sait_woocommerce_database
+  wordpress_data:
+    name: sait_woocommerce_wordpress
+
+networks:
+  sait_test:
+    name: sait_woocommerce_test
+    ipam:
+      config:
+        - subnet: 192.168.64.0/24

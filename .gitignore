@@ -1,3 +1,4 @@
 sait-woocommerce/includescopy/
 *.bk
 descartado/
+node_modules/
