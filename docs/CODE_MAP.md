@@ -156,7 +156,7 @@ Metodos:
 
 - `SAIT_sendPedido($order, $formapago, $wait = false)`: arma body de pedido y lo envia a `/api/v3/pedidos`.
 - `SAIT_sendCotizacion($order, $formapago, $wait = false)`: arma body de cotizacion y lo envia a `/api/v3/cotizaciones`.
-- `SAIT_sendOrder($id_pedido, $formapago)`: envio automatico con idempotencia; decide pedido/cotizacion segun configuracion.
+- `SAIT_sendOrder($id_pedido, $formapago)`: adaptador legacy que encola el envio automatico.
 - `SAIT_envioAutomaticoDisparado($order)`: revisa si la orden ya disparo envio automatico a SAIT.
 - `SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo)`: guarda metadata del envio automatico disparado.
 - `SAIT_reenviarPedido($id_pedido)`: reenvia la orden indicada como pedido o cotizacion.
@@ -165,6 +165,13 @@ Metodos:
 - `SAIT_responderResultadoEnvio($resultado)`: genera respuesta REST del reenvio manual.
 - `SAIT_calcularPjeDescuentoItem($cantidad, $total, $precio)`: calcula descuento porcentual.
 - `SAIT_getDirEnvio($order)`: genera cadena `direnvio` para SAIT.
+
+## Entrega Asincrona De Documentos
+
+- `SAIT_WOOCOMMERCE-order-delivery-state.php`: persiste estados `pending`,
+  `sending`, `sent` y `failed`, intentos, timestamps y HTTP mediante `WC_Order`.
+- `SAIT_WOOCOMMERCE-order-delivery-scheduler.php`: desduplica acciones,
+  ejecuta el POST bloqueante y programa hasta tres intentos con backoff.
 
 ## `includes/SAIT_WOOCOMMERCE-document-builders.php`
 
@@ -201,6 +208,7 @@ Clase `SAIT_WOOCOMMERCE_OrderAdmin`.
 Responsabilidades:
 
 - Agrega el boton `Reenviar pedido a SAIT` en la pantalla de edicion de pedidos.
+- Muestra estado de entrega, intentos, ultimo intento y HTTP sin exponer el cuerpo del error.
 - Procesa el `admin_post` `sait_reenviar_pedido_admin`.
 - Valida permisos y nonce antes de reenviar.
 - Usa `SAIT_WOOCOMMERCE_Orders::SAIT_reenviarPedido()` para reutilizar el flujo manual existente.

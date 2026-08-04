@@ -412,10 +412,11 @@ Objetivo: distinguir disparo, aceptación y fallo sin duplicar documentos.
 - [x] Hacer cada tarea idempotente antes de enviar.
 - [x] Desduplicar acciones programadas.
 - [x] Definir reintentos limitados (3) y backoff (60/300 segundos).
-- [ ] Mantener disparo manual protegido para recuperación.
+- [x] Mantener disparo manual protegido con capacidad y nonce para recuperación.
 - [x] Considerar HPOS: usar CRUD de `WC_Order`, no acceso directo a posts.
-- [ ] Probar que `woocommerce_thankyou` y
+- [x] Probar que `woocommerce_thankyou` y
   `woocommerce_payment_complete` no generan duplicados.
+- [x] Mostrar estado, intentos, último intento y HTTP en administración.
 
 ### Commits
 

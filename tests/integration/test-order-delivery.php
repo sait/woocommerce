@@ -16,6 +16,13 @@ function sait_delivery_assert_same($expected, $actual, $message)
 	}
 }
 
+function sait_delivery_assert_true($condition, $message)
+{
+	if (!$condition) {
+		throw new RuntimeException($message);
+	}
+}
+
 $options = get_option('opciones_sait', array());
 $options['SAITNube_URL'] = 'https://sait-api.invalid';
 $options['SAITNube_APIKey'] = 'fixture-api-key';
@@ -58,6 +65,18 @@ sait_delivery_assert_same('sent', $state->status($order), 'Estado enviado confir
 sait_delivery_assert_same(2, absint($order->get_meta('_sait_delivery_attempts')), 'Intentos acumulados.');
 sait_delivery_assert_same(201, (int) $order->get_meta('_sait_delivery_http_status'), 'HTTP confirmado.');
 sait_delivery_assert_same('', $order->get_meta('_sait_delivery_last_error'), 'Error eliminado al enviar.');
+
+require_once WP_PLUGIN_DIR . '/sait-woocommerce/includes/SAIT_WOOCOMMERCE-order-admin.php';
+wp_set_current_user(1);
+$admin = new SAIT_WOOCOMMERCE_OrderAdmin();
+ob_start();
+$admin->render_resend_button($order);
+$admin_html = ob_get_clean();
+sait_delivery_assert_true(strpos($admin_html, 'Entrega SAIT') !== false, 'Panel de estado administrativo.');
+sait_delivery_assert_true(strpos($admin_html, 'Enviado') !== false, 'Estado enviado visible.');
+sait_delivery_assert_true(strpos($admin_html, 'Intentos:') !== false, 'Intentos visibles.');
+sait_delivery_assert_true(strpos($admin_html, '201') !== false, 'HTTP visible.');
+sait_delivery_assert_true(strpos($admin_html, 'Fallo simulado') === false, 'No se muestra el cuerpo del error.');
 
 $automatic_order = wc_create_order();
 delete_option('sait_test_request_counts');

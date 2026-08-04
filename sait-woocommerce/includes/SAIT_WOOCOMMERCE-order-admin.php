@@ -39,12 +39,39 @@ class SAIT_WOOCOMMERCE_OrderAdmin {
 			'sait_reenviar_pedido_admin_' . $order_id
 		);
 		?>
+		<div class="form-field form-field-wide sait-delivery-status">
+			<h4>Entrega SAIT</h4>
+			<p>
+				<strong>Estado:</strong>
+				<?php echo esc_html($this->delivery_status_label($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_STATUS))); ?>
+			</p>
+			<p>
+				<strong>Intentos:</strong>
+				<?php echo esc_html(absint($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_ATTEMPTS))); ?>
+				&middot; <strong>Ultimo intento:</strong>
+				<?php echo esc_html((string) $order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_LAST_ATTEMPT_AT)); ?>
+				&middot; <strong>HTTP:</strong>
+				<?php echo esc_html((string) $order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_HTTP_STATUS)); ?>
+			</p>
+		</div>
 		<p class="form-field form-field-wide">
 			<a class="button button-secondary" href="<?php echo esc_url($url); ?>">
 				Reenviar pedido a SAIT
 			</a>
 		</p>
 		<?php
+	}
+
+	/** @return string */
+	private function delivery_status_label($status) {
+		$labels = array(
+			SAIT_WOOCOMMERCE_OrderDeliveryState::PENDING => 'Pendiente',
+			SAIT_WOOCOMMERCE_OrderDeliveryState::SENDING => 'Enviando',
+			SAIT_WOOCOMMERCE_OrderDeliveryState::SENT => 'Enviado',
+			SAIT_WOOCOMMERCE_OrderDeliveryState::FAILED => 'Fallido',
+		);
+
+		return isset($labels[$status]) ? $labels[$status] : 'Sin programar';
 	}
 
 	public function handle_resend_order() {
