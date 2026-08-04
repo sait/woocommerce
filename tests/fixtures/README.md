@@ -36,6 +36,6 @@ con distintas precondiciones.
 `expected/documents-current.json` congela payloads representativos que el
 codigo actual construye. Las fechas son valores deterministas de ejemplo.
 
-`expected/document-eventual-existing-target.json` define la regresion que debe
-pasar al recuperar clientes eventuales: si el correo ya existe en SAIT, se
-debe enviar `numcliev` y no volver a enviar `clievent`. Actualmente falla.
+`expected/document-eventual-existing-target.json` define la regresion de
+clientes eventuales: `/clientes` devuelve un `numcli` con `-`, que se envia en
+`numcliev` sin volver a incluir `clievent`.

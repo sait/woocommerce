@@ -15,7 +15,7 @@ if ($normal !== "  123") {
 }
 
 $eventual = SAIT_UTILS::SAIT_getClienteEventualbyemail("eventual.fixture@example.test");
-if ($eventual !== "  456") {
+if ($eventual !== " -456") {
     throw new RuntimeException("Cliente eventual no simulado: " . $eventual);
 }
 

@@ -140,10 +140,10 @@ volumen de pruebas. El POST se captura localmente y nunca sale a SAIT:
 sh tests/test-documents.sh
 ```
 
-Se cubren cliente mapeado, cliente normal encontrado por correo, eventual
-existente, cliente nuevo, descuentos, observaciones, direccion de envio y
-cotizacion. El eventual existente conserva como expectativa la brecha de
-1.2.3: se vuelve a enviar `clievent` en vez de reutilizar `numcliev`.
+Se cubren clientes normales y eventuales, mapeados o encontrados por correo,
+clientes nuevos, correos invalidos, descuentos, observaciones, direccion de
+envio y cotizacion. `/clientes` es la unica ruta de busqueda: un `numcli` que
+contiene `-` se envia como `numcliev`.
 
 ## Lint PHP
 

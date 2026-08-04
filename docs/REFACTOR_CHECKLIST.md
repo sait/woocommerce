@@ -336,18 +336,18 @@ Objetivo: eliminar duplicación entre pedidos y cotizaciones.
 
 ### Resolución de clientes
 
-Pendiente de confirmar el contrato actual de API v3: no agregar una consulta
-separada a `/clienteseventuales` si `/clientes` ya devuelve ambos tipos. La
-resolucion eventual no se implementara hasta contar con esa confirmacion.
+Contrato confirmado: `/clientes` devuelve clientes normales y eventuales en
+el campo `numcli`. Un valor que contiene `-` identifica a un cliente eventual;
+no se consulta `/clienteseventuales`.
 
-- [ ] Crear `CustomerResolver`.
-- [ ] Resolver en orden:
-  - [ ] Mapeo local válido.
-  - [ ] Cliente normal por correo -> `numcli`.
-  - [ ] Cliente eventual por correo -> `numcliev`.
-  - [ ] Cliente nuevo -> objeto `clievent`.
-- [ ] Garantizar que sólo una representación quede activa.
-- [ ] Probar usuarios registrados, invitados y correos inválidos.
+- [x] Crear `CustomerResolver`.
+- [x] Resolver en orden:
+  - [x] Mapeo local válido.
+  - [x] Cliente normal por correo -> `numcli`.
+  - [x] Cliente eventual por correo -> `numcliev`.
+  - [x] Cliente nuevo -> objeto `clievent`.
+- [x] Garantizar que sólo una representación quede activa.
+- [x] Probar usuarios registrados, invitados y correos inválidos.
 
 ### Construcción de documentos
 

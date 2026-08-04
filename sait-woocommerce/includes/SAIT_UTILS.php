@@ -32,15 +32,9 @@
 	}
 
 	public static function SAIT_getClienteEventualbyemail($email){
-		if (empty($email) || !is_string($email) || !is_email($email)) {
-				return "";
-		}
-		$api_response = self::SAIT_GetNube("/api/v3/clienteseventuales?email=".urlencode($email));
-		$result = self::SAIT_getResult($api_response);
-		if (empty($result)){
-				return "";
-		}
-		return str_pad($result[0]["numcliev"],5, " ", STR_PAD_LEFT);
+		$numcli = self::SAIT_getClientebyemail($email);
+
+		return strpos($numcli, '-') !== false ? $numcli : "";
 	}
 
 

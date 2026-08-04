@@ -3,11 +3,11 @@
   "status": "regresion_objetivo",
   "sait_lookup": {
     "email": "eventual.fixture@example.test",
-    "numcliev": "456"
+    "numcli": "-456"
   },
   "expected_customer_fields": {
     "numcli": "",
-    "numcliev": "  456"
+    "numcliev": " -456"
   },
   "forbidden_fields": [
     "clievent"

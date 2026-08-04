@@ -153,12 +153,13 @@ function sait_test_intercept_api_request($preempt, $args, $url)
 	}
 
 	if ($path === '/api/v3/clientes' && isset($query['emailtw'])) {
-		$key = $query['emailtw'] === 'normal.fixture@example.test' ? 'cliente_normal' : 'sin_resultados';
-		return sait_test_http_response(isset($fixtures[$key]) ? $fixtures[$key] : array('result' => array()));
-	}
-
-	if ($path === '/api/v3/clienteseventuales' && isset($query['email'])) {
-		$key = $query['email'] === 'eventual.fixture@example.test' ? 'cliente_eventual' : 'sin_resultados';
+		if ($query['emailtw'] === 'normal.fixture@example.test') {
+			$key = 'cliente_normal';
+		} elseif ($query['emailtw'] === 'eventual.fixture@example.test') {
+			$key = 'cliente_eventual';
+		} else {
+			$key = 'sin_resultados';
+		}
 		return sait_test_http_response(isset($fixtures[$key]) ? $fixtures[$key] : array('result' => array()));
 	}
 

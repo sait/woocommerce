@@ -48,7 +48,7 @@
   },
   "cliente_eventual": {
     "result": [
-      { "numcliev": "456" }
+      { "numcli": "-456" }
     ]
   },
   "almacenes": {

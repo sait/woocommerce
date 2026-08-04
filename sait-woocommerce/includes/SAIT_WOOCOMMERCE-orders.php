@@ -106,26 +106,7 @@
 					$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
 					$pedido->items[] = $art;
 			}
-		$clave = SAIT_UTILS::SAIT_getClaves("clientes",null,$order->get_user_id());		
-		if (isset($clave->clave)){
-		 	$pedido->numcli =  str_pad($clave->clave,5, " ", STR_PAD_LEFT);
-		}else{
-			// buscar Cliente o Cliente Eventual en SAIT
-			$pedido->numcli = SAIT_UTILS::SAIT_getClientebyemail($order->get_billing_email());
-		}
-
-		// no se encontro ningun cliente
-		if ($pedido->numcli == "" && $pedido->numcliev == "" ) {
-				// aqui agregar el objeto clienteventual a pedido.
-				$clienteeventual =  new stdClass();
-				$clienteeventual->nomcliev  = $order->get_formatted_billing_full_name();
-				$clienteeventual->calle = $order->get_billing_address_1();
-				$clienteeventual->ciudad = $order->get_billing_city();
-				$clienteeventual->estado = $order->get_billing_state();
-				$clienteeventual->telefono = $order->get_billing_phone();
-				$clienteeventual->email = $order->get_billing_email();
-				$pedido->clievent = $clienteeventual;
-		}
+		self::SAIT_applyCustomer($pedido, $order);
 
 		if ($FuncionPersonalizadaPedido_activo) {
 			$pedido = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($pedido,$order);
@@ -227,26 +208,7 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 				$art->pjedesc1 = self::SAIT_calcularPjeDescuentoItem($art->cant,(float)$item->get_total(),$art->preciopub);
 				$cotizacion->items[] = $art;
 		}
-	$clave = SAIT_UTILS::SAIT_getClaves("clientes",null,$order->get_user_id());		
-	if (isset($clave->clave)){
-		 $cotizacion->numcli =  str_pad($clave->clave,5, " ", STR_PAD_LEFT);
-	}else{
-		// buscar Cliente o Cliente Eventual en SAIT
-		$cotizacion->numcli = SAIT_UTILS::SAIT_getClientebyemail($order->get_billing_email());
-	}
-
-	// no se encontro ningun cliente
-	if ($cotizacion->numcli == "" && $cotizacion->numcliev == "" ) {
-			// aqui agregar el objeto clienteventual a cotizacion.
-			$clienteeventual =  new stdClass();
-			$clienteeventual->nomcliev  = $order->get_formatted_billing_full_name();
-			$clienteeventual->calle = $order->get_billing_address_1();
-			$clienteeventual->ciudad = $order->get_billing_city();
-			$clienteeventual->estado = $order->get_billing_state();
-			$clienteeventual->telefono = $order->get_billing_phone();
-			$clienteeventual->email = $order->get_billing_email();
-			$cotizacion->clievent = $clienteeventual;
-	}
+	self::SAIT_applyCustomer($cotizacion, $order);
 
 	if ($FuncionPersonalizadaPedido_activo) {
 		$cotizacion = SAIT_PERSONALIZADO::SAIT_FuncionPersonalizaPostPedido($cotizacion,$order);
@@ -431,6 +393,22 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 
 	public static function SAIT_calcularPjeDescuentoItem($cantidad,$total,$precio){
 		return round((($precio-($total/$cantidad))/$precio)*100,2);
+	}
+
+	/**
+	 * Aplica al documento una sola representacion de cliente SAIT.
+	 *
+	 * @param object   $document Documento en construccion.
+	 * @param WC_Order $order Orden WooCommerce.
+	 * @return void
+	 */
+	private static function SAIT_applyCustomer($document, $order){
+		$customer = SAIT_WOOCOMMERCE()->customer_resolver()->resolve($order);
+		$document->numcli = $customer['numcli'];
+		$document->numcliev = $customer['numcliev'];
+		if ($customer['clievent'] !== null) {
+			$document->clievent = $customer['clievent'];
+		}
 	}
 	 
 

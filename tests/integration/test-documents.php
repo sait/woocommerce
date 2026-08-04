@@ -61,7 +61,7 @@ function sait_document_clean_data()
 	if (!function_exists('wp_delete_user')) {
 		require_once ABSPATH . 'wp-admin/includes/user.php';
 	}
-	foreach (array('mapeado.documento@example.test', 'normal.fixture@example.test') as $email) {
+	foreach (array('mapeado.documento@example.test', 'eventual.mapeado@example.test', 'normal.fixture@example.test') as $email) {
 		$user = get_user_by('email', $email);
 		if ($user) {
 			wp_delete_user($user->ID);
@@ -71,6 +71,7 @@ function sait_document_clean_data()
 	$table = $wpdb->prefix . 'sait_claves';
 	$wpdb->delete($table, array('tabla' => 'arts', 'clave' => 'FIX-ART-001'), array('%s', '%s'));
 	$wpdb->delete($table, array('tabla' => 'clientes', 'clave' => '123'), array('%s', '%s'));
+	$wpdb->delete($table, array('tabla' => 'clientes', 'clave' => '-789'), array('%s', '%s'));
 }
 
 function sait_document_create_order($product, $email, $customer_id = 0, $total = 208.8)
@@ -170,6 +171,16 @@ sait_document_assert_same('  123', $mapped_payload['numcli'], 'Cliente mapeado.'
 sait_document_assert_same('', $mapped_payload['numcliev'], 'Cliente eventual vacio.');
 sait_document_assert_true(!isset($mapped_payload['clievent']), 'Cliente mapeado no debe enviar clievent.');
 
+$mapped_eventual_user_id = wc_create_new_customer('eventual.mapeado@example.test');
+SAIT_UTILS::SAIT_insertClaves('clientes', '-789', $mapped_eventual_user_id);
+$mapped_eventual_order = sait_document_create_order($product, 'eventual.mapeado@example.test', $mapped_eventual_user_id);
+$mapped_eventual_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($mapped_eventual_order, '1', true);
+sait_document_assert_same(201, wp_remote_retrieve_response_code($mapped_eventual_response), 'HTTP eventual mapeado.');
+$mapped_eventual_payload = sait_document_last_request()['body'];
+sait_document_assert_same('', $mapped_eventual_payload['numcli'], 'Eventual mapeado sin numcli.');
+sait_document_assert_same(' -789', $mapped_eventual_payload['numcliev'], 'Eventual mapeado por guion.');
+sait_document_assert_true(!isset($mapped_eventual_payload['clievent']), 'Eventual mapeado no debe enviar clievent.');
+
 $normal_order = sait_document_create_order($product, 'normal.fixture@example.test');
 $normal_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($normal_order, '2', true);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($normal_response), 'HTTP cliente normal.');
@@ -182,9 +193,8 @@ $eventual_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($eventual_order, '
 sait_document_assert_same(201, wp_remote_retrieve_response_code($eventual_response), 'HTTP eventual existente.');
 $eventual_payload = sait_document_last_request()['body'];
 sait_document_assert_same('', $eventual_payload['numcli'], 'Eventual sin numcli.');
-sait_document_assert_same('', $eventual_payload['numcliev'], 'Brecha actual: no reutiliza numcliev.');
-sait_document_assert_true(isset($eventual_payload['clievent']), 'Brecha actual: vuelve a enviar clievent.');
-sait_document_assert_same('eventual.fixture@example.test', $eventual_payload['clievent']['email'], 'Email eventual.');
+sait_document_assert_same(' -456', $eventual_payload['numcliev'], 'Eventual reutilizado por numcliev.');
+sait_document_assert_true(!isset($eventual_payload['clievent']), 'Eventual existente no debe reenviar clievent.');
 
 $new_order = sait_document_create_order($product, 'nuevo.documento@example.test');
 $new_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($new_order, '2', true);
@@ -193,6 +203,17 @@ $new_payload = sait_document_last_request()['body'];
 sait_document_assert_same('', $new_payload['numcli'], 'Cliente nuevo sin numcli.');
 sait_document_assert_same('', $new_payload['numcliev'], 'Cliente nuevo sin numcliev.');
 sait_document_assert_same('nuevo.documento@example.test', $new_payload['clievent']['email'], 'Objeto clievent nuevo.');
+
+delete_option('sait_test_request_counts');
+$invalid_email_order = sait_document_create_order($product, '');
+$invalid_email_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($invalid_email_order, '2', true);
+sait_document_assert_same(201, wp_remote_retrieve_response_code($invalid_email_response), 'HTTP correo invalido.');
+$invalid_email_payload = sait_document_last_request()['body'];
+sait_document_assert_same('', $invalid_email_payload['numcli'], 'Correo invalido sin numcli.');
+sait_document_assert_same('', $invalid_email_payload['numcliev'], 'Correo invalido sin numcliev.');
+sait_document_assert_same('', $invalid_email_payload['clievent']['email'], 'Correo vacio conserva clievent.');
+$invalid_email_counts = get_option('sait_test_request_counts', array());
+sait_document_assert_true(!isset($invalid_email_counts['GET /api/v3/clientes']), 'Correo invalido no debe consultar clientes.');
 
 $quote_order = sait_document_create_order($product, 'cotizacion.documento@example.test', 0, 232.0);
 $quote_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendCotizacion($quote_order, '2', true);
@@ -203,5 +224,8 @@ $quote_payload = $quote_request['body'];
 sait_document_assert_common_payload($quote_payload, $quote_order->get_id(), 0.0);
 sait_document_assert_true(isset($quote_payload['fecha']), 'Cotizacion debe incluir fecha.');
 sait_document_assert_true(isset($quote_payload['hora']), 'Cotizacion debe incluir hora.');
+
+$request_counts = get_option('sait_test_request_counts', array());
+sait_document_assert_true(!isset($request_counts['GET /api/v3/clienteseventuales']), 'No debe consultarse /clienteseventuales.');
 
 echo "Documentos SAIT caracterizados correctamente con API simulada.\n";

@@ -68,7 +68,8 @@ Clase `SAIT_UTILS` y varias funciones globales frontend.
 Metodos principales:
 
 - `SAIT_getClientebyemail($email)`: busca cliente SAIT por `emailtw`.
-- `SAIT_getClienteEventualbyemail($email)`: busca cliente eventual SAIT por email.
+- `SAIT_getClienteEventualbyemail($email)`: adaptador legacy que usa `/clientes`
+  y devuelve el `numcli` solamente cuando contiene `-`.
 - `SAIT_GetNube($uri, $reintentar = true)`: GET a SAITNube con API key y un reintento opcional.
 - `SAIT_getResult($response)`: extrae `result` de una respuesta `array|null` de `SAIT_GetNube()`.
 - `SAIT_PostNube($uri, $bodyObject, $wait = false)`: POST JSON a SAITNube.
