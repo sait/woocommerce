@@ -2,19 +2,20 @@ includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 
 parameters:
-	level: 3
-	phpVersion: 70433
-	paths:
-		- sait-woocommerce
+    level: 3
+    phpVersion: 70433
+    paths:
+        - sait-woocommerce
+        - personalizados
 
-	bootstrapFiles:
-		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
-		- vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+    bootstrapFiles:
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
 
-	excludePaths:
-		analyse:
-			- vendor
-			- node_modules
-			- tests
+    excludePaths:
+        analyse:
+            - vendor
+            - node_modules
+            - tests
 
-	tmpDir: /tmp/phpstan-sait-woocommerce
+    tmpDir: /tmp/phpstan-sait-woocommerce
