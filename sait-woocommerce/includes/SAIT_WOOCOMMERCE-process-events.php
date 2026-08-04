@@ -199,7 +199,10 @@
 					$product->set_global_unique_id( $codigo );
 				} catch (Exception $e) {
 					// Si falla (por duplicado o inválido), lo registramos en el log y seguimos
-					error_log("SAIT Error: No se pudo asignar el código $codigo al producto " . $numart . " - " . $e->getMessage());
+					SAIT_WOOCOMMERCE()->logger()->warning(
+						'No se pudo asignar el codigo global al producto.',
+						array('event' => 'MODART', 'sku' => $numart, 'error_code' => get_class($e))
+					);
 				}
 		
 				if (!empty($category_id)) {
@@ -239,7 +242,10 @@
 			$product->set_global_unique_id( $codigo );
 		} catch (Exception $e) {
 			// Si falla (por duplicado o inválido), lo registramos en el log y seguimos
-			error_log("SAIT Error: No se pudo asignar el código $codigo al producto " . $numart . " - " . $e->getMessage());
+			SAIT_WOOCOMMERCE()->logger()->warning(
+				'No se pudo asignar el codigo global al producto.',
+				array('event' => 'MODART', 'sku' => $numart, 'error_code' => get_class($e))
+			);
 		}
 		$product->set_status("draft");
 		$product->set_manage_stock(true);

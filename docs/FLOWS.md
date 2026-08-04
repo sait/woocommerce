@@ -157,6 +157,15 @@ Todas las llamadas salientes pasan por `SAIT_WOOCOMMERCE_SaitClient`.
 - Las pruebas sustituyen el cliente o interceptan `https://sait-api.invalid`;
   no requieren endpoints ni credenciales reales.
 
+## Logging Operativo
+
+Los registros se consultan en `WooCommerce -> Estado -> Registros` usando la
+fuente `sait-woocommerce`.
+
+El contexto puede incluir evento, ID de orden, SKU, intento, operacion y estado
+HTTP. No se registran API keys, tokens, correos, nombres, direcciones, partidas
+completas ni cuerpos HTTP.
+
 La metadata indica que WooCommerce disparo el envio automatico; no confirma que SAITNube lo haya recibido, porque el POST se hace sin esperar respuesta.
 
 El endpoint manual `reenviar-pedido-sait/{idpedido}` no usa este bloqueo, para permitir recuperacion cuando SAITNube/API no estuvo disponible. Ese reenvio espera respuesta de SAITNube y guarda metadata del ultimo resultado:

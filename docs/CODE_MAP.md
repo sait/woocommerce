@@ -50,6 +50,7 @@ Clase `SAIT_WOOCOMMERCE_Plugin`.
 - Mantiene instancias compartidas de configuracion y cliente HTTP, sustituible
   por un cliente falso en pruebas.
 - Mantiene una instancia compartida del repositorio de mapeos.
+- Mantiene una instancia compartida del logger saneado de WooCommerce.
 
 ## `includes/SAIT_WOOCOMMERCE-lifecycle.php`
 
@@ -104,6 +105,18 @@ Clase `SAIT_WOOCOMMERCE_MappingRepository`.
 
 Los metodos `SAIT_getClaves`, `SAIT_insertClaves` y `SAIT_deleteClaves` de
 `SAIT_UTILS` permanecen como adaptadores de compatibilidad.
+
+## `includes/SAIT_WOOCOMMERCE-logger.php`
+
+Clase `SAIT_WOOCOMMERCE_Logger`.
+
+- Escribe mediante `wc_get_logger()` con fuente `sait-woocommerce`.
+- Acepta contexto operativo de evento, orden, SKU, intento, operacion, status,
+  modo y tipo de documento.
+- Descarta claves no permitidas para evitar API keys, tokens, correos, nombres,
+  direcciones y payloads.
+- Sustituye el volcado completo de partidas y los usos directos de
+  `error_log()` observados.
 
 Funciones globales:
 

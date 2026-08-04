@@ -308,9 +308,9 @@ Objetivo: centralizar HTTP, mapeos y logs antes de dividir reglas de negocio.
 
 ### Logging
 
-- [ ] Crear logger del plugin sobre `wc_get_logger()`.
-- [ ] Añadir contexto de evento, orden, SKU e intento.
-- [ ] No registrar API keys, tokens ni información personal innecesaria.
+- [x] Crear logger del plugin sobre `wc_get_logger()`.
+- [x] Añadir contexto de evento, orden, SKU e intento.
+- [x] No registrar API keys, tokens ni información personal innecesaria.
 
 ### Commit 4.1
 

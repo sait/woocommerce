@@ -40,12 +40,17 @@ class SAIT_WOOCOMMERCE_SaitClient implements SAIT_WOOCOMMERCE_SaitClientInterfac
 	/** @var SAIT_WOOCOMMERCE_Settings */
 	private $settings;
 
+	/** @var SAIT_WOOCOMMERCE_Logger */
+	private $logger;
+
 	/**
 	 * @param SAIT_WOOCOMMERCE_Settings $settings Configuracion compartida.
+	 * @param SAIT_WOOCOMMERCE_Logger|null $logger Logger saneado.
 	 */
-	public function __construct(SAIT_WOOCOMMERCE_Settings $settings)
+	public function __construct(SAIT_WOOCOMMERCE_Settings $settings, $logger = null)
 	{
 		$this->settings = $settings;
+		$this->logger = $logger !== null ? $logger : SAIT_WOOCOMMERCE()->logger();
 	}
 
 	/**
@@ -77,6 +82,14 @@ class SAIT_WOOCOMMERCE_SaitClient implements SAIT_WOOCOMMERCE_SaitClientInterfac
 		$normalized = $this->normalize_response($response);
 
 		if ($retry && in_array($normalized['error_code'], array('transport_error', 'invalid_json'), true)) {
+			$this->logger->warning(
+				'Reintentando consulta GET a SAIT.',
+				array(
+					'operation'  => 'GET',
+					'attempt'    => 2,
+					'error_code' => $normalized['error_code'],
+				)
+			);
 			usleep(self::RETRY_DELAY_MICROSECONDS);
 
 			return $this->get($uri, false);

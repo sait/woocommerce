@@ -96,6 +96,15 @@ Se prueban busquedas por clave SAIT e ID WooCommerce, metodos de entidades,
 consultas preparadas, adaptadores historicos, eliminacion y prevencion de
 duplicados sin agregar un indice unico.
 
+El saneamiento de logs se valida con:
+
+```sh
+sh tests/test-logger.sh
+```
+
+La prueba confirma que el contexto operativo permitido se conserva y que API
+keys, tokens, correos, nombres y payloads son descartados.
+
 ## Caracterizacion De Eventos XML
 
 Los eventos se envian a la ruta REST real del plugin, pero todas sus consultas

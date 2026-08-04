@@ -65,9 +65,14 @@
 
 				
 			
-			$order_items_data = array_map( function($item){ return $item->get_data(); }, $order->get_items() );
-    		$logger = wc_get_logger();
-    		$logger->add("send-order-debug", json_encode($order_items_data));
+			SAIT_WOOCOMMERCE()->logger()->info(
+				'Preparando pedido para SAIT.',
+				array(
+					'order_id'      => $order->get_id(),
+					'document_type' => 'P',
+					'item_count'    => count($order->get_items()),
+				)
+			);
 			foreach ( $order->get_items() as $item_id => $item ) {
 					$art = new stdClass();
 					$art->cant = $item->get_quantity();
@@ -84,6 +89,16 @@
 							$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
 							$api_result = SAIT_UTILS::SAIT_getResult($api_response);
 							$intentos++;
+					}
+					if (!isset($api_result['unidad'])) {
+						SAIT_WOOCOMMERCE()->logger()->warning(
+							'No se obtuvo la unidad del articulo para el pedido.',
+							array(
+								'order_id' => $order->get_id(),
+								'sku'      => $art->numart,
+								'attempt'  => $intentos,
+							)
+						);
 					}
 					$art->unidad = isset($api_result["unidad"]) ? $api_result["unidad"] : "";
 					$art->preciopub =  (float)$product->get_regular_price();
@@ -169,6 +184,15 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 			$cotizacion->direnvio = self::SAIT_getDirEnvio($order);
 		}
 
+		SAIT_WOOCOMMERCE()->logger()->info(
+			'Preparando cotizacion para SAIT.',
+			array(
+				'order_id'      => $order->get_id(),
+				'document_type' => 'Q',
+				'item_count'    => count($order->get_items()),
+			)
+		);
+
 
 		foreach ( $order->get_items() as $item_id => $item ) {
 				$art = new stdClass();
@@ -187,6 +211,16 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 						$api_response = SAIT_UTILS::SAIT_GetNube("/api/v3/articulos/".$art->numart, false);
 						$api_result = SAIT_UTILS::SAIT_getResult($api_response);
 						$intentos++;
+				}
+				if (!isset($api_result['unidad'])) {
+					SAIT_WOOCOMMERCE()->logger()->warning(
+						'No se obtuvo la unidad del articulo para la cotizacion.',
+						array(
+							'order_id' => $order->get_id(),
+							'sku'      => $art->numart,
+							'attempt'  => $intentos,
+						)
+					);
 				}
 				$art->unidad = isset($api_result["unidad"]) ? $api_result["unidad"] : "";
 				$art->precio = (float)$product->get_regular_price();
@@ -343,6 +377,19 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 			$estado = 'reintento_requerido';
 		} else {
 			$estado = 'error';
+		}
+
+		$log_context = array(
+			'order_id'      => $order->get_id(),
+			'status_code'   => $status_code,
+			'mode'          => $modo,
+			'document_type' => $tipo,
+			'error_code'    => $estado,
+		);
+		if ($estado === 'enviado') {
+			SAIT_WOOCOMMERCE()->logger()->info('Documento enviado a SAIT.', $log_context);
+		} else {
+			SAIT_WOOCOMMERCE()->logger()->warning('El envio del documento a SAIT requiere revision.', $log_context);
 		}
 
 		$order->update_meta_data('_sait_ultimo_envio_estado', $estado);
