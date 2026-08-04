@@ -76,7 +76,7 @@ add_action('woocommerce_after_checkout_form', function() {
 			'sait-personalizado-script',
 			plugins_url('../assets/js/personalizado.js', __FILE__),
 			array('jquery'),
-			'1.0',
+			SAIT_WOOCOMMERCE_VERSION,
 			true
 	);
 
@@ -84,7 +84,7 @@ add_action('woocommerce_after_checkout_form', function() {
 			'modal-script',
 			false,
 			array('sait-personalizado-script'),
-			'1.0',
+			SAIT_WOOCOMMERCE_VERSION,
 			true
 	);
 	wp_enqueue_script('modal-script');

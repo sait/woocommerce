@@ -183,12 +183,12 @@ class SAIT_WOOCOMMERCE_BranchSelector
 			array(),
 			'6.4.0'
 		);
-		wp_enqueue_style('modal-style', $base_url . 'assets/css/modal.css', array(), '1.0');
+		wp_enqueue_style('modal-style', $base_url . 'assets/css/modal.css', array(), SAIT_WOOCOMMERCE_VERSION);
 		wp_enqueue_script(
 			'sait-modal-script',
 			$base_url . 'assets/js/modal.js',
 			array('jquery'),
-			'1.0',
+			SAIT_WOOCOMMERCE_VERSION,
 			true
 		);
 		wp_localize_script(

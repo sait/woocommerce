@@ -34,7 +34,7 @@ compatibilidad. Para codigo nuevo se recomiendan estos filtros porque no exige
 editar archivos del plugin.
 
 El adaptador está marcado como obsoleto y no se retirará antes de la versión
-2.0.0. Un plugin complementario que reemplaza completamente esa lógica debe
+3.0.0. Un plugin complementario que reemplaza completamente esa lógica debe
 desactivarlo sin cambiar la opción histórica:
 
 ```php

@@ -30,7 +30,7 @@ método para pedidos y cotizaciones.
 Este adaptador se conserva durante una versión de transición para no romper
 instalaciones que todavía reemplazan ese archivo. No debe recibir reglas de
 clientes nuevas y está marcado como obsoleto en código y administración. No se
-retirará antes de la versión 2.0.0. Antes de retirarlo hay que localizar
+retirará antes de la versión 3.0.0. Antes de retirarlo hay que localizar
 instalaciones que tengan la opción activa y entregarles su plugin
 complementario.
 

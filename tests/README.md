@@ -237,6 +237,19 @@ del análisis; `vendor/` también está excluido de Git y del paquete del plugin
 La baseline inicial se utilizó para revisar la deuda heredada y se eliminó al
 resolver sus 16 hallazgos. Actualmente cualquier error hace fallar el comando.
 
+## Prueba De Liberación
+
+Después de crear los ZIP desde un commit limpio, valida una actualización
+1.2.3 → 2.0.0 y una instalación limpia en un entorno Docker aislado:
+
+```sh
+sh scripts/build-release.sh 2.0.0 1.0.0
+sh tests/test-release-install.sh
+```
+
+La prueba usa únicamente volúmenes con prefijo `sait_woocommerce_release_` y
+los elimina al terminar. No altera la base de integración habitual.
+
 ## Línea Base Del Frontend
 
 La etapa de rendimiento cuenta con un escenario local determinista para

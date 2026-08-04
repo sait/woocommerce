@@ -1,15 +1,23 @@
 <?php
 /**
  * @package SAIT_WOOCOMMERCE
- * @version 1.2.3
+ * @version 2.0.0
  */
 /*
 Plugin Name: SAIT WooCommerce
 Description: Este plugin agrega un endpoint a wordpress para procesar eventos enviados desde SAIT.
 Author: SAIT Software Administrativo
-Version: 1.2.3
+Version: 2.0.0
 Author URI: http://sait.mx
+Requires at least: 6.6
+Requires PHP: 7.4
+WC requires at least: 9.3
+WC tested up to: 9.3
 */
+
+if (!defined('SAIT_WOOCOMMERCE_VERSION')) {
+	define('SAIT_WOOCOMMERCE_VERSION', '2.0.0');
+}
 
 if (!defined('SAIT_NUBE_NUMALM')) {
 	define('SAIT_NUBE_NUMALM', '1');
@@ -18,6 +26,16 @@ if (!defined('SAIT_NUBE_NUMALM')) {
 if (!defined('SAIT_SERIE')) {
 	define('SAIT_SERIE', 'WO');
 }
+
+add_action('before_woocommerce_init', static function () {
+	if (class_exists('Automattic\\WooCommerce\\Utilities\\FeaturesUtil')) {
+		Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+			'custom_order_tables',
+			__FILE__,
+			true
+		);
+	}
+});
 
 require_once plugin_dir_path(__FILE__) . 'includes/SAIT_WOOCOMMERCE-lifecycle.php';
 require_once plugin_dir_path(__FILE__) . 'includes/SAIT_WOOCOMMERCE-plugin.php';

@@ -537,7 +537,7 @@ class SAITSettingsPage
 			Desactivado
 		</label>
 		<p class="description">
-			<?php echo esc_html__('Compatibilidad heredada. Para personalizaciones nuevas usa un plugin complementario; este adaptador no se retirará antes de la versión 2.0.0.', 'sait-woocommerce'); ?>
+			<?php echo esc_html__('Compatibilidad heredada. Para personalizaciones nuevas usa un plugin complementario; este adaptador no se retirará antes de la versión 3.0.0.', 'sait-woocommerce'); ?>
 		</p>
 		<?php
 	}

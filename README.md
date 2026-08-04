@@ -18,7 +18,9 @@ El plugin sincroniza informacion de SAIT hacia WooCommerce mediante webhooks y e
 
 ## Requisitos
 
-- WordPress con WooCommerce activo.
+- WordPress 6.6 o superior.
+- WooCommerce 9.3 o superior.
+- PHP 7.4 o superior.
 - Acceso a SAITNube/API.
 - Un webhook configurado en SAITNube para enviar eventos hacia WooCommerce.
 
@@ -74,7 +76,9 @@ Las rutas se registran bajo `/wp-json/saitplugin/v1`.
 
 `/saitevents` valida el header `x-AccessToken` contra la opcion `SAITNube_AccessToken`.
 
-La ruta de reenvio manual esta disponible sin token por compatibilidad operativa. Su uso recomendado es cuando SAITNube/API no estuvo disponible y se necesita reenviar una orden especifica.
+Las rutas de reenvío manual requieren un usuario autenticado con capacidad para
+editar pedidos. Su uso recomendado es cuando SAITNube/API no estuvo disponible
+y se necesita reenviar una orden específica.
 
 ## SAIT -> WooCommerce
 
@@ -142,7 +146,9 @@ Segun `SAITNube_TipoDoc`, genera:
 - `P`: pedido hacia `/api/v3/pedidos`.
 - Otro valor: cotizacion hacia `/api/v3/cotizaciones`.
 
-Los envios automaticos se disparan sin esperar respuesta de SAITNube. Para evitar duplicados entre hooks, la orden se marca con metadata de idempotencia antes de enviar.
+Los envíos automáticos se programan mediante Action Scheduler, con alternativa
+WP-Cron. Para evitar duplicados entre hooks, la orden guarda estados de entrega,
+intentos y metadata de idempotencia antes de enviar.
 
 SAITNube responde `201` cuando recibe correctamente pedidos o cotizaciones.
 

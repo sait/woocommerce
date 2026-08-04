@@ -551,7 +551,7 @@ El inventario, contratos, diferencias de seguridad y migración están en
 
 `SAIT_PERSONALIZADO` permanece operativo durante la transición, está marcado
 como obsoleto en código y administración y no se retirará antes de la versión
-2.0.0. Los complementos pueden sustituirlo mediante
+3.0.0. Los complementos pueden sustituirlo mediante
 `sait_woocommerce_legacy_customizer_enabled` sin modificar la opción guardada.
 
 ### Commits
@@ -565,35 +565,38 @@ refactor: aislar personalizador heredado de SAIT
 
 ## Etapa 12: Liberacion Y Despliegue
 
-- [ ] Ejecutar PHP lint, pruebas y PHPStan.
+Versión objetivo aprobada: `2.0.0`. Papelía se entrega como complemento
+independiente `1.0.0`.
+
+- [x] Ejecutar PHP lint, pruebas y PHPStan.
 - [ ] Instalar desde cero en staging.
 - [ ] Actualizar una copia real de una instalación anterior en staging.
 - [ ] Confirmar conservación de `opciones_sait` y `sait_claves`.
-- [ ] Probar todos los fixtures XML.
-- [ ] Probar pedido pagado, sin pago y cotización.
-- [ ] Probar cliente normal, eventual y nuevo.
-- [ ] Probar reenvío manual autorizado y rechazo no autorizado.
-- [ ] Probar producto existente por SKU sin mapeo.
-- [ ] Probar almacén único, múltiples almacenes y tipo de cambio.
-- [ ] Probar promociones, sucursal y mínimo de carrito.
-- [ ] Revisar logs para confirmar que no contienen secretos.
-- [ ] Actualizar documentación, changelog y versión.
+- [x] Probar todos los fixtures XML en la suite local simulada.
+- [x] Probar pedido pagado, sin pago y cotización con API simulada.
+- [x] Probar cliente normal, eventual y nuevo con API simulada.
+- [x] Probar reenvío manual autorizado y rechazo no autorizado.
+- [x] Probar producto existente por SKU sin mapeo.
+- [x] Probar almacén único, múltiples almacenes y tipo de cambio.
+- [x] Probar promociones, sucursal y mínimo de carrito.
+- [x] Revisar logs para confirmar que no contienen secretos.
+- [x] Actualizar documentación, changelog y versión.
 - [ ] Crear el ZIP desde un árbol limpio.
 - [ ] Inspeccionar que el ZIP no incluya tests, `.git`, `.codex` ni copias
   históricas.
 - [ ] Respaldar base de datos y plugin antes de producción.
-- [ ] Definir plan de rollback.
+- [x] Definir plan de rollback en `docs/RELEASE_2.0.0.md`.
 
 ### Commit de liberacion
 
 ```text
-chore: preparar version X.Y.Z de SAIT WooCommerce
+chore: preparar version 2.0.0 de SAIT WooCommerce
 ```
 
 Crear el tag sólo después de validar exactamente el ZIP que se instalará:
 
 ```text
-vX.Y.Z
+v2.0.0
 ```
 
 ## Criterios De Bloqueo

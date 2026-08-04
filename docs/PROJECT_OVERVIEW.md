@@ -49,16 +49,13 @@ Segun `SAITNube_TipoDoc`, genera:
 - `P`: pedido a `/api/v3/pedidos`.
 - Otro valor: cotizacion a `/api/v3/cotizaciones`.
 
-Los envios se hacen con `SAIT_UTILS::SAIT_PostNube()`, normalmente sin esperar respuesta (`blocking = false`).
+Los envíos se programan mediante Action Scheduler, con alternativa WP-Cron, y
+el servicio centralizado registra estados e intentos antes de confirmar la
+respuesta de SAITNube.
 
 ## Estado General
 
-El plugin ya tiene README con uso basico, pero la logica real esta concentrada en archivos grandes, funciones globales y metodos estaticos. Hay comentarios utiles en algunas zonas, aunque varios no explican las reglas de negocio o el motivo de validaciones importantes.
-
-Para mantenimiento futuro conviene priorizar:
-
-- Documentar reglas de negocio por evento.
-- Normalizar nombres de opciones.
-- Agregar validaciones y preparacion SQL.
-- Separar UI frontend, API SAITNube y logica de sincronizacion.
-- Agregar pruebas o al menos fixtures XML de eventos.
+La versión 2.0.0 separa controladores REST, manejadores de eventos, servicios de
+clientes/documentos/productos, módulos frontend y adaptadores de
+infraestructura. Los contratos, configuración, flujos, extensiones y pruebas se
+documentan bajo `docs/` y `tests/`.

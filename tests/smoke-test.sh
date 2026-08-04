@@ -33,6 +33,15 @@ schema_version="$(wp option get sait_woocommerce_db_version)"
 [ "$schema_version" = "1.0.0" ]
 
 wp eval '
+$features = Automattic\WooCommerce\Utilities\FeaturesUtil::get_compatible_features_for_plugin(
+	"sait-woocommerce/SAIT_WOOCOMMERCE.php"
+);
+if (!in_array("custom_order_tables", $features["compatible"], true)) {
+	throw new RuntimeException("SAIT WooCommerce no declaró compatibilidad HPOS.");
+}
+'
+
+wp eval '
 global $wpdb;
 $table = $wpdb->prefix . "sait_claves";
 if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table)) !== $table) {
