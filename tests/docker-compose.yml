@@ -78,6 +78,16 @@ services:
     networks:
       - sait_test
 
+  composer:
+    image: composer:2.8
+    working_dir: /workspace
+    environment:
+      COMPOSER_HOME: /tmp/composer
+    volumes:
+      - ..:/workspace
+    networks:
+      - sait_test
+
 volumes:
   database_data:
     name: sait_woocommerce_database

@@ -52,9 +52,9 @@ La red usa una subred fija para no depender del pool automatico de Docker. Si
 `192.168.64.0/24` se superpone con una red local, cambia solamente esa subred
 en `tests/docker-compose.yml`.
 
-Composer y Node no se incorporan en esta etapa: el primer objetivo es
-caracterizar la integracion real. Se reconsideraran cuando las extracciones de
-logica pura necesiten PHPUnit, analisis estatico o herramientas JavaScript.
+Node no forma parte del entorno de integración. Composer se incorporó en la
+etapa 10 exclusivamente para instalar PHPStan y los stubs de desarrollo; estas
+dependencias no se empaquetan ni se cargan al ejecutar el plugin.
 
 ## API SAIT Simulada
 
@@ -204,6 +204,24 @@ docker compose -f tests/docker-compose.yml run --rm php php -l sait-woocommerce/
 ```
 
 El contenedor monta el repositorio en `/workspace` y no modifica archivos del plugin.
+
+## Análisis Estático Con PHPStan
+
+Instala las dependencias de desarrollo fijadas en `composer.lock`:
+
+```sh
+docker compose -f tests/docker-compose.yml run --rm -T composer install
+```
+
+Ejecuta el análisis del código propio del plugin:
+
+```sh
+docker compose -f tests/docker-compose.yml run --rm -T composer run phpstan
+```
+
+La configuración comienza en nivel 3 y carga stubs compatibles con WordPress
+6.6.2 y WooCommerce 9.3.3. `vendor/`, las pruebas y sus fixtures quedan fuera
+del análisis; `vendor/` también está excluido de Git y del paquete del plugin.
 
 ## Línea Base Del Frontend
 

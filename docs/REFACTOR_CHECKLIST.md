@@ -21,8 +21,9 @@ poder revisarse, probarse y revertirse de manera independiente.
 - El triage ejecutado sobre `sait-woocommerce/` clasifica el proyecto como
   `wp-plugin` y detecta `SAIT WooCommerce` versión `1.2.3`.
 - No se detectaron bloques Gutenberg, Abilities API ni integración WP-CLI.
-- No se detectaron `composer.json`, `package.json`, PHPStan, PHPUnit, `wp-env`,
-  Playwright o Jest.
+- La etapa 10 incorpora Composer y PHPStan únicamente como herramientas de
+  desarrollo; no se detectan dependencias Composer de ejecución, `package.json`,
+  PHPUnit, `wp-env`, Playwright o Jest.
 - En shells que no carguen `nvm`, Node está disponible actualmente en
   `/home/ali/.nvm/versions/node/v24.19.0/bin/node`.
 
@@ -501,11 +502,11 @@ Cada optimización debe incluir medición antes/después en su PR o documentaci�
 
 Objetivo: impedir nuevas regresiones de tipos sin intentar limpiar todo de golpe.
 
-- [ ] Aprobar primero la incorporación de Composer y dependencias de desarrollo.
-- [ ] Añadir stubs compatibles de WordPress y WooCommerce.
-- [ ] Limitar análisis a código propio.
-- [ ] Excluir vendor, assets generados y fixtures cuando corresponda.
-- [ ] Empezar en un nivel conservador.
+- [x] Aprobar primero la incorporación de Composer y dependencias de desarrollo.
+- [x] Añadir stubs compatibles de WordPress y WooCommerce.
+- [x] Limitar análisis a código propio.
+- [x] Excluir vendor, assets generados y fixtures cuando corresponda.
+- [x] Empezar en un nivel conservador.
 - [ ] Generar una baseline inicial sólo para deuda heredada.
 - [ ] No permitir errores nuevos en la baseline.
 - [ ] Agregar tipos precisos para callbacks de hooks.

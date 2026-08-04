@@ -1,0 +1,22 @@
+{
+  "name": "sait/woocommerce-plugin-development",
+  "description": "Herramientas de desarrollo para SAIT WooCommerce.",
+  "type": "project",
+  "license": "proprietary",
+  "require-dev": {
+    "php-stubs/woocommerce-stubs": "9.3.3",
+    "php-stubs/wordpress-stubs": "6.6.2",
+    "phpstan/phpstan": "^2.1",
+    "szepeviktor/phpstan-wordpress": "^2.0"
+  },
+  "scripts": {
+        "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G",
+        "phpstan:baseline": "phpstan analyse --configuration=phpstan.neon.dist --generate-baseline=phpstan-baseline.neon --memory-limit=1G"
+  },
+  "config": {
+    "platform": {
+      "php": "7.4.33"
+    },
+    "sort-packages": true
+  }
+}
