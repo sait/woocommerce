@@ -13,6 +13,7 @@ final class SAIT_Papelia_Stock
 	public function register_hooks()
 	{
 		add_filter('woocommerce_product_get_stock_quantity', array($this, 'filter_total_stock'), 10, 2);
+		add_filter('woocommerce_product_is_in_stock', array($this, 'filter_is_in_stock'), 10, 2);
 		add_filter('woocommerce_add_to_cart_validation', array($this, 'validate_add_to_cart'), 10, 3);
 		add_filter('woocommerce_update_cart_validation', array($this, 'validate_cart_update'), 10, 4);
 	}
@@ -31,6 +32,22 @@ final class SAIT_Papelia_Stock
 		$remote = $this->get_stock($product);
 
 		return $remote === null ? $stock : $remote;
+	}
+
+	/**
+	 * @param bool $is_in_stock Disponibilidad calculada por WooCommerce.
+	 * @param WC_Product $product Producto consultado.
+	 * @return bool
+	 */
+	public function filter_is_in_stock($is_in_stock, $product)
+	{
+		if (is_admin() || !$product instanceof WC_Product) {
+			return $is_in_stock;
+		}
+
+		$remote = $this->get_stock($product);
+
+		return $remote === null ? $is_in_stock : $remote > 0.0;
 	}
 
 	/**
@@ -60,7 +77,7 @@ final class SAIT_Papelia_Stock
 			}
 		}
 
-		if ((float) $quantity > $remote || $in_cart + (float) $quantity > $remote) {
+		if ($remote <= 0.0 || (float) $quantity > $remote || $in_cart + (float) $quantity > $remote) {
 			$this->add_stock_notice($product, $remote);
 			return false;
 		}
@@ -83,7 +100,7 @@ final class SAIT_Papelia_Stock
 		}
 
 		$remote = $this->get_stock($product);
-		if ($remote !== null && (float) $quantity > $remote) {
+		if ($remote !== null && ($remote <= 0.0 || (float) $quantity > $remote)) {
 			$this->add_stock_notice($product, $remote);
 			return false;
 		}
@@ -107,7 +124,7 @@ final class SAIT_Papelia_Stock
 		$cache_key = 'sait_papelia_stock_' . md5($sku . '|' . $context);
 		$cached = get_transient($cache_key);
 		if ($cached !== false) {
-			return (float) $cached;
+			return max(0.0, (float) $cached);
 		}
 
 		$rows = $this->stock_rows($sku);
@@ -129,6 +146,7 @@ final class SAIT_Papelia_Stock
 			}
 		}
 
+		$total = max(0.0, $total);
 		set_transient($cache_key, $total, self::CACHE_TTL);
 
 		return $total;

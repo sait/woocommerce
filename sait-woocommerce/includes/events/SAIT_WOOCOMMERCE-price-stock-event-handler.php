@@ -16,7 +16,8 @@ class SAIT_WOOCOMMERCE_PriceStockEventHandler
 				if ($product===false) {
 					return SAIT_UTILS::SAIT_response(200,"ART NO EXISTE");
 				}
-				$product->set_stock_quantity(SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($action->flds[0],"existencia"));
+				$stock = (float) SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($action->flds[0], "existencia");
+				$product->set_stock_quantity(max(0.0, $stock));
 				$product->save();
 			}
 		}
@@ -92,4 +93,3 @@ class SAIT_WOOCOMMERCE_PriceStockEventHandler
 		return SAIT_UTILS::SAIT_response(200, $result['mensaje']);
 	}
 }
-

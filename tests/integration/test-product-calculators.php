@@ -60,6 +60,22 @@ $zero_stock = $stock_calculator->calculate(array(array('numalm' => '1', 'existen
 sait_calculator_assert_same(true, $zero_stock['matched'], 'Existencia cero conserva coincidencia.');
 sait_calculator_assert_same(0.0, $zero_stock['stock'], 'Existencia cero valida.');
 
+$negative_stock = $stock_calculator->calculate(array(array('numalm' => '1', 'existencia' => -5)), '1');
+sait_calculator_assert_same(true, $negative_stock['matched'], 'Existencia negativa conserva coincidencia.');
+sait_calculator_assert_same(0.0, $negative_stock['stock'], 'Existencia negativa se normaliza a cero.');
+
+$negative_total = $stock_calculator->calculate(
+	array(
+		array('numalm' => '1', 'existencia' => 5),
+		array('numalm' => '2', 'existencia' => -10),
+	),
+	'1',
+	true,
+	array('1', '2')
+);
+sait_calculator_assert_same(true, $negative_total['matched'], 'Almacenes del total negativo encontrados.');
+sait_calculator_assert_same(0.0, $negative_total['stock'], 'El total negativo se normaliza despues de sumar almacenes.');
+
 $missing_stock = $stock_calculator->calculate($rows, '9');
 sait_calculator_assert_same(false, $missing_stock['matched'], 'Almacen ausente no se sincroniza.');
 

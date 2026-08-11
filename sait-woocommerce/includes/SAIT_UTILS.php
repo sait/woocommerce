@@ -147,6 +147,6 @@ class SAIT_UTILS
 			}
 		}
 
-		return round($quantity, 2);
+		return max(0.0, round($quantity, 2));
 	}
 }

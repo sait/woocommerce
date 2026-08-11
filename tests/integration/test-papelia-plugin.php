@@ -39,6 +39,10 @@ class SAIT_Papelia_Test_Client implements SAIT_WOOCOMMERCE_SaitClientInterface
 				array('numalm' => '2', 'existencia' => 5),
 				array('numalm' => '4', 'existencia' => 100),
 			);
+		} elseif ($uri === '/api/v3/existencias/FIX-PAPELIA-NEGATIVE') {
+			$result = array(
+				array('numalm' => '1', 'existencia' => -5),
+			);
 		} else {
 			$result = array();
 		}
@@ -89,6 +93,10 @@ sait_papelia_assert_same(
 	has_filter('woocommerce_cart_has_stock', '__return_true'),
 	'Papelía no debe desactivar globalmente la validación de stock de WooCommerce.'
 );
+sait_papelia_assert_true(
+	has_filter('woocommerce_product_is_in_stock') !== false,
+	'Papelía debe registrar la disponibilidad basada en el stock remoto.'
+);
 
 $original_options = SAIT_WOOCOMMERCE()->settings()->all();
 $options = $original_options;
@@ -110,6 +118,30 @@ sait_papelia_assert_same(2.0, $stock->get_stock($product, '1'), 'El stock por su
 sait_papelia_assert_same(2, count($client->requests), 'Cada contexto de stock debe consultar SAIT una vez.');
 $stock->get_stock($product, '1');
 sait_papelia_assert_same(2, count($client->requests), 'El stock por sucursal debe reutilizar su transient.');
+
+$negative_product = new WC_Product_Simple();
+$negative_product->set_sku('FIX-PAPELIA-NEGATIVE');
+$negative_product->set_name('Producto Papelía Sin Existencia');
+$negative_product->set_manage_stock(true);
+$negative_product->set_stock_quantity(0);
+$negative_product_id = $negative_product->save();
+delete_transient('sait_papelia_stock_' . md5('FIX-PAPELIA-NEGATIVE|total'));
+sait_papelia_assert_same(0.0, $stock->get_stock($negative_product), 'El stock remoto negativo debe normalizarse a cero.');
+sait_papelia_assert_same(
+	false,
+	$stock->filter_is_in_stock(true, $negative_product),
+	'Un producto con stock remoto cero debe mostrarse agotado.'
+);
+sait_papelia_assert_same(
+	false,
+	$stock->validate_add_to_cart(true, $negative_product_id, 1),
+	'No debe permitir agregar al carrito un producto con stock remoto cero.'
+);
+sait_papelia_assert_same(
+	false,
+	$stock->validate_cart_update(true, 'negative-item', array('data' => $negative_product), 1),
+	'No debe permitir actualizar el carrito con stock remoto cero.'
+);
 
 $order = wc_create_order();
 sait_papelia_assert_true(!is_wp_error($order), 'Debe crear una orden para caracterizar el payload Papelía.');
@@ -138,6 +170,7 @@ sait_papelia_assert_true(isset($quote_payload->otrosdatos), 'La cotización debe
 sait_papelia_assert_true(isset($quote_payload->obs), 'La cotización debe conservar OBS de Papelía.');
 
 $order->delete(true);
+$negative_product->delete(true);
 update_option(SAIT_WOOCOMMERCE_Settings::OPTION_NAME, $original_options);
 
 echo "Plugin complementario de Papelía validado correctamente.\n";

@@ -107,7 +107,7 @@ class SAIT_WOOCOMMERCE_StockCalculator
 
 		return array(
 			'matched' => $matched,
-			'stock'   => round($quantity, 2),
+			'stock'   => max(0.0, round($quantity, 2)),
 		);
 	}
 }

@@ -436,7 +436,7 @@ class SAIT_WOOCOMMERCE_ArtSync {
 
 		return array(
 			'sincronizado' => $matched,
-			'existencia' => round($quantity, 2),
+			'existencia' => max(0.0, round($quantity, 2)),
 			'mensaje' => $matched ? '' : self::get_stock_not_found_message($ExistAlm_activo, $NumAlm, $almacenes_a_mostrar),
 		);
 	}

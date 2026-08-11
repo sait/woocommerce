@@ -153,12 +153,8 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 				// Si el stock es 0, consultar existencia en SAIT
 				if (empty($current_stock) || $current_stock <= 0) {
 					$stock_result = SAIT_WOOCOMMERCE()->product_sync_service()->get_stock_from_sait($numart);
-					$sait_stock = $stock_result['matched'] ? $stock_result['stock'] : 0;
-
-					// Si hay existencia en SAIT, actualizar el stock
-					if (!empty($sait_stock) && $sait_stock > 0) {
-						$product->set_stock_quantity($sait_stock);
-	
+					if ($stock_result['matched']) {
+						$product->set_stock_quantity($stock_result['stock']);
 					}
 				}
 				$product->save();
@@ -195,12 +191,8 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 		}
 
 		$stock_result = SAIT_WOOCOMMERCE()->product_sync_service()->get_stock_from_sait($numart);
-		$sait_stock = $stock_result['matched'] ? $stock_result['stock'] : 0;
-
-		// Si hay existencia en SAIT, actualizar el stock
-		if (!empty($sait_stock) && $sait_stock > 0) {
-			$product->set_stock_quantity($sait_stock);
-
+		if ($stock_result['matched']) {
+			$product->set_stock_quantity($stock_result['stock']);
 		}
 
 		$product_id = $product->save();
