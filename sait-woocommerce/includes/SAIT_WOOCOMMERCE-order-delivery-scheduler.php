@@ -49,11 +49,42 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 		$this->state->mark_pending($order, $payment_method, $document_type, 'automatic');
 		SAIT_WOOCOMMERCE_Orders::SAIT_marcarEnvioAutomaticoDisparado($order, $payment_method, $document_type);
 
-		if (function_exists('as_enqueue_async_action')) {
-			as_enqueue_async_action(self::ACTION, $args, self::GROUP, true);
-		} else {
-			wp_schedule_single_event(time() + 10, self::ACTION, $args);
+		$scheduler = function_exists('as_enqueue_async_action') ? 'action_scheduler' : 'wp_cron';
+		$action_id = function_exists('as_enqueue_async_action')
+			? as_enqueue_async_action(self::ACTION, $args, self::GROUP, true)
+			: wp_schedule_single_event(time() + 10, self::ACTION, $args);
+
+		if (!$action_id) {
+			$error = new WP_Error('sait_schedule_failed', 'No se pudo programar el envio automatico a SAIT.');
+			$this->state->record_response($order, $error);
+			SAIT_WOOCOMMERCE()->logger()->diagnostic(
+				'No se pudo programar el envio automatico a SAIT.',
+				array(
+					'order_id'       => $order->get_id(),
+					'mode'           => 'automatic',
+					'document_type'  => $document_type,
+					'payment_method' => $payment_method,
+					'scheduler'      => $scheduler,
+					'stage'          => 'schedule_failed',
+					'error_code'     => $error->get_error_code(),
+				)
+			);
+
+			return array('queued' => false, 'message' => 'NO SE PUDO PROGRAMAR ENVIO SAIT');
 		}
+
+		SAIT_WOOCOMMERCE()->logger()->diagnostic(
+			'Envio automatico a SAIT programado.',
+			array(
+				'order_id'       => $order->get_id(),
+				'action_id'      => is_numeric($action_id) ? (int) $action_id : 0,
+				'mode'           => 'automatic',
+				'document_type'  => $document_type,
+				'payment_method' => $payment_method,
+				'scheduler'      => $scheduler,
+				'stage'          => 'queued',
+			)
+		);
 
 		return array('queued' => true, 'message' => 'SAIT ENVIO PROGRAMADO');
 	}
@@ -75,9 +106,39 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 		$options = SAIT_WOOCOMMERCE()->settings()->all();
 		$document_type = isset($options['SAITNube_TipoDoc']) ? $options['SAITNube_TipoDoc'] : 'P';
 		$this->state->mark_sending($order, $payment_method, $document_type, 'automatic');
-		$response = $document_type === 'P'
-			? SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($order, $payment_method, true)
-			: SAIT_WOOCOMMERCE_Orders::SAIT_sendCotizacion($order, $payment_method, true);
+		$attempt = absint($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_ATTEMPTS));
+		SAIT_WOOCOMMERCE()->logger()->diagnostic(
+			'Worker de envio a SAIT iniciado.',
+			array(
+				'order_id'       => $order->get_id(),
+				'attempt'        => $attempt,
+				'mode'           => 'automatic',
+				'document_type'  => $document_type,
+				'payment_method' => $payment_method,
+				'stage'          => 'worker_started',
+			)
+		);
+
+		try {
+			$response = $document_type === 'P'
+				? SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($order, $payment_method, true)
+				: SAIT_WOOCOMMERCE_Orders::SAIT_sendCotizacion($order, $payment_method, true);
+		} catch (Throwable $exception) {
+			$response = new WP_Error('sait_delivery_exception', $exception->getMessage());
+			SAIT_WOOCOMMERCE()->logger()->diagnostic(
+				'Excepcion durante el envio automatico a SAIT.',
+				array(
+					'order_id'        => $order->get_id(),
+					'attempt'         => $attempt,
+					'mode'            => 'automatic',
+					'document_type'   => $document_type,
+					'payment_method'  => $payment_method,
+					'stage'           => 'exception',
+					'error_code'      => get_class($exception),
+					'response_message' => $exception->getMessage(),
+				)
+			);
+		}
 		$result = SAIT_WOOCOMMERCE_Orders::SAIT_registrarResultadoEnvio(
 			$order,
 			$response,
@@ -89,7 +150,19 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 		$attempts = $order ? absint($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_ATTEMPTS)) : 0;
 		if ($order && $this->should_retry($result, $attempts)) {
 			$this->state->mark_pending($order, $payment_method, $document_type, 'automatic_retry');
-			$this->schedule_retry(array((int) $order_id, (string) $payment_method), $attempts);
+			$delay = $this->schedule_retry(array((int) $order_id, (string) $payment_method), $attempts);
+			SAIT_WOOCOMMERCE()->logger()->diagnostic(
+				'Reintento de envio a SAIT programado.',
+				array(
+					'order_id'       => $order->get_id(),
+					'attempt'        => $attempts,
+					'delay_seconds'  => $delay,
+					'mode'           => 'automatic_retry',
+					'document_type'  => $document_type,
+					'payment_method' => $payment_method,
+					'stage'          => 'retry_queued',
+				)
+			);
 		}
 	}
 
@@ -104,7 +177,7 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 	/**
 	 * @param array{0:int,1:string} $args Argumentos serializados para el worker.
 	 * @param int $attempts Intentos ya realizados.
-	 * @return void
+	 * @return int Retraso programado en segundos.
 	 */
 	private function schedule_retry($args, $attempts)
 	{
@@ -115,6 +188,8 @@ class SAIT_WOOCOMMERCE_OrderDeliveryScheduler
 		} else {
 			wp_schedule_single_event(time() + $delay, self::ACTION, $args);
 		}
+
+		return $delay;
 	}
 
 	/**

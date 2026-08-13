@@ -95,11 +95,42 @@ class SAIT_WOOCOMMERCE_DocumentService
 	 * @param string $endpoint Ruta SAIT permitida.
 	 * @param object $document Payload construido.
 	 * @param bool $wait Espera la respuesta cuando es true.
+	 * @param array $context Contexto operativo del envio.
 	 * @return array|WP_Error
 	 */
-	public function send_document($endpoint, $document, $wait = false)
+	public function send_document($endpoint, $document, $wait = false, $context = array())
 	{
-		return $this->sait_client->post($endpoint, $document, $wait);
+		$context = array_merge(
+			$context,
+			array(
+				'operation'  => 'POST',
+				'endpoint'   => $endpoint,
+				'item_count' => $this->document_item_count($document),
+				'stage'      => 'request_started',
+			)
+		);
+		$this->logger->diagnostic('Iniciando POST de documento a SAIT.', $context);
+
+		$started_at = microtime(true);
+		$response = $this->sait_client->post($endpoint, $document, $wait);
+		$duration_ms = (int) round((microtime(true) - $started_at) * 1000);
+		$is_error = is_wp_error($response);
+		$status_code = $is_error ? 0 : (int) wp_remote_retrieve_response_code($response);
+		$body = $is_error ? '' : (string) wp_remote_retrieve_body($response);
+		$response_context = array_merge(
+			$context,
+			array(
+				'stage'            => 'response_received',
+				'status_code'      => $status_code,
+				'duration_ms'      => $duration_ms,
+				'response_bytes'   => strlen($body),
+				'error_code'       => $is_error ? $response->get_error_code() : '',
+				'response_message' => $this->response_summary($response),
+			)
+		);
+		$this->logger->diagnostic('POST de documento a SAIT finalizado.', $response_context);
+
+		return $response;
 	}
 
 	/** @return array|WP_Error */
@@ -108,7 +139,8 @@ class SAIT_WOOCOMMERCE_DocumentService
 		return $this->send_document(
 			'/api/v3/pedidos',
 			$this->build_order($order, $payment_method),
-			$wait
+			$wait,
+			$this->delivery_context($order, $payment_method, 'P')
 		);
 	}
 
@@ -118,8 +150,70 @@ class SAIT_WOOCOMMERCE_DocumentService
 		return $this->send_document(
 			'/api/v3/cotizaciones',
 			$this->build_quote($order, $payment_method),
-			$wait
+			$wait,
+			$this->delivery_context($order, $payment_method, 'Q')
 		);
+	}
+
+	/** @return array<string,int|string> */
+	private function delivery_context($order, $payment_method, $document_type)
+	{
+		return array(
+			'order_id'       => $order->get_id(),
+			'attempt'        => absint($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_ATTEMPTS)),
+			'mode'           => (string) $order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_MODE),
+			'document_type'  => $document_type,
+			'payment_method' => $payment_method,
+		);
+	}
+
+	/** @return int */
+	private function document_item_count($document)
+	{
+		if (is_object($document) && isset($document->movs) && is_array($document->movs)) {
+			return count($document->movs);
+		}
+		if (is_array($document) && isset($document['movs']) && is_array($document['movs'])) {
+			return count($document['movs']);
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Extrae solo el mensaje operativo de la respuesta; nunca registra el
+	 * payload completo exitoso, que puede contener datos del cliente.
+	 *
+	 * @param array|WP_Error $response Respuesta HTTP.
+	 * @return string
+	 */
+	private function response_summary($response)
+	{
+		if (is_wp_error($response)) {
+			return $response->get_error_message();
+		}
+
+		$status_code = (int) wp_remote_retrieve_response_code($response);
+		$response_message = (string) wp_remote_retrieve_response_message($response);
+		if ($status_code === 201) {
+			return $response_message !== '' ? $response_message : 'Created';
+		}
+
+		$body = trim((string) wp_remote_retrieve_body($response));
+		$decoded = json_decode($body, true);
+		if (is_array($decoded)) {
+			foreach (array('error', 'message', 'mensaje', 'detail') as $key) {
+				if (isset($decoded[$key]) && is_scalar($decoded[$key])) {
+					return (string) $decoded[$key];
+				}
+			}
+		}
+
+		if ($body !== '') {
+			return substr(wp_strip_all_tags($body), 0, 500);
+		}
+
+		return $response_message;
 	}
 
 	/**

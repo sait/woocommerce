@@ -59,6 +59,32 @@ class SAIT_WOOCOMMERCE_Logger
 	}
 
 	/**
+	 * Registra una traza operativa en WooCommerce y, con WP_DEBUG_LOG activo,
+	 * también en wp-content/debug.log.
+	 *
+	 * @param string $message Mensaje sin datos sensibles.
+	 * @param array  $context Contexto operativo.
+	 * @return void
+	 */
+	public function diagnostic($message, $context = array())
+	{
+		$this->log('debug', $message, $context);
+
+		if (!defined('WP_DEBUG') || !WP_DEBUG || !defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
+			return;
+		}
+
+		$sanitized_context = $this->sanitize_context($context);
+		$encoded_context = wp_json_encode($sanitized_context);
+		$log_message = '[SAIT WooCommerce] ' . substr(sanitize_text_field((string) $message), 0, 500);
+		if ($encoded_context !== false && $encoded_context !== '[]') {
+			$log_message .= ' ' . $encoded_context;
+		}
+
+		error_log($log_message);
+	}
+
+	/**
 	 * @param string $level Nivel WooCommerce.
 	 * @param string $message Mensaje sin datos sensibles.
 	 * @param array  $context Contexto operativo.
@@ -90,8 +116,29 @@ class SAIT_WOOCOMMERCE_Logger
 			return array();
 		}
 
-		$integer_keys = array('order_id', 'attempt', 'status_code', 'item_count');
-		$text_keys = array('event', 'sku', 'operation', 'error_code', 'mode', 'document_type');
+		$integer_keys = array(
+			'order_id',
+			'attempt',
+			'status_code',
+			'item_count',
+			'action_id',
+			'duration_ms',
+			'response_bytes',
+			'delay_seconds',
+		);
+		$text_keys = array(
+			'event',
+			'sku',
+			'operation',
+			'error_code',
+			'mode',
+			'document_type',
+			'endpoint',
+			'payment_method',
+			'scheduler',
+			'stage',
+			'response_message',
+		);
 		$sanitized = array();
 
 		foreach ($integer_keys as $key) {
@@ -102,7 +149,8 @@ class SAIT_WOOCOMMERCE_Logger
 
 		foreach ($text_keys as $key) {
 			if (isset($context[$key]) && is_scalar($context[$key])) {
-				$sanitized[$key] = substr(sanitize_text_field((string) $context[$key]), 0, 100);
+				$max_length = $key === 'response_message' ? 500 : 100;
+				$sanitized[$key] = substr(sanitize_text_field((string) $context[$key]), 0, $max_length);
 			}
 		}
 

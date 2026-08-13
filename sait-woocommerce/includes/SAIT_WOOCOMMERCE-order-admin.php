@@ -87,7 +87,7 @@ class SAIT_WOOCOMMERCE_OrderAdmin {
 		$status = $response instanceof WP_REST_Response ? (int) $response->get_status() : 500;
 		$data = $response instanceof WP_REST_Response ? $response->get_data() : 'Respuesta inesperada.';
 
-		$type = ($status >= 200 && $status < 300) ? 'success' : 'warning';
+		$type = $status === 201 ? 'success' : 'warning';
 		$message = 'Pedido #' . $order_id . ': ' . self::format_response_message($data);
 		self::set_notice($type, $message);
 
@@ -107,12 +107,19 @@ class SAIT_WOOCOMMERCE_OrderAdmin {
 	private static function format_response_message($data) {
 		if (is_array($data)) {
 			$estado = isset($data['estado']) ? $data['estado'] : '';
-			$status_code = isset($data['status_code']) ? $data['status_code'] : '';
-			$message = isset($data['message']) ? $data['message'] : '';
-			return trim('estado=' . $estado . ' status=' . $status_code . ' ' . wp_strip_all_tags((string) $message));
+			$status_code = isset($data['status_code']) ? (int) $data['status_code'] : 0;
+			if ($estado === 'enviado' && $status_code === 201) {
+				return 'enviado correctamente a SAIT.';
+			}
+
+			if ($status_code > 0) {
+				return 'no se pudo enviar a SAIT (HTTP ' . $status_code . '). Revisa debug.log.';
+			}
+
+			return 'no se pudo obtener respuesta de SAIT. Revisa debug.log.';
 		}
 
-		return wp_strip_all_tags((string) $data);
+		return 'no se pudo enviar a SAIT. Revisa debug.log.';
 	}
 
 	private static function get_order_redirect_url($order_id) {

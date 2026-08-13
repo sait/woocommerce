@@ -172,6 +172,34 @@ intentos y metadata de idempotencia antes de enviar.
 
 SAITNube responde `201` cuando recibe correctamente pedidos o cotizaciones.
 
+### Diagnostico De Envios
+
+El envío automático se encola para ejecución asíncrona inmediata mediante
+Action Scheduler. No ocurre dentro de la misma solicitud de checkout y depende
+de que el runner asíncrono y las solicitudes loopback de WordPress funcionen.
+
+Con `WP_DEBUG` y `WP_DEBUG_LOG` activos, el plugin escribe trazas con el prefijo
+`[SAIT WooCommerce]` en `wp-content/debug.log`. Para activarlas:
+
+```php
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+define('WP_DEBUG_DISPLAY', false);
+```
+
+Las etapas principales permiten localizar dónde se interrumpió un intento:
+
+- `queued`: Action Scheduler o WP-Cron aceptó el trabajo;
+- `worker_started`: comenzó a procesarse la orden;
+- `request_started`: se construyó el documento y comenzó el POST;
+- `response_received`: SAIT o la capa HTTP devolvió un resultado;
+- `exception`: una excepción interrumpió la construcción o el envío;
+- `retry_queued`: se programó otro intento.
+
+Las trazas incluyen ID de pedido, número de intento, endpoint, estado HTTP,
+duración, tamaño y mensaje operativo de la respuesta. No incluyen API keys,
+tokens ni el payload completo del pedido.
+
 ## Reenvio Manual De Pedidos
 
 Cuando SAITNube/API no estuvo disponible, se puede reenviar una orden con:

@@ -2,7 +2,7 @@
 Contributors: sait
 Requires at least: 6.6
 Requires PHP: 7.4
-Stable tag: 2.0.2
+Stable tag: 2.0.3
 WC requires at least: 9.3
 WC tested up to: 9.3
 
@@ -27,6 +27,12 @@ plugins complementarios independientes.
 5. Confirma el webhook y realiza un pedido de prueba antes de producción.
 
 == Changelog ==
+
+= 2.0.3 =
+
+* Agrega trazas saneadas del ciclo de envío de pedidos y cotizaciones en debug.log.
+* Registra las excepciones de envío como fallo o reintento en lugar de conservar el estado Enviando.
+* Simplifica el aviso del reenvío manual y considera exitoso solamente HTTP 201.
 
 = 2.0.2 =
 

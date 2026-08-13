@@ -113,14 +113,44 @@ public static function SAIT_sendCotizacion( $order,$formapago,$wait = false ){
 			if (!$order) {
 				return SAIT_UTILS::SAIT_response(404, "Pedido no existe");
 			}
-			$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
-			$tipo = $SAIT_options['SAITNube_TipoDoc'];
-			SAIT_WOOCOMMERCE()->order_delivery_state()->mark_sending($order, "1", $tipo, 'manual');
-			if ($tipo==="P"){
-				$response = self::SAIT_sendPedido($order,"1",true);
-			}else{
-				$response = self::SAIT_sendCotizacion($order,"1",true);
-			}
+				$SAIT_options = SAIT_WOOCOMMERCE()->settings()->all();
+				$tipo = $SAIT_options['SAITNube_TipoDoc'];
+				SAIT_WOOCOMMERCE()->order_delivery_state()->mark_sending($order, "1", $tipo, 'manual');
+				$attempt = absint($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_ATTEMPTS));
+				SAIT_WOOCOMMERCE()->logger()->diagnostic(
+					'Reenvio manual a SAIT iniciado.',
+					array(
+						'order_id'       => $order->get_id(),
+						'attempt'        => $attempt,
+						'mode'           => 'manual',
+						'document_type'  => $tipo,
+						'payment_method' => '1',
+						'stage'          => 'worker_started',
+					)
+				);
+
+				try {
+					if ($tipo==="P"){
+						$response = self::SAIT_sendPedido($order,"1",true);
+					}else{
+						$response = self::SAIT_sendCotizacion($order,"1",true);
+					}
+				} catch (Throwable $exception) {
+					$response = new WP_Error('sait_delivery_exception', $exception->getMessage());
+					SAIT_WOOCOMMERCE()->logger()->diagnostic(
+						'Excepcion durante el reenvio manual a SAIT.',
+						array(
+							'order_id'        => $order->get_id(),
+							'attempt'         => $attempt,
+							'mode'            => 'manual',
+							'document_type'   => $tipo,
+							'payment_method'  => '1',
+							'stage'           => 'exception',
+							'error_code'      => get_class($exception),
+							'response_message' => $exception->getMessage(),
+						)
+					);
+				}
 			$resultado = self::SAIT_registrarResultadoEnvio($order, $response, $tipo, "1", "manual");
 			return self::SAIT_responderResultadoEnvio($resultado);
 		}

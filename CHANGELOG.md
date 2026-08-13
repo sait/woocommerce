@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.3] - 13/AGO/2026
+
+### added
+- Trazas operativas del envío de pedidos y cotizaciones en `debug.log`, con orden, intento, endpoint, duración y resultado HTTP, sin credenciales ni payloads de clientes.
+
+### fixed
+- Las excepciones normales durante un envío automático o manual ahora se registran como fallo y pueden activar el reintento, en lugar de dejar la orden indefinidamente en `Enviando`.
+- El aviso del reenvío manual ya no muestra el cuerpo completo de la respuesta de SAIT; HTTP `201` se presenta como un envío correcto.
+
 ## [2.0.2] - 13/AGO/2026
 
 ### fixed

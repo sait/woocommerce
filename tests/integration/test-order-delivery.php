@@ -78,6 +78,26 @@ sait_delivery_assert_true(strpos($admin_html, 'Intentos:') !== false, 'Intentos 
 sait_delivery_assert_true(strpos($admin_html, '201') !== false, 'HTTP visible.');
 sait_delivery_assert_true(strpos($admin_html, 'Fallo simulado') === false, 'No se muestra el cuerpo del error.');
 
+$format_notice = new ReflectionMethod('SAIT_WOOCOMMERCE_OrderAdmin', 'format_response_message');
+$format_notice->setAccessible(true);
+$success_notice = $format_notice->invoke(null, array(
+	'estado' => 'enviado',
+	'status_code' => 201,
+	'message' => '{"result":{"cliente":"dato que no debe mostrarse"}}',
+));
+sait_delivery_assert_same('enviado correctamente a SAIT.', $success_notice, 'Aviso manual exitoso simplificado.');
+sait_delivery_assert_true(strpos($success_notice, 'result') === false, 'El aviso no muestra el cuerpo de SAIT.');
+$failed_notice = $format_notice->invoke(null, array(
+	'estado' => 'reintento_requerido',
+	'status_code' => 503,
+	'message' => '{"error":"detalle interno"}',
+));
+sait_delivery_assert_same(
+	'no se pudo enviar a SAIT (HTTP 503). Revisa debug.log.',
+	$failed_notice,
+	'Aviso manual fallido simplificado.'
+);
+
 $automatic_order = wc_create_order();
 delete_option('sait_test_request_counts');
 SAIT_WOOCOMMERCE_Orders::SAIT_sendOrder($automatic_order->get_id(), '1');

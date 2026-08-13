@@ -55,6 +55,10 @@ $logger->warning(
 		'mode'          => 'manual',
 		'document_type' => 'P',
 		'item_count'    => '3',
+		'endpoint'      => '/api/v3/pedidos',
+		'duration_ms'   => '450',
+		'response_bytes' => '128',
+		'response_message' => 'Servicio no disponible.',
 		'api_key'       => 'fixture-api-key-no-registrar',
 		'token'         => 'fixture-token-no-registrar',
 		'email'         => 'persona@example.test',
@@ -74,6 +78,10 @@ sait_logger_assert_same('FIX-ART-001', $record['context']['sku'], 'Contexto de S
 sait_logger_assert_same(2, $record['context']['attempt'], 'Contexto de intento.');
 sait_logger_assert_same(503, $record['context']['status_code'], 'Contexto de status HTTP.');
 sait_logger_assert_same(3, $record['context']['item_count'], 'Cantidad de partidas.');
+sait_logger_assert_same('/api/v3/pedidos', $record['context']['endpoint'], 'Endpoint sin host ni credenciales.');
+sait_logger_assert_same(450, $record['context']['duration_ms'], 'Duracion del POST.');
+sait_logger_assert_same(128, $record['context']['response_bytes'], 'Tamano de la respuesta.');
+sait_logger_assert_same('Servicio no disponible.', $record['context']['response_message'], 'Detalle operativo de respuesta.');
 
 foreach (array('api_key', 'token', 'email', 'name', 'payload') as $forbidden_key) {
 	sait_logger_assert_same(
