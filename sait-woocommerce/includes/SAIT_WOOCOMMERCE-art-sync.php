@@ -417,7 +417,9 @@ class SAIT_WOOCOMMERCE_ArtSync {
 
 		foreach ($result as $almacen) {
 			$almacen_num = isset($almacen['numalm']) ? trim($almacen['numalm']) : '';
-			$existencia = isset($almacen['existencia']) ? (float) $almacen['existencia'] : 0;
+			$existencia = isset($almacen['existencia'])
+				? max(0.0, (float) $almacen['existencia'])
+				: 0.0;
 
 			if ($ExistAlm_activo) {
 				if (in_array($almacen_num, $almacenes_a_mostrar, true)) {

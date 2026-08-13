@@ -87,7 +87,7 @@ class SAIT_WOOCOMMERCE_StockCalculator
 
 			$warehouse_number = isset($warehouse['numalm']) ? trim((string) $warehouse['numalm']) : '';
 			$stock = isset($warehouse['existencia']) && is_numeric($warehouse['existencia'])
-				? (float) $warehouse['existencia']
+				? max(0.0, (float) $warehouse['existencia'])
 				: 0.0;
 
 			if ($multiple_warehouses) {

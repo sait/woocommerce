@@ -2,7 +2,7 @@
 /*
 Plugin Name: SAIT WooCommerce - Papelía
 Description: Reglas de checkout, sucursales y payload SAIT específicas para Papelía.
-Version: 1.0.1
+Version: 1.0.2
 Requires at least: 6.6
 Requires PHP: 7.4
 Requires Plugins: woocommerce, sait-woocommerce

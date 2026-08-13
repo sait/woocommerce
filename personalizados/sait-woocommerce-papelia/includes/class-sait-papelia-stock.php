@@ -136,7 +136,9 @@ final class SAIT_Papelia_Stock
 		$total = 0.0;
 		foreach ($rows as $row) {
 			$row_branch = isset($row['numalm']) ? trim((string) $row['numalm']) : '';
-			$quantity = isset($row['existencia']) ? (float) $row['existencia'] : 0.0;
+			$quantity = isset($row['existencia'])
+				? max(0.0, (float) $row['existencia'])
+				: 0.0;
 			if ($branch_id !== '' && $row_branch === trim($branch_id)) {
 				$total = $quantity;
 				break;

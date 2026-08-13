@@ -73,8 +73,8 @@ $negative_total = $stock_calculator->calculate(
 	true,
 	array('1', '2')
 );
-sait_calculator_assert_same(true, $negative_total['matched'], 'Almacenes del total negativo encontrados.');
-sait_calculator_assert_same(0.0, $negative_total['stock'], 'El total negativo se normaliza despues de sumar almacenes.');
+sait_calculator_assert_same(true, $negative_total['matched'], 'Almacenes con existencias mixtas encontrados.');
+sait_calculator_assert_same(5.0, $negative_total['stock'], 'Las existencias negativas no deben restarse del total.');
 
 $missing_stock = $stock_calculator->calculate($rows, '9');
 sait_calculator_assert_same(false, $missing_stock['matched'], 'Almacen ausente no se sincroniza.');

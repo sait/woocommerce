@@ -38,6 +38,7 @@ class SAIT_Papelia_Test_Client implements SAIT_WOOCOMMERCE_SaitClientInterface
 				array('numalm' => '1', 'existencia' => 2),
 				array('numalm' => '2', 'existencia' => 5),
 				array('numalm' => '4', 'existencia' => 100),
+				array('numalm' => '5', 'existencia' => -10),
 			);
 		} elseif ($uri === '/api/v3/existencias/FIX-PAPELIA-NEGATIVE') {
 			$result = array(
@@ -101,7 +102,7 @@ sait_papelia_assert_true(
 $original_options = SAIT_WOOCOMMERCE()->settings()->all();
 $options = $original_options;
 $options['SAITNube_ExistAlm_enabled'] = '1';
-$options['SAITNube_ExistAlm'] = '1,2,4';
+$options['SAITNube_ExistAlm'] = '1,2,4,5';
 update_option(SAIT_WOOCOMMERCE_Settings::OPTION_NAME, $options);
 
 $client = new SAIT_Papelia_Test_Client();
@@ -113,7 +114,7 @@ $product->set_name('Producto Papelía Fixture');
 
 delete_transient('sait_papelia_stock_' . md5('FIX-PAPELIA-001|total'));
 delete_transient('sait_papelia_stock_' . md5('FIX-PAPELIA-001|1'));
-sait_papelia_assert_same(107.0, $stock->get_stock($product), 'El stock total debe sumar almacenes configurados.');
+sait_papelia_assert_same(107.0, $stock->get_stock($product), 'El stock total debe omitir existencias negativas.');
 sait_papelia_assert_same(2.0, $stock->get_stock($product, '1'), 'El stock por sucursal debe conservar su contexto.');
 sait_papelia_assert_same(2, count($client->requests), 'Cada contexto de stock debe consultar SAIT una vez.');
 $stock->get_stock($product, '1');

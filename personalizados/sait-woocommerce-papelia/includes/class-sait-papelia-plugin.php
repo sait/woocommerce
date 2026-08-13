@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
  */
 final class SAIT_Papelia_Plugin
 {
-	const VERSION = '1.0.0';
+	const VERSION = '1.0.2';
 
 	/** @var self|null */
 	private static $instance;

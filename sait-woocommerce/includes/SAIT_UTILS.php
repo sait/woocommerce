@@ -137,7 +137,9 @@ class SAIT_UTILS
 		$quantity = 0;
 		foreach ($result as $warehouse) {
 			$warehouse_number = isset($warehouse['numalm']) ? $warehouse['numalm'] : '';
-			$stock = isset($warehouse['existencia']) ? (float) $warehouse['existencia'] : 0;
+			$stock = isset($warehouse['existencia'])
+				? max(0.0, (float) $warehouse['existencia'])
+				: 0.0;
 
 			if ($multiple_warehouses && in_array($warehouse_number, $allowed_warehouses)) {
 				$quantity += $stock;
