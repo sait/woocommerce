@@ -402,6 +402,7 @@ class SAIT_WOOCOMMERCE_Plugin
 		require_once $includes . 'events/SAIT_WOOCOMMERCE-event-router.php';
 		require_once $includes . 'SAIT_WOOCOMMERCE-logger.php';
 		require_once $includes . 'SAIT_UTILS.php';
+		require_once $includes . 'SAIT_WOOCOMMERCE-orders.php';
 		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-branch-selector.php';
 		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-price-service.php';
 		require_once $includes . 'frontend/SAIT_WOOCOMMERCE-stock-display.php';

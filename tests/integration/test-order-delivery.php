@@ -4,8 +4,6 @@ if (!defined('ABSPATH')) {
 	throw new RuntimeException('WordPress no esta cargado.');
 }
 
-require_once WP_PLUGIN_DIR . '/sait-woocommerce/includes/SAIT_WOOCOMMERCE-orders.php';
-
 function sait_delivery_assert_same($expected, $actual, $message)
 {
 	if ($expected !== $actual) {
@@ -22,6 +20,11 @@ function sait_delivery_assert_true($condition, $message)
 		throw new RuntimeException($message);
 	}
 }
+
+sait_delivery_assert_true(
+	class_exists('SAIT_WOOCOMMERCE_Orders', false),
+	'La clase de pedidos debe estar disponible en solicitudes aisladas de Action Scheduler.'
+);
 
 $options = get_option('opciones_sait', array());
 $options['SAITNube_URL'] = 'https://sait-api.invalid';

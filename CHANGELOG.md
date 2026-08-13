@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.5] - 13/AGO/2026
+
+### fixed
+- El worker de Action Scheduler carga la clase de pedidos durante su solicitud independiente y ya no falla con `Class SAIT_WOOCOMMERCE_Orders not found` antes del POST.
+
 ## [2.0.4] - 13/AGO/2026
 
 ### fixed
