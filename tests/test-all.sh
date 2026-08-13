@@ -10,6 +10,7 @@ sh tests/test-frontend-modules.sh
 sh tests/test-guest-branch.sh
 sh tests/test-price-service.sh
 sh tests/test-papelia-plugin.sh
+sh tests/test-fysson-plugin.sh
 sh tests/test-product-calculators.sh
 sh tests/test-product-sync.sh
 sh tests/test-rest.sh

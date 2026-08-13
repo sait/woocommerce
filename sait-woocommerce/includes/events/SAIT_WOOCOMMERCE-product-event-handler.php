@@ -14,68 +14,38 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 		$modelo = trim(SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($oFlds, "modelo"));
 		$statusweb = trim(SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($oFlds, "statusweb"));
 		$obs = trim(SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($oFlds, "obs"));
-		// Si statusweb vaio no es modart completo
+		// Si statusweb viene vacio no es un MODART completo.
 		if ( $statusweb === "")  {
 					return SAIT_UTILS::SAIT_response(200, "statusweb null");
-			}
-		SAIT_WOOCOMMERCE()->price_service()->invalidate_sku($numart);
-		// Los atributos MODART y las claves de sus eventos no siguen un unico patron.
-		$category_source = SAIT_WOOCOMMERCE()->settings()->category_source_config();
-		$category_key = trim(SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($oFlds, $category_source['article_attribute']));
-		$category_mapping = $category_key === ''
-			? null
-			: SAIT_UTILS::SAIT_getClaves($category_source['mapping_table'], $category_key, null);
-		$category_id = isset($category_mapping->wcid) ? array($category_mapping->wcid) : array();
-		
-		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
-	
-		/*
-		$product_id_by_sku = wc_get_product_id_by_sku($numart);
-		if ($product_id_by_sku) {
-				$product = wc_get_product($product_id_by_sku);
-
-				// Si existe producto y no teníamos clave registrada aún
-				if ($product && !$clave) {
-						// Registrar o actualizar la clave ligando el numart al producto por SKU
-						//SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_sku);
-						//	$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
-						
-						//	ES PRODUCTO PREVIAMENTE REGISTRADO DE FYSON HACER UPDATE
-			
-						// Actualizar producto
-						//$product->set_name($desc);
-						//$product->set_sku($numart);
-						//$product->set_global_unique_id( $codigo );
-
-						if (!empty($category_id)) {
-								$product->set_category_ids($category_id);
-						}
-
-						if (!empty($obs)) {
-								 $product->set_description($obs);
-						}
-
-						$product->save();
-
-						return SAIT_UTILS::SAIT_response(200, "ART UPD");
-				}
 		}
-		
-		
-		
-		//$product_id_by_codigo = "";
-		//if ($codigo != "") {
-			// Obtener id producto por codigo y numart
-			//$product_id_by_codigo = wc_get_product_id_by_global_unique_id( $codigo );
+		SAIT_WOOCOMMERCE()->price_service()->invalidate_sku($numart);
+		$settings = SAIT_WOOCOMMERCE()->settings();
+		$sync_category = $settings->category_source() !== 'none';
+		$sync_category = (bool) apply_filters(
+			'sait_woocommerce_modart_sync_category',
+			$sync_category,
+			$numart,
+			$oXml
+		);
+		$sync_model = (bool) apply_filters(
+			'sait_woocommerce_modart_sync_model',
+			$settings->is_enabled(SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY),
+			$numart,
+			$oXml
+		);
+		$category_id = array();
+		if ($sync_category) {
+			// Los atributos MODART y las claves de sus eventos no siguen un unico patron.
+			$category_source = $settings->category_source_config();
+			$category_key = trim(SAIT_WOOCOMMERCE_ProcessEvents::xml_attribute($oFlds, $category_source['article_attribute']));
+			$category_mapping = $category_key === ''
+				? null
+				: SAIT_UTILS::SAIT_getClaves($category_source['mapping_table'], $category_key, null);
+			$category_id = isset($category_mapping->wcid) ? array($category_mapping->wcid) : array();
+		}
 
-			// Si es un articulo que ya estaba en la tienda lo registramos en tabla claves
-			//if ( $product_id_by_codigo && !$clave ) {
-				//SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_codigo);
-				//$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
-			//}	
-		//}
+		$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null);
 
-*/
 		// Si statusweb = 0, vacío o null → eliminar el producto
 		if ($statusweb === "0" || $statusweb === "" || $statusweb === null) {
 				if (isset($clave->wcid)) {
@@ -83,24 +53,20 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 				}
 				return SAIT_UTILS::SAIT_response(200, "OK");
 		}
-		
-/*
-		$product_id_by_sku = wc_get_product_id_by_sku($numart);
 
-		if ($product_id_by_sku) {
-				$product = wc_get_product($product_id_by_sku);
-
-				// Si existe producto y no teníamos clave registrada aún
-				if ($product && !$clave) {
-						// Registrar o actualizar la clave ligando el numart al producto por SKU
-						SAIT_UTILS::SAIT_insertClaves("arts", $numart, $product_id_by_sku);
-						$clave = SAIT_UTILS::SAIT_getClaves("arts", $numart, null); // refrescar clave
-				}
-		}
-		*/
 		if (!isset($clave->wcid)) {
 			$resolved = SAIT_WOOCOMMERCE()->product_resolver()->resolve($numart);
 			if ($resolved['source'] === 'sku' && $resolved['product']) {
+				$existing_sku_mode = apply_filters(
+					'sait_woocommerce_modart_existing_sku_mode',
+					'link_and_sync',
+					$resolved['product'],
+					$numart,
+					$oXml
+				);
+				if ($existing_sku_mode === 'ignore') {
+					return SAIT_UTILS::SAIT_response(200, "ART IGNORADO SKU EXISTENTE");
+				}
 				$product_id = $resolved['product']->get_id();
 				$mapping_id = SAIT_WOOCOMMERCE()->mapping_repository()->add('arts', $numart, $product_id);
 				if ($mapping_id) {
@@ -136,11 +102,11 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 					);
 				}
 		
-				if (!empty($category_id)) {
+				if ($sync_category && !empty($category_id)) {
 						$product->set_category_ids($category_id);
 				}
 		
-				if (!empty($modelo)) {
+				if ($sync_model && !empty($modelo)) {
 						$product->set_short_description("Modelo: " . $modelo);
 				}
 
@@ -178,12 +144,12 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 		$product->set_status("draft");
 		$product->set_manage_stock(true);
 		$product->set_regular_price( 0);
-		if (!empty($category_id)) {
-				$product->set_category_ids($category_id);
+		if ($sync_category && !empty($category_id)) {
+			$product->set_category_ids($category_id);
 		}
 		
-		if (!empty($modelo)) {
-				$product->set_short_description("Modelo: " . $modelo);
+		if ($sync_model && !empty($modelo)) {
+			$product->set_short_description("Modelo: " . $modelo);
 		}
 
 		if (!empty($obs)) {

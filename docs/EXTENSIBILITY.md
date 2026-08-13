@@ -1,4 +1,24 @@
-# Personalizacion De Documentos SAIT
+# Extensibilidad De SAIT WooCommerce
+
+## Personalización De MODART
+
+El procesamiento de artículos expone estos filtros para complementos de
+clientes. Los valores predeterminados conservan el comportamiento del núcleo:
+
+- `sait_woocommerce_modart_existing_sku_mode`: recibe
+  `link_and_sync`, el producto encontrado, el SKU y el XML. Puede devolver
+  `ignore` para no relacionar ni modificar un producto que existe por SKU pero
+  no tiene mapeo en `sait_claves`.
+- `sait_woocommerce_modart_sync_category`: recibe la decisión configurada, el
+  SKU y el XML. `false` conserva las categorías actuales y crea productos sin
+  categoría.
+- `sait_woocommerce_modart_sync_model`: recibe la decisión configurada, el SKU
+  y el XML. `false` conserva la descripción corta y no escribe `Modelo: ...`.
+
+El complemento Fysson utiliza estos tres contratos; no reemplaza la clase que
+procesa eventos.
+
+## Personalización De Documentos SAIT
 
 Los payloads se pueden modificar con filtros de WordPress despues de construir
 el documento y aplicar la personalizacion legacy, pero antes del POST a SAIT.

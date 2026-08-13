@@ -7,6 +7,7 @@ class SAIT_WOOCOMMERCE_Settings
 {
 	const OPTION_NAME = 'opciones_sait';
 	const CATEGORY_SOURCE_KEY = 'SAITNube_CategoriaFuente';
+	const SYNC_MODEL_KEY = 'SAITNube_ModeloDescripcionCorta_enabled';
 	const DEFAULT_CATEGORY_SOURCE = 'linea';
 
 	/**
@@ -20,6 +21,7 @@ class SAIT_WOOCOMMERCE_Settings
 			'SAITNube_AccessToken'                       => '',
 			'SAITNube_TipoDoc'                           => '',
 			self::CATEGORY_SOURCE_KEY                    => self::DEFAULT_CATEGORY_SOURCE,
+			self::SYNC_MODEL_KEY                         => '1',
 			'SAITNube_Sucursal_enabled'                  => '0',
 			'SAITNube_NumAlm'                            => null,
 			'SAITNube_OcultarSinPrecio_enabled'          => '0',
@@ -91,6 +93,12 @@ class SAIT_WOOCOMMERCE_Settings
 	public function category_sources()
 	{
 		return array(
+			'none' => array(
+				'label'             => 'No sincronizar',
+				'article_attribute' => '',
+				'mapping_table'     => '',
+				'event_key'         => '',
+			),
 			'linea' => array(
 				'label'             => 'Línea',
 				'article_attribute' => 'linea',
@@ -197,6 +205,7 @@ class SAIT_WOOCOMMERCE_Settings
 			'SAITNube_PrecioLista',
 		);
 		$boolean_fields = array(
+			self::SYNC_MODEL_KEY,
 			'SAITNube_Sucursal_enabled',
 			'SAITNube_OcultarSinPrecio_enabled',
 			'SAITNube_ExistAlm_enabled',

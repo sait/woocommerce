@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.6] - 13/AGO/2026
+
+### added
+- La configuración de categorías permite seleccionar `No sincronizar`, y el modelo de `MODART` puede desactivarse independientemente sin cambiar los valores predeterminados existentes.
+- Se agregaron filtros para controlar la adopción de productos por SKU y la sincronización de categorías/modelo desde plugins complementarios.
+- Se agregó `SAIT WooCommerce - Fysson` 1.0.0, que conserva categorías y descripciones cortas, y no adopta productos preexistentes sin mapeo.
+- El empaquetador genera también un ZIP independiente del complemento Fysson y su suma SHA-256.
+
 ## [2.0.5] - 13/AGO/2026
 
 ### fixed

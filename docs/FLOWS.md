@@ -51,14 +51,17 @@ Archivo: `includes/SAIT_WOOCOMMERCE-process-events.php`
    `modelo`, `statusweb`, `obs`.
 3. Si `statusweb` viene vacio, responde `statusweb null`.
 4. Busca categoria en `sait_claves` usando la fuente configurada; si la opcion
-   no existe usa `linea` y la tabla `lineas`.
+   no existe usa `linea` y la tabla `lineas`. Con `none`, conserva las
+   categorias actuales.
 5. Busca producto mapeado en `sait_claves` con tabla `arts`.
 6. Si `statusweb` es `0`, manda el producto a papelera si existe.
 7. Si ya existe mapeo:
    - Restaura de papelera.
    - Actualiza nombre, SKU, GTIN/codigo global, categoria, descripcion corta y descripcion.
    - Si stock actual es cero o vacio, consulta existencia SAIT y actualiza stock.
-8. Si no existe mapeo:
+8. Si no existe mapeo, primero busca el SKU. Por omision lo relaciona y
+   actualiza; un complemento puede indicar `ignore` para dejarlo intacto.
+9. Si tampoco existe por SKU:
    - Crea `WC_Product_Simple`.
    - Lo deja en `draft`.
    - Activa manejo de stock.

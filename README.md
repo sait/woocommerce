@@ -44,6 +44,8 @@ Las opciones se guardan en WordPress dentro de `opciones_sait`.
 | `SAITNube_AccessToken` | Valor esperado en el header entrante `x-AccessToken` para webhooks SAIT. |
 | `SAITNube_TipoDoc` | `P` envia pedidos; cualquier otro valor envia cotizaciones. |
 | `SAITNube_NumAlm` | Almacen base para existencias y documentos enviados a SAIT. |
+| `SAITNube_CategoriaFuente` | Fuente de categoría en `MODART`; acepta línea, familia, categoría, departamento o no sincronizar. |
+| `SAITNube_ModeloDescripcionCorta_enabled` | Controla si `MODART` escribe el modelo en la descripción corta. |
 | `SAITNube_PrecioLista` | Lista de precio SAIT usada para actualizar precios WooCommerce. |
 | `SAITNube_TipoCambio` | Tipo de cambio guardado por el evento `ACTTC`. |
 
@@ -82,6 +84,18 @@ a las sincronizaciones manuales de artículos.
 El complemento de Papelía usa el mismo criterio para el stock remoto. Cuando
 la existencia efectiva es `0`, el producto se considera agotado y no puede
 agregarse ni aumentarse en el carrito.
+
+## Complementos De Clientes
+
+Las reglas específicas se distribuyen separadas del núcleo:
+
+- `SAIT WooCommerce - Papelía`: checkout, sucursales, stock remoto y payload.
+- `SAIT WooCommerce - Fysson`: conserva productos preexistentes sin mapeo y no
+  reemplaza categorías ni descripciones cortas mediante `MODART`.
+
+Cada complemento se puede activar solamente en la instalación correspondiente.
+El script `scripts/build-release.sh` lee las versiones declaradas y genera los
+tres ZIP sin exigir cambiar números dentro del script.
 
 ## Endpoints REST
 

@@ -129,6 +129,14 @@ class SAITSettingsPage
 			'SAITNube'
 		);
 
+		add_settings_field(
+			SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY,
+			'¿Agregar modelo a la descripción corta?',
+			array($this, 'SAITNube_ModeloDescripcionCorta_enabled_callback'),
+			'opciones_sait_page',
+			'SAITNube'
+		);
+
 		// Campo para activar o desactivar el modal de Sucursal
 		add_settings_field(
 			'SAITNube_Sucursal_enabled',
@@ -337,6 +345,31 @@ class SAITSettingsPage
 		</select>
 		<p class="description">
 			Si no se configura, se conserva Línea por compatibilidad con la versión 1.2.3.
+		</p>
+		<?php
+	}
+
+	/**
+	 * Permite conservar o desactivar el comportamiento historico de MODART.
+	 *
+	 * @return void
+	 */
+	public function SAITNube_ModeloDescripcionCorta_enabled_callback()
+	{
+		$value = isset($this->options[SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY])
+			? $this->options[SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY]
+			: '1';
+		?>
+		<label>
+			<input type="radio" name="opciones_sait[<?php echo esc_attr(SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY); ?>]" value="1" <?php checked('1', $value); ?> />
+			Activado
+		</label><br>
+		<label>
+			<input type="radio" name="opciones_sait[<?php echo esc_attr(SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY); ?>]" value="0" <?php checked('0', $value); ?> />
+			Desactivado
+		</label>
+		<p class="description">
+			Al activarlo, MODART escribe &quot;Modelo: ...&quot; en la descripción corta.
 		</p>
 		<?php
 	}

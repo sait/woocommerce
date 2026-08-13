@@ -45,6 +45,7 @@ sait_settings_assert_same('linea', $settings->category_source(), 'Linea debe ser
 
 $category_sources = $settings->category_sources();
 $expected_category_sources = array(
+	'none' => array('', '', ''),
 	'linea' => array('linea', 'lineas', 'numlin'),
 	'familia' => array('familia', 'familia', 'numfam'),
 	'categoria' => array('categoria', 'catego', 'numcat'),
@@ -59,6 +60,7 @@ foreach ($expected_category_sources as $source => $expected) {
 $all = $settings->all();
 sait_settings_assert_same('fixture-key', $settings->get('SAITNube_APIKey'), 'Lectura tipada de API key.');
 sait_settings_assert_same('0', $all['SAITNube_Sucursal_enabled'], 'Default de bandera ausente.');
+sait_settings_assert_same('1', $all[SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY], 'El modelo conserva su comportamiento historico.');
 sait_settings_assert_same(true, $settings->is_enabled('SAITNube_Promo_enabled'), 'Bandera activa.');
 sait_settings_assert_same(false, $settings->is_enabled('SAITNube_Sucursal_enabled'), 'Bandera inactiva.');
 sait_settings_assert_same(array('1', '2', '3'), $settings->warehouses(), 'Lista normalizada de almacenes.');
@@ -85,6 +87,7 @@ $sanitized = $settings->sanitize(
 		'SAITNube_PromoGlobal_enabled'       => 'si',
 		'SAITNube_PedidoDirenvio_enabled'    => '0',
 		'SAITNube_CategoriaFuente'           => 'departamento',
+		'SAITNube_ModeloDescripcionCorta_enabled' => '0',
 		'campo_desconocido'                  => 'no guardar',
 	)
 );
@@ -94,11 +97,17 @@ sait_settings_assert_same('1', $sanitized['SAITNube_Promo_enabled'], 'Booleano p
 sait_settings_assert_same('0', $sanitized['SAITNube_PromoGlobal_enabled'], 'Booleano invalido debe desactivarse.');
 sait_settings_assert_same('0', $sanitized['SAITNube_PedidoDirenvio_enabled'], 'Booleano desactivado.');
 sait_settings_assert_same('departamento', $sanitized['SAITNube_CategoriaFuente'], 'Fuente de categoria permitida.');
+sait_settings_assert_same('0', $sanitized[SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY], 'Sincronizacion de modelo desactivada.');
 sait_settings_assert_same(false, isset($sanitized['campo_desconocido']), 'No aceptar claves desconocidas.');
 sait_settings_assert_same(
 	'linea',
 	$settings->sanitize(array('SAITNube_CategoriaFuente' => 'otra'))['SAITNube_CategoriaFuente'],
 	'Una fuente invalida debe volver a linea.'
+);
+sait_settings_assert_same(
+	'none',
+	$settings->sanitize(array('SAITNube_CategoriaFuente' => 'none'))['SAITNube_CategoriaFuente'],
+	'No sincronizar debe ser una fuente permitida.'
 );
 
 $settings->set(SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY, 'invalida');
@@ -118,6 +127,10 @@ global $wp_settings_fields;
 sait_settings_assert_true(
 	isset($wp_settings_fields['opciones_sait_page']['SAITNube'][SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY]),
 	'La pantalla debe registrar el selector de fuente de categoria.'
+);
+sait_settings_assert_true(
+	isset($wp_settings_fields['opciones_sait_page']['SAITNube'][SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY]),
+	'La pantalla debe registrar la opcion de descripcion corta.'
 );
 
 update_option(SAIT_WOOCOMMERCE_Settings::OPTION_NAME, $original_options);

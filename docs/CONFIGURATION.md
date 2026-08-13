@@ -19,7 +19,8 @@ La pagina de administracion esta en:
 | `SAITNube_URL` | URL base de SAITNube. Se concatena con rutas como `/api/v3/pedidos`. |
 | `SAITNube_AccessToken` | Token esperado en el header entrante `x-AccessToken` para eventos SAIT. |
 | `SAITNube_TipoDoc` | `P` envia pedidos; otros valores envian cotizaciones. |
-| `SAITNube_CategoriaFuente` | Clasificacion SAIT usada como categoria WooCommerce: `linea`, `familia`, `categoria` o `departamento`. El valor predeterminado es `linea`. |
+| `SAITNube_CategoriaFuente` | Clasificacion SAIT usada como categoria WooCommerce: `linea`, `familia`, `categoria`, `departamento` o `none`. El valor predeterminado es `linea`. |
+| `SAITNube_ModeloDescripcionCorta_enabled` | Escribe `Modelo: ...` en la descripción corta durante `MODART`. Está activa por omisión para conservar compatibilidad. |
 | `SAITNube_NumAlm` | Almacen base para existencias y pedidos. |
 | `SAITNube_TipoCambio` | Tipo de cambio guardado por evento `ACTTC`; campo readonly en admin. |
 | `SAITNube_PrecioLista` | Lista de precio SAIT alternativa para actualizar precio WooCommerce. |
@@ -31,6 +32,7 @@ no siguen el mismo patron en todos los casos:
 
 | Valor configurado | Atributo en `MODART` | Tabla en `sait_claves` | Clave del evento de catalogo |
 | --- | --- | --- | --- |
+| `none` | No se consulta | No se consulta | No aplica |
 | `linea` | `linea` | `lineas` | `MODLINEA.keys.numlin` |
 | `familia` | `familia` | `familia` | `MODFAMILIA.keys.numfam` |
 | `categoria` | `categoria` | `catego` | `MODCATEGO.keys.numcat` |
@@ -40,6 +42,10 @@ Si una instalacion actualizada no tiene la opcion, se usa `linea` sin necesidad
 de modificar los datos guardados. Si el atributo seleccionado viene vacio o
 todavia no existe su mapeo, `MODART` conserva las categorias actuales del
 producto.
+
+El valor `none` conserva siempre las categorías actuales. La opción de modelo
+es independiente: puede desactivarse para conservar la descripción corta que
+ya tenga el producto.
 
 ## Opciones De Frontend Y Stock
 

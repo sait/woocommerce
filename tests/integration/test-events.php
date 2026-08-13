@@ -156,6 +156,7 @@ $options['SAITNube_ExistAlm'] = '';
 $options['SAITNube_PrecioLista'] = '';
 $options['SAITNube_TipoCambio'] = '17.0000';
 unset($options[SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY]);
+unset($options[SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY]);
 update_option('opciones_sait', $options);
 
 $bad_token = sait_test_send_event('acttc.xml', 'incorrecto');
@@ -212,6 +213,7 @@ sait_test_assert_true(
 	in_array((int) $line_mapping->wcid, array_map('intval', $product->get_category_ids()), true),
 	'MODART debe usar linea cuando la opcion no existe.'
 );
+sait_test_assert_same('Modelo: M-1', $product->get_short_description(), 'MODART debe sincronizar el modelo por compatibilidad.');
 
 $article_category_cases = array(
 	array('linea', 'lineas', 'FIX-LIN'),
@@ -260,6 +262,28 @@ sait_test_assert_same(
 	array_map('intval', wc_get_product($product_id)->get_category_ids()),
 	'Una opcion persistida invalida debe usar linea.'
 );
+
+$product = wc_get_product($product_id);
+$product->set_short_description('Descripción corta manual');
+$product->save();
+SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY, 'none');
+SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY, '0');
+$categories_without_sync = array_map('intval', wc_get_product($product_id)->get_category_ids());
+$without_catalog_sync = sait_test_send_event('modart-active.xml');
+sait_test_assert_same('ART UPD', $without_catalog_sync->get_data(), 'MODART debe aceptar la sincronizacion selectiva.');
+$product = wc_get_product($product_id);
+sait_test_assert_same(
+	$categories_without_sync,
+	array_map('intval', $product->get_category_ids()),
+	'No sincronizar categoria debe conservar las categorias actuales.'
+);
+sait_test_assert_same(
+	'Descripción corta manual',
+	$product->get_short_description(),
+	'Desactivar el modelo debe conservar la descripcion corta actual.'
+);
+SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::CATEGORY_SOURCE_KEY, 'linea');
+SAIT_WOOCOMMERCE()->settings()->set(SAIT_WOOCOMMERCE_Settings::SYNC_MODEL_KEY, '1');
 
 $article_update = sait_test_send_event('modart-active.xml');
 sait_test_assert_same('ART UPD', $article_update->get_data(), 'Respuesta de actualizacion MODART.');

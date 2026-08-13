@@ -11,6 +11,9 @@ empacado por separado bajo `personalizados/`.
 | `sait_woocommerce_order_payload` | `object $document`, `WC_Order $order` | Modificar únicamente pedidos. |
 | `sait_woocommerce_quote_payload` | `object $document`, `WC_Order $order` | Modificar únicamente cotizaciones. |
 | `sait_woocommerce_document_payload` | `object $document`, `WC_Order $order`, `string $type` | Modificar ambos documentos; `P` es pedido y `Q` cotización. |
+| `sait_woocommerce_modart_existing_sku_mode` | `string $mode`, `WC_Product $product`, `string $sku`, `SimpleXMLElement $xml` | Adoptar (`link_and_sync`) o ignorar (`ignore`) un SKU preexistente sin mapeo. |
+| `sait_woocommerce_modart_sync_category` | `bool $enabled`, `string $sku`, `SimpleXMLElement $xml` | Permitir o impedir cambios de categoría en MODART. |
+| `sait_woocommerce_modart_sync_model` | `bool $enabled`, `string $sku`, `SimpleXMLElement $xml` | Permitir o impedir que MODART escriba el modelo en la descripción corta. |
 
 Los filtros se ejecutan después del constructor y del adaptador heredado, pero
 antes del POST. Deben devolver el mismo objeto o un reemplazo serializable y no
@@ -81,3 +84,19 @@ Para migrar una instalación Papelía:
    opción histórica durante la transición.
 4. Probar pedido con entrega, recogida con stock y recogida con faltantes.
 5. Empacar el núcleo y el complemento en ZIP separados.
+
+## Complemento Fysson
+
+La implementación está en `personalizados/sait-woocommerce-fysson/`. Al
+activarla reproduce las diferencias encontradas en la versión antigua del
+cliente:
+
+- no relaciona ni modifica productos que ya existen por SKU pero no aparecen
+  todavía en `sait_claves`;
+- no asigna categorías desde `MODART`;
+- no escribe el modelo en la descripción corta;
+- sí crea productos verdaderamente nuevos y sigue actualizando los productos
+  que ya están relacionados.
+
+Las reglas viven en filtros del núcleo y no reemplazan archivos. Desactivar el
+complemento restaura inmediatamente la configuración general.
