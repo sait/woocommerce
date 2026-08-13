@@ -117,6 +117,35 @@ sait_delivery_assert_same(1, absint($automatic_order->get_meta('_sait_delivery_a
 $request_counts = get_option('sait_test_request_counts', array());
 sait_delivery_assert_same(1, $request_counts['POST /api/v3/pedidos'], 'Un solo POST automatico.');
 
+$client_error_order = wc_create_order();
+$client_error_args = array($client_error_order->get_id(), '1');
+update_option('sait_test_post_responses', array(400), false);
+SAIT_WOOCOMMERCE()->order_delivery_scheduler()->enqueue($client_error_order->get_id(), '1');
+if (function_exists('as_unschedule_all_actions')) {
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		$client_error_args,
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+}
+do_action(SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION, $client_error_order->get_id(), '1');
+$client_error_order = wc_get_order($client_error_order->get_id());
+sait_delivery_assert_same('failed', $state->status($client_error_order), 'HTTP 400 termina como fallo.');
+sait_delivery_assert_same(1, absint($client_error_order->get_meta('_sait_delivery_attempts')), 'HTTP 400 no se reintenta.');
+sait_delivery_assert_same(400, (int) $client_error_order->get_meta('_sait_delivery_http_status'), 'HTTP 400 queda registrado.');
+if (function_exists('as_has_scheduled_action')) {
+	sait_delivery_assert_same(
+		false,
+		(bool) as_has_scheduled_action(
+			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+			$client_error_args,
+			SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+		),
+		'HTTP 400 no deja reintento programado.'
+	);
+}
+delete_option('sait_test_post_responses');
+
 $retry_order = wc_create_order();
 $retry_args = array($retry_order->get_id(), '1');
 update_option('sait_test_post_responses', array(503, 201), false);
@@ -178,8 +207,18 @@ sait_delivery_assert_same(3, absint($exhausted_order->get_meta('_sait_delivery_a
 delete_option('sait_test_post_responses');
 
 $duplicate_order = wc_create_order();
-SAIT_WOOCOMMERCE()->send_order_payment($duplicate_order->get_id());
-SAIT_WOOCOMMERCE()->send_order_thankyou($duplicate_order->get_id());
+sait_delivery_assert_true(
+	has_action('woocommerce_payment_complete') !== false,
+	'El hook de pago completado debe estar registrado.'
+);
+sait_delivery_assert_true(
+	has_action('woocommerce_thankyou') !== false,
+	'El hook de thankyou debe estar registrado.'
+);
+do_action('woocommerce_payment_complete', $duplicate_order->get_id());
+ob_start();
+do_action('woocommerce_thankyou', $duplicate_order->get_id());
+ob_end_clean();
 $duplicate_order = wc_get_order($duplicate_order->get_id());
 sait_delivery_assert_same('pending', $state->status($duplicate_order), 'Hooks dejan una entrega pendiente.');
 sait_delivery_assert_same('1', $duplicate_order->get_meta('_sait_delivery_payment_method'), 'Primer hook conserva forma de pago.');
@@ -213,6 +252,11 @@ if (function_exists('as_unschedule_all_actions')) {
 	);
 	as_unschedule_all_actions(
 		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
+		$client_error_args,
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
+	);
+	as_unschedule_all_actions(
+		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::ACTION,
 		array($exhausted_order->get_id(), '1'),
 		SAIT_WOOCOMMERCE_OrderDeliveryScheduler::GROUP
 	);
@@ -221,6 +265,7 @@ if (function_exists('as_unschedule_all_actions')) {
 $order->delete(true);
 $automatic_order->delete(true);
 $duplicate_order->delete(true);
+$client_error_order->delete(true);
 $retry_order->delete(true);
 $exhausted_order->delete(true);
 

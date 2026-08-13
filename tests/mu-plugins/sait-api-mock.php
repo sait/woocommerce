@@ -188,6 +188,10 @@ function sait_test_intercept_api_request($preempt, $args, $url)
 		return sait_test_http_response($fixtures['articulos_dolares']);
 	}
 
+	if ($path === '/api/v3/articulos' && isset($query['statusweb']) && (string) $query['statusweb'] === '1') {
+		return sait_test_http_response(array('result' => array()));
+	}
+
 	if ($path === '/api/v3/existencias/FIX-ART-001' && isset($fixtures['existencias'])) {
 		return sait_test_http_response($fixtures['existencias']);
 	}

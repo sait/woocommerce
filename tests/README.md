@@ -199,7 +199,17 @@ sh tests/test-order-delivery.sh
 ```
 
 La prueba cubre `pending`, `sending`, `failed` y `sent`, conteo de intentos,
-HTTP/errores y confirma que un POST no bloqueante no se marque como enviado.
+HTTP/errores, hooks reales de pago/thankyou y confirma que HTTP 400 no se
+reintenta. También ejecuta el worker en un proceso PHP separado para reproducir
+la solicitud independiente de Action Scheduler.
+
+La sincronización masiva de artículos también se dispara en otro proceso PHP
+para confirmar que su clase y su hook están disponibles al ejecutarse mediante
+Action Scheduler o WP-Cron:
+
+```sh
+sh tests/test-async-workers.sh
+```
 
 ## Lint PHP
 

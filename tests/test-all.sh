@@ -16,4 +16,5 @@ sh tests/test-rest.sh
 sh tests/test-events.sh
 sh tests/test-documents.sh
 sh tests/test-order-delivery.sh
+sh tests/test-async-workers.sh
 sh tests/smoke-test.sh
