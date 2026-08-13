@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.4] - 13/AGO/2026
+
+### fixed
+- Los identificadores obtenidos de `/clientes`, incluidos los que contienen guiones como `WC-2`, vuelven a enviarse siempre en `numcli` para conservar compatibilidad con SAIT.
+
 ## [2.0.3] - 13/AGO/2026
 
 ### added

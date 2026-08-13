@@ -197,6 +197,8 @@ function sait_test_intercept_api_request($preempt, $args, $url)
 			$key = 'cliente_normal';
 		} elseif ($query['emailtw'] === 'eventual.fixture@example.test') {
 			$key = 'cliente_eventual';
+		} elseif ($query['emailtw'] === 'cliente.guion.fixture@example.test') {
+			$key = 'cliente_con_guion';
 		} else {
 			$key = 'sin_resultados';
 		}

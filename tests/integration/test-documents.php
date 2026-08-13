@@ -229,7 +229,7 @@ sait_document_assert_same('/api/v3/pedidos', $mapped_request['path'], 'Endpoint 
 $mapped_payload = $mapped_request['body'];
 sait_document_assert_common_payload($mapped_payload, $mapped_order->get_id());
 sait_document_assert_same('  123', $mapped_payload['numcli'], 'Cliente mapeado.');
-sait_document_assert_same('', $mapped_payload['numcliev'], 'Cliente eventual vacio.');
+sait_document_assert_same('', $mapped_payload['numcliev'], 'Cliente mapeado sin numcliev.');
 sait_document_assert_true(!isset($mapped_payload['clievent']), 'Cliente mapeado no debe enviar clievent.');
 
 $mapped_eventual_user_id = wc_create_new_customer('eventual.mapeado@example.test');
@@ -238,8 +238,8 @@ $mapped_eventual_order = sait_document_create_order($product, 'eventual.mapeado@
 $mapped_eventual_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($mapped_eventual_order, '1', true);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($mapped_eventual_response), 'HTTP eventual mapeado.');
 $mapped_eventual_payload = sait_document_last_request()['body'];
-sait_document_assert_same('', $mapped_eventual_payload['numcli'], 'Eventual mapeado sin numcli.');
-sait_document_assert_same(' -789', $mapped_eventual_payload['numcliev'], 'Eventual mapeado por guion.');
+sait_document_assert_same(' -789', $mapped_eventual_payload['numcli'], 'Eventual mapeado conservado en numcli.');
+sait_document_assert_same('', $mapped_eventual_payload['numcliev'], 'Eventual mapeado sin numcliev.');
 sait_document_assert_true(!isset($mapped_eventual_payload['clievent']), 'Eventual mapeado no debe enviar clievent.');
 
 $normal_order = sait_document_create_order($product, 'normal.fixture@example.test');
@@ -251,6 +251,7 @@ remove_filter('sait_woocommerce_document_payload', 'sait_document_filter_common'
 sait_document_assert_same(201, wp_remote_retrieve_response_code($normal_response), 'HTTP cliente normal.');
 $normal_payload = sait_document_last_request()['body'];
 sait_document_assert_same('  123', $normal_payload['numcli'], 'Cliente normal encontrado por correo.');
+sait_document_assert_same('', $normal_payload['numcliev'], 'Cliente normal encontrado sin numcliev.');
 sait_document_assert_same('2', $normal_payload['formapago'], 'Forma de pago thankyou.');
 sait_document_assert_same('pedido-' . $normal_order->get_id(), $normal_payload['filtro_fixture'], 'Filtro de pedido.');
 sait_document_assert_same('P-' . $normal_order->get_id(), $normal_payload['tipo_fixture'], 'Filtro comun de pedido.');
@@ -259,9 +260,17 @@ $eventual_order = sait_document_create_order($product, 'eventual.fixture@example
 $eventual_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($eventual_order, '1', true);
 sait_document_assert_same(201, wp_remote_retrieve_response_code($eventual_response), 'HTTP eventual existente.');
 $eventual_payload = sait_document_last_request()['body'];
-sait_document_assert_same('', $eventual_payload['numcli'], 'Eventual sin numcli.');
-sait_document_assert_same(' -456', $eventual_payload['numcliev'], 'Eventual reutilizado por numcliev.');
+sait_document_assert_same(' -456', $eventual_payload['numcli'], 'Eventual reutilizado en numcli.');
+sait_document_assert_same('', $eventual_payload['numcliev'], 'Eventual existente sin numcliev.');
 sait_document_assert_true(!isset($eventual_payload['clievent']), 'Eventual existente no debe reenviar clievent.');
+
+$hyphenated_order = sait_document_create_order($product, 'cliente.guion.fixture@example.test');
+$hyphenated_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($hyphenated_order, '1', true);
+sait_document_assert_same(201, wp_remote_retrieve_response_code($hyphenated_response), 'HTTP cliente WC con guion.');
+$hyphenated_payload = sait_document_last_request()['body'];
+sait_document_assert_same(' WC-2', $hyphenated_payload['numcli'], 'Cliente WC con guion conservado en numcli.');
+sait_document_assert_same('', $hyphenated_payload['numcliev'], 'Cliente WC con guion sin numcliev.');
+sait_document_assert_true(!isset($hyphenated_payload['clievent']), 'Cliente WC con guion no debe reenviar clievent.');
 
 $new_order = sait_document_create_order($product, 'nuevo.documento@example.test');
 $new_response = SAIT_WOOCOMMERCE_Orders::SAIT_sendPedido($new_order, '2', true);

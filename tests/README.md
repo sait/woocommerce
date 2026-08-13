@@ -189,8 +189,8 @@ sh tests/test-documents.sh
 
 Se cubren clientes normales y eventuales, mapeados o encontrados por correo,
 clientes nuevos, correos invalidos, descuentos, observaciones, direccion de
-envio y cotizacion. `/clientes` es la unica ruta de busqueda: un `numcli` que
-contiene `-` se envia como `numcliev`.
+envio y cotizacion. `/clientes` es la unica ruta de busqueda y todo identificador
+que devuelve se conserva en `numcli`, incluidos valores con `-`.
 
 Los estados persistentes de entrega se validan con:
 

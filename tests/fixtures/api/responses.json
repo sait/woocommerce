@@ -51,6 +51,11 @@
       { "numcli": "-456" }
     ]
   },
+  "cliente_con_guion": {
+    "result": [
+      { "numcli": "WC-2" }
+    ]
+  },
   "almacenes": {
     "result": [
       { "numalm": "1", "nombre": "Matriz" },

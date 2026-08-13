@@ -22,10 +22,10 @@ class SAIT_WOOCOMMERCE_CustomerResolver
 	}
 
 	/**
-	 * Devuelve exactamente una representacion activa: numcli, numcliev o clievent.
+	 * Devuelve el numcli existente o los datos necesarios para crear al cliente.
 	 *
-	 * El endpoint /clientes devuelve clientes normales y eventuales. SAIT identifica
-	 * los eventuales porque su numcli contiene un guion.
+	 * Por compatibilidad con el contrato historico, todo identificador devuelto por
+	 * /clientes se envia en numcli. SAIT interpreta internamente los guiones.
 	 *
 	 * @param WC_Order $order Orden WooCommerce.
 	 * @return array{numcli:string,numcliev:string,clievent:object|null}
@@ -90,11 +90,10 @@ class SAIT_WOOCOMMERCE_CustomerResolver
 	private function existing_customer($identifier)
 	{
 		$padded = str_pad($identifier, 5, ' ', STR_PAD_LEFT);
-		$is_eventual = strpos($identifier, '-') !== false;
 
 		return array(
-			'numcli'   => $is_eventual ? '' : $padded,
-			'numcliev' => $is_eventual ? $padded : '',
+			'numcli'   => $padded,
+			'numcliev' => '',
 			'clievent' => null,
 		);
 	}

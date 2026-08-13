@@ -338,16 +338,16 @@ Objetivo: eliminar duplicación entre pedidos y cotizaciones.
 ### Resolución de clientes
 
 Contrato confirmado: `/clientes` devuelve clientes normales y eventuales en
-el campo `numcli`. Un valor que contiene `-` identifica a un cliente eventual;
-no se consulta `/clienteseventuales`.
+el campo `numcli`. El documento conserva ese campo aunque el valor contenga
+`-`; SAIT realiza internamente la interpretación del identificador.
 
 - [x] Crear `CustomerResolver`.
 - [x] Resolver en orden:
   - [x] Mapeo local válido.
   - [x] Cliente normal por correo -> `numcli`.
-  - [x] Cliente eventual por correo -> `numcliev`.
+  - [x] Cliente eventual por correo -> `numcli`.
   - [x] Cliente nuevo -> objeto `clievent`.
-- [x] Garantizar que sólo una representación quede activa.
+- [x] Mantener `numcliev` vacío para clientes encontrados por `/clientes`.
 - [x] Probar usuarios registrados, invitados y correos inválidos.
 
 ### Construcción de documentos

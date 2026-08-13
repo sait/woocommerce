@@ -36,6 +36,6 @@ con distintas precondiciones.
 `expected/documents-current.json` congela payloads representativos que el
 codigo actual construye. Las fechas son valores deterministas de ejemplo.
 
-`expected/document-eventual-existing-target.json` define la regresion de
-clientes eventuales: `/clientes` devuelve un `numcli` con `-`, que se envia en
-`numcliev` sin volver a incluir `clievent`.
+`expected/document-eventual-existing-target.json` protege el contrato historico
+de clientes existentes: `/clientes` devuelve el identificador en `numcli` y el
+documento lo conserva en ese mismo campo, incluso cuando contiene `-`.
