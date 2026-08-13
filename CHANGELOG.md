@@ -1,5 +1,66 @@
 # Changelog
 
+## [2.0.6] - 13/AGO/2026
+
+### added
+- La configuración de categorías permite seleccionar `No sincronizar`, y el modelo de `MODART` puede desactivarse independientemente sin cambiar los valores predeterminados existentes.
+- Se agregaron filtros para controlar la adopción de productos por SKU y la sincronización de categorías/modelo desde plugins complementarios.
+- Se agregó `SAIT WooCommerce - Fysson` 1.0.0, que conserva categorías y descripciones cortas, y no adopta productos preexistentes sin mapeo.
+- El empaquetador genera también un ZIP independiente del complemento Fysson y su suma SHA-256.
+
+## [2.0.5] - 13/AGO/2026
+
+### fixed
+- El worker de Action Scheduler carga la clase de pedidos durante su solicitud independiente y ya no falla con `Class SAIT_WOOCOMMERCE_Orders not found` antes del POST.
+
+## [2.0.4] - 13/AGO/2026
+
+### fixed
+- Los identificadores obtenidos de `/clientes`, incluidos los que contienen guiones como `WC-2`, vuelven a enviarse siempre en `numcli` para conservar compatibilidad con SAIT.
+
+## [2.0.3] - 13/AGO/2026
+
+### added
+- Trazas operativas del envío de pedidos y cotizaciones en `debug.log`, con orden, intento, endpoint, duración y resultado HTTP, sin credenciales ni payloads de clientes.
+
+### fixed
+- Las excepciones normales durante un envío automático o manual ahora se registran como fallo y pueden activar el reintento, en lugar de dejar la orden indefinidamente en `Enviando`.
+- El aviso del reenvío manual ya no muestra el cuerpo completo de la respuesta de SAIT; HTTP `201` se presenta como un envío correcto.
+
+## [2.0.2] - 13/AGO/2026
+
+### fixed
+- Las existencias negativas de cada almacén SAIT ahora se consideran `0` antes de calcular el total configurado.
+- Los eventos y las sincronizaciones manuales ya no guardan existencias negativas en WooCommerce.
+- La tabla de existencias por sucursal muestra `0` cuando SAIT devuelve una cantidad negativa.
+- El complemento de Papelía marca como agotados y bloquea en el carrito los productos cuya existencia remota efectiva es `0`.
+
+## [2.0.0] - 04/AGO/2026
+
+### added
+- Selector configurable de línea, familia, categoría o departamento para las categorías de productos.
+- Cliente HTTP, repositorio de mapeos, configuración tipada y logger saneado compartidos.
+- Entrega asíncrona de pedidos y cotizaciones mediante Action Scheduler, con estados, idempotencia y reintentos.
+- Filtros públicos para personalizar documentos desde plugins complementarios.
+- Plugin complementario independiente para las reglas de Papelía.
+- Suite reproducible con WordPress 6.6.2, WooCommerce 9.3.3, PHP 7.4, HPOS, API simulada y PHPStan.
+
+### changed
+- Rutas REST, eventos XML, clientes, documentos, productos y frontend se separaron en controladores y servicios.
+- Precios y promociones reutilizan caché contextual por cliente, producto, cantidad, sucursal, divisa y forma de pago.
+- La selección de sucursal de invitados se guarda en la sesión WooCommerce sin utilizar el usuario `0`.
+- `SAIT_PERSONALIZADO` queda como adaptador obsoleto de transición; no se retirará antes de 3.0.0.
+
+### security
+- Los endpoints de reenvío manual ahora requieren autenticación y capacidad para editar pedidos.
+- Los tokens se comparan de forma segura y los logs descartan credenciales, correos y payloads sensibles.
+- Las consultas del repositorio `sait_claves` utilizan parámetros preparados.
+
+### fixed
+- Los productos existentes por SKU pueden vincularse sin crear duplicados.
+- Los clientes normales, eventuales y nuevos se resuelven desde la ruta unificada `/clientes`.
+- El cliente público conserva `numcli = "    0"` y el padding requerido en consultas de precios.
+
 ## [1.1.18] - 22/ENE/2025 
 ### fix
 - Fix modcli: fix al actualizar nuevo correo de cliente desde evento 

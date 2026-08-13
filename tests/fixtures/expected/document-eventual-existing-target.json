@@ -1,0 +1,15 @@
+{
+  "scenario": "cliente_eventual_existente",
+  "status": "regresion_objetivo",
+  "sait_lookup": {
+    "email": "eventual.fixture@example.test",
+    "numcli": "-456"
+  },
+  "expected_customer_fields": {
+    "numcli": " -456",
+    "numcliev": ""
+  },
+  "forbidden_fields": [
+    "clievent"
+  ]
+}

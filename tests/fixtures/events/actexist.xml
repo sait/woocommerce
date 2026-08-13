@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event type="ACTEXIST" version="2" src="fixture">
+  <action cmd="write" tbl="multialm">
+    <keys numart="FIX-ART-001" numalm="1" />
+    <flds existencia="7.500" />
+  </action>
+</event>

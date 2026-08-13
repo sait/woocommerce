@@ -18,7 +18,9 @@ El plugin sincroniza informacion de SAIT hacia WooCommerce mediante webhooks y e
 
 ## Requisitos
 
-- WordPress con WooCommerce activo.
+- WordPress 6.6 o superior.
+- WooCommerce 9.3 o superior.
+- PHP 7.4 o superior.
 - Acceso a SAITNube/API.
 - Un webhook configurado en SAITNube para enviar eventos hacia WooCommerce.
 
@@ -42,6 +44,8 @@ Las opciones se guardan en WordPress dentro de `opciones_sait`.
 | `SAITNube_AccessToken` | Valor esperado en el header entrante `x-AccessToken` para webhooks SAIT. |
 | `SAITNube_TipoDoc` | `P` envia pedidos; cualquier otro valor envia cotizaciones. |
 | `SAITNube_NumAlm` | Almacen base para existencias y documentos enviados a SAIT. |
+| `SAITNube_CategoriaFuente` | Fuente de categoría en `MODART`; acepta línea, familia, categoría, departamento o no sincronizar. |
+| `SAITNube_ModeloDescripcionCorta_enabled` | Controla si `MODART` escribe el modelo en la descripción corta. |
 | `SAITNube_PrecioLista` | Lista de precio SAIT usada para actualizar precios WooCommerce. |
 | `SAITNube_TipoCambio` | Tipo de cambio guardado por el evento `ACTTC`. |
 
@@ -61,6 +65,38 @@ Opciones adicionales:
 | `SAITNube_PedidoDirenvio_enabled` | Envia direccion de envio a SAIT. |
 | `SAITNube_FuncionPersonalizadaPedido_enabled` | Ejecuta personalizacion del documento antes de enviarlo a SAIT. |
 
+## Calculo De Existencias
+
+Cuando está activa la existencia por múltiples almacenes, el plugin suma
+solamente los almacenes configurados en `SAITNube_ExistAlm`. Cada existencia
+negativa recibida desde SAIT se considera `0` antes de realizar la suma:
+
+```text
+Almacen 1:  5 -> aporta 5
+Almacen 2: -3 -> aporta 0
+Total efectivo: 5
+```
+
+La existencia efectiva guardada en WooCommerce y mostrada en la tabla de
+sucursales nunca es negativa. Esta regla se aplica a eventos de existencias y
+a las sincronizaciones manuales de artículos.
+
+El complemento de Papelía usa el mismo criterio para el stock remoto. Cuando
+la existencia efectiva es `0`, el producto se considera agotado y no puede
+agregarse ni aumentarse en el carrito.
+
+## Complementos De Clientes
+
+Las reglas específicas se distribuyen separadas del núcleo:
+
+- `SAIT WooCommerce - Papelía`: checkout, sucursales, stock remoto y payload.
+- `SAIT WooCommerce - Fysson`: conserva productos preexistentes sin mapeo y no
+  reemplaza categorías ni descripciones cortas mediante `MODART`.
+
+Cada complemento se puede activar solamente en la instalación correspondiente.
+El script `scripts/build-release.sh` lee las versiones declaradas y genera los
+tres ZIP sin exigir cambiar números dentro del script.
+
 ## Endpoints REST
 
 Las rutas se registran bajo `/wp-json/saitplugin/v1`.
@@ -74,7 +110,9 @@ Las rutas se registran bajo `/wp-json/saitplugin/v1`.
 
 `/saitevents` valida el header `x-AccessToken` contra la opcion `SAITNube_AccessToken`.
 
-La ruta de reenvio manual esta disponible sin token por compatibilidad operativa. Su uso recomendado es cuando SAITNube/API no estuvo disponible y se necesita reenviar una orden especifica.
+Las rutas de reenvío manual requieren un usuario autenticado con capacidad para
+editar pedidos. Su uso recomendado es cuando SAITNube/API no estuvo disponible
+y se necesita reenviar una orden específica.
 
 ## SAIT -> WooCommerce
 
@@ -142,9 +180,39 @@ Segun `SAITNube_TipoDoc`, genera:
 - `P`: pedido hacia `/api/v3/pedidos`.
 - Otro valor: cotizacion hacia `/api/v3/cotizaciones`.
 
-Los envios automaticos se disparan sin esperar respuesta de SAITNube. Para evitar duplicados entre hooks, la orden se marca con metadata de idempotencia antes de enviar.
+Los envíos automáticos se programan mediante Action Scheduler, con alternativa
+WP-Cron. Para evitar duplicados entre hooks, la orden guarda estados de entrega,
+intentos y metadata de idempotencia antes de enviar.
 
 SAITNube responde `201` cuando recibe correctamente pedidos o cotizaciones.
+
+### Diagnostico De Envios
+
+El envío automático se encola para ejecución asíncrona inmediata mediante
+Action Scheduler. No ocurre dentro de la misma solicitud de checkout y depende
+de que el runner asíncrono y las solicitudes loopback de WordPress funcionen.
+
+Con `WP_DEBUG` y `WP_DEBUG_LOG` activos, el plugin escribe trazas con el prefijo
+`[SAIT WooCommerce]` en `wp-content/debug.log`. Para activarlas:
+
+```php
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+define('WP_DEBUG_DISPLAY', false);
+```
+
+Las etapas principales permiten localizar dónde se interrumpió un intento:
+
+- `queued`: Action Scheduler o WP-Cron aceptó el trabajo;
+- `worker_started`: comenzó a procesarse la orden;
+- `request_started`: se construyó el documento y comenzó el POST;
+- `response_received`: SAIT o la capa HTTP devolvió un resultado;
+- `exception`: una excepción interrumpió la construcción o el envío;
+- `retry_queued`: se programó otro intento.
+
+Las trazas incluyen ID de pedido, número de intento, endpoint, estado HTTP,
+duración, tamaño y mensaje operativo de la respuesta. No incluyen API keys,
+tokens ni el payload completo del pedido.
 
 ## Reenvio Manual De Pedidos
 

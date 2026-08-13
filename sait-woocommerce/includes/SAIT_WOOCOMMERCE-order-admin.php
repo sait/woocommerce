@@ -39,12 +39,39 @@ class SAIT_WOOCOMMERCE_OrderAdmin {
 			'sait_reenviar_pedido_admin_' . $order_id
 		);
 		?>
+		<div class="form-field form-field-wide sait-delivery-status">
+			<h4>Entrega SAIT</h4>
+			<p>
+				<strong>Estado:</strong>
+				<?php echo esc_html($this->delivery_status_label($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_STATUS))); ?>
+			</p>
+			<p>
+				<strong>Intentos:</strong>
+				<?php echo esc_html(absint($order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_ATTEMPTS))); ?>
+				&middot; <strong>Ultimo intento:</strong>
+				<?php echo esc_html((string) $order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_LAST_ATTEMPT_AT)); ?>
+				&middot; <strong>HTTP:</strong>
+				<?php echo esc_html((string) $order->get_meta(SAIT_WOOCOMMERCE_OrderDeliveryState::META_HTTP_STATUS)); ?>
+			</p>
+		</div>
 		<p class="form-field form-field-wide">
 			<a class="button button-secondary" href="<?php echo esc_url($url); ?>">
 				Reenviar pedido a SAIT
 			</a>
 		</p>
 		<?php
+	}
+
+	/** @return string */
+	private function delivery_status_label($status) {
+		$labels = array(
+			SAIT_WOOCOMMERCE_OrderDeliveryState::PENDING => 'Pendiente',
+			SAIT_WOOCOMMERCE_OrderDeliveryState::SENDING => 'Enviando',
+			SAIT_WOOCOMMERCE_OrderDeliveryState::SENT => 'Enviado',
+			SAIT_WOOCOMMERCE_OrderDeliveryState::FAILED => 'Fallido',
+		);
+
+		return isset($labels[$status]) ? $labels[$status] : 'Sin programar';
 	}
 
 	public function handle_resend_order() {
@@ -60,7 +87,7 @@ class SAIT_WOOCOMMERCE_OrderAdmin {
 		$status = $response instanceof WP_REST_Response ? (int) $response->get_status() : 500;
 		$data = $response instanceof WP_REST_Response ? $response->get_data() : 'Respuesta inesperada.';
 
-		$type = ($status >= 200 && $status < 300) ? 'success' : 'warning';
+		$type = $status === 201 ? 'success' : 'warning';
 		$message = 'Pedido #' . $order_id . ': ' . self::format_response_message($data);
 		self::set_notice($type, $message);
 
@@ -80,12 +107,19 @@ class SAIT_WOOCOMMERCE_OrderAdmin {
 	private static function format_response_message($data) {
 		if (is_array($data)) {
 			$estado = isset($data['estado']) ? $data['estado'] : '';
-			$status_code = isset($data['status_code']) ? $data['status_code'] : '';
-			$message = isset($data['message']) ? $data['message'] : '';
-			return trim('estado=' . $estado . ' status=' . $status_code . ' ' . wp_strip_all_tags((string) $message));
+			$status_code = isset($data['status_code']) ? (int) $data['status_code'] : 0;
+			if ($estado === 'enviado' && $status_code === 201) {
+				return 'enviado correctamente a SAIT.';
+			}
+
+			if ($status_code > 0) {
+				return 'no se pudo enviar a SAIT (HTTP ' . $status_code . '). Revisa debug.log.';
+			}
+
+			return 'no se pudo obtener respuesta de SAIT. Revisa debug.log.';
 		}
 
-		return wp_strip_all_tags((string) $data);
+		return 'no se pudo enviar a SAIT. Revisa debug.log.';
 	}
 
 	private static function get_order_redirect_url($order_id) {

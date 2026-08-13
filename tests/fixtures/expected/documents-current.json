@@ -1,0 +1,74 @@
+{
+  "pedido_cliente_normal": {
+    "endpoint": "/api/v3/pedidos",
+    "payload": {
+      "numdoc": "WO1001",
+      "numcli": "  123",
+      "numcliev": "",
+      "numalm": " 1",
+      "formapago": "1",
+      "divisa": "P",
+      "tc": 1,
+      "items": [
+        {
+          "cant": 2,
+          "numart": "FIX-ART-001",
+          "unidad": "PZA",
+          "preciopub": 116,
+          "precio": 116,
+          "pjedesc1": 0
+        }
+      ],
+      "fentrega": "20260803",
+      "hentrega": "10:30"
+    }
+  },
+  "pedido_cliente_nuevo": {
+    "endpoint": "/api/v3/pedidos",
+    "payload": {
+      "numdoc": "WO1002",
+      "numcli": "",
+      "numcliev": "",
+      "numalm": " 1",
+      "formapago": "2",
+      "divisa": "P",
+      "tc": 1,
+      "items": [],
+      "fentrega": "20260803",
+      "hentrega": "10:30",
+      "clievent": {
+        "nomcliev": "Cliente Nuevo",
+        "calle": "Calle Fixture 1",
+        "ciudad": "Hermosillo",
+        "estado": "SON",
+        "telefono": "6620000000",
+        "email": "nuevo.fixture@example.test"
+      }
+    }
+  },
+  "cotizacion_cliente_nuevo": {
+    "endpoint": "/api/v3/cotizaciones",
+    "payload": {
+      "numdoc": "WO1003",
+      "fecha": "2026-08-03 10:30:00",
+      "hora": "10:30:00",
+      "numcli": "",
+      "numcliev": "",
+      "numalm": " 1",
+      "formapago": "2",
+      "divisa": "P",
+      "tc": 1,
+      "items": [],
+      "fentrega": "20260803",
+      "hentrega": "10:30",
+      "clievent": {
+        "nomcliev": "Cliente Nuevo",
+        "calle": "Calle Fixture 1",
+        "ciudad": "Hermosillo",
+        "estado": "SON",
+        "telefono": "6620000000",
+        "email": "nuevo.fixture@example.test"
+      }
+    }
+  }
+}

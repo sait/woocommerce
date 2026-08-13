@@ -7,15 +7,12 @@ Archivo principal del plugin.
 Responsabilidades:
 
 - Declara metadatos del plugin.
-- Incluye opciones, utilidades, sincronizacion administrativa de precios, funciones personalizadas y carrito.
-- Incluye acciones administrativas de pedidos.
+- Carga las clases de bootstrap y ciclo de vida.
 - Define constantes por defecto:
   - `SAIT_NUBE_NUMALM = "1"`
   - `SAIT_SERIE = "WO"`
 - Registra activacion.
-- Registra endpoints REST.
-- Registra hooks de envio de ordenes.
-- Registra assets del modal de sucursal.
+- Conserva adaptadores globales para callbacks historicos.
 
 Funciones:
 
@@ -23,9 +20,46 @@ Funciones:
 - `SAIT_helloworld()`: callback REST de prueba.
 - `SAIT_procesEvents($request)`: valida token, parsea XML y delega procesamiento.
 - `SAIT_reenviarPedido($request)`: reenvia una orden usando `idpedido` desde la ruta REST.
+
+## `includes/rest/SAIT_WOOCOMMERCE-rest-controller.php`
+
+Clase `SAIT_WOOCOMMERCE_REST_Controller`.
+
+Responsabilidades:
+
+- Registra las rutas del namespace historico `saitplugin/v1`.
+- Conserva los metodos de 1.2.3; el webhook es publico y los reenvios requieren
+  la capacidad `edit_shop_orders`.
+- Valida el token y parsea el XML del webhook sin cambiar su contrato.
+- Delega eventos al procesador y reenvios a la clase de pedidos.
+
+Las funciones REST globales del archivo principal permanecen como adaptadores
+de compatibilidad y delegan en este controlador.
 - `sendOrderSAIT_payment($order_id)`: envia orden pagada con forma de pago `1`.
 - `sendOrderSAIT_thankyou($order_id)`: envia orden no pagada con forma de pago `2`.
 - `registrar_estilos_scripts()`: carga Font Awesome, CSS/JS del modal y nonce AJAX cuando esta activo selector de sucursal.
+
+## `includes/SAIT_WOOCOMMERCE-plugin.php`
+
+Clase `SAIT_WOOCOMMERCE_Plugin`.
+
+- Carga dependencias compartidas y limita opciones/pedidos administrativos a
+  contexto `is_admin()`.
+- Registra rutas REST, hooks de pedidos y assets frontend.
+- Mantiene una sola instancia del controlador REST.
+- Mantiene instancias compartidas de configuracion y cliente HTTP, sustituible
+  por un cliente falso en pruebas.
+- Mantiene una instancia compartida del repositorio de mapeos.
+- Mantiene una instancia compartida del logger saneado de WooCommerce.
+
+## `includes/SAIT_WOOCOMMERCE-lifecycle.php`
+
+Clase `SAIT_WOOCOMMERCE_Lifecycle`.
+
+- Crea o actualiza la tabla mediante el activador existente.
+- Guarda `sait_woocommerce_db_version = 1.0.0`.
+- Ejecuta actualizaciones de esquema de forma idempotente.
+- Conserva todos los datos al desactivar.
 
 ## `includes/SAIT_UTILS.php`
 
@@ -34,7 +68,8 @@ Clase `SAIT_UTILS` y varias funciones globales frontend.
 Metodos principales:
 
 - `SAIT_getClientebyemail($email)`: busca cliente SAIT por `emailtw`.
-- `SAIT_getClienteEventualbyemail($email)`: busca cliente eventual SAIT por email.
+- `SAIT_getClienteEventualbyemail($email)`: adaptador legacy que usa `/clientes`
+  y devuelve el `numcli` solamente cuando contiene `-`.
 - `SAIT_GetNube($uri, $reintentar = true)`: GET a SAITNube con API key y un reintento opcional.
 - `SAIT_getResult($response)`: extrae `result` de una respuesta `array|null` de `SAIT_GetNube()`.
 - `SAIT_PostNube($uri, $bodyObject, $wait = false)`: POST JSON a SAITNube.
@@ -45,18 +80,61 @@ Metodos principales:
 - `SAIT_codigo_valido($codigo)`: valida codigos GTIN/UPC/EAN/ISBN por formato y longitud.
 - `getExistSAIT($SKU)`: obtiene existencia desde SAITNube; puede sumar almacenes configurados.
 
-Funciones globales:
+## `includes/SAIT_WOOCOMMERCE-sait-client.php`
 
-- `agregar_boton_al_menu($items, $args)`: agrega boton de sucursal al menu `primary`.
-- `agregar_modal_sucursal()`: imprime modal con sucursales desde SAITNube.
-- `guardar_sucursal()`: handler AJAX para guardar sucursal seleccionada.
-- `mostrar_tabla_almacenes()`: muestra existencias por sucursal en producto.
-- `ocultar_productos_sin_precio($query)`: filtra catalogo por `_price > 0`.
-- `sait_precio_promocional_en_producto($price_html, $product)`: reemplaza HTML de precio con precio promocional consultado a SAITNube.
+Interfaz `SAIT_WOOCOMMERCE_SaitClientInterface` y clase
+`SAIT_WOOCOMMERCE_SaitClient`.
+
+- Es el unico adaptador que llama a `wp_remote_get()` y `wp_remote_post()`.
+- Centraliza URL, API key, headers, SSL compatible y timeouts.
+- Normaliza GET exitoso, `result: null`, JSON invalido, `WP_Error` y estados
+  HTTP no exitosos.
+- Reintenta GET una vez por transporte o JSON invalido; no reintenta estados
+  HTTP ni operaciones POST.
+- Mantiene respuestas POST crudas para los contratos historicos de pedidos.
+
+## `includes/SAIT_WOOCOMMERCE-mapping-repository.php`
+
+Clase `SAIT_WOOCOMMERCE_MappingRepository`.
+
+- Es el unico acceso del plugin a la tabla `sait_claves`.
+- Separa busquedas por clave SAIT y por ID WooCommerce.
+- Expone metodos para productos, clientes y categorias.
+- Usa consultas preparadas y evita repetir una misma `tabla + clave`.
+- Permite claves distintas con el mismo `wcid` y no agrega restricciones
+  unicas antes de auditar los datos existentes.
+
+Los metodos `SAIT_getClaves`, `SAIT_insertClaves` y `SAIT_deleteClaves` de
+`SAIT_UTILS` permanecen como adaptadores de compatibilidad.
+
+## `includes/SAIT_WOOCOMMERCE-logger.php`
+
+Clase `SAIT_WOOCOMMERCE_Logger`.
+
+- Escribe mediante `wc_get_logger()` con fuente `sait-woocommerce`.
+- Acepta contexto operativo de evento, orden, SKU, intento, operacion, status,
+  modo y tipo de documento.
+- Descarta claves no permitidas para evitar API keys, tokens, correos, nombres,
+  direcciones y payloads.
+- Sustituye el volcado completo de partidas y los usos directos de
+  `error_log()` observados.
+
+Los nombres globales anteriores se conservan como adaptadores en
+`SAIT_WOOCOMMERCE-frontend-compat.php`. Los hooks apuntan a estos módulos:
+
+- `frontend/SAIT_WOOCOMMERCE-branch-selector.php`: menú, modal, AJAX y assets de sucursal.
+- `frontend/SAIT_WOOCOMMERCE-stock-display.php`: tabla de existencias y filtro `_price > 0`.
+- `frontend/SAIT_WOOCOMMERCE-promotions.php`: precios de catálogo, producto y carrito.
+- `frontend/SAIT_WOOCOMMERCE-price-service.php`: contexto por cliente, padding, memoización, transients e invalidación de precios.
+- `frontend/SAIT_WOOCOMMERCE-cart-minimum.php`: aviso de mínimo y bloqueo visual de checkout.
+- `templates/`: modal, tabla, precio promocional y script del mínimo con escape tardío.
 
 ## `includes/SAIT_WOOCOMMERCE-process-events.php`
 
 Clase `SAIT_WOOCOMMERCE_ProcessEvents`.
+
+Conserva el punto de entrada y adaptadores historicos; el enrutamiento reside
+en `events/SAIT_WOOCOMMERCE-event-router.php` y la logica en handlers separados.
 
 Metodos:
 
@@ -82,7 +160,7 @@ Metodos:
 
 - `SAIT_sendPedido($order, $formapago, $wait = false)`: arma body de pedido y lo envia a `/api/v3/pedidos`.
 - `SAIT_sendCotizacion($order, $formapago, $wait = false)`: arma body de cotizacion y lo envia a `/api/v3/cotizaciones`.
-- `SAIT_sendOrder($id_pedido, $formapago)`: envio automatico con idempotencia; decide pedido/cotizacion segun configuracion.
+- `SAIT_sendOrder($id_pedido, $formapago)`: adaptador legacy que encola el envio automatico.
 - `SAIT_envioAutomaticoDisparado($order)`: revisa si la orden ya disparo envio automatico a SAIT.
 - `SAIT_marcarEnvioAutomaticoDisparado($order, $formapago, $tipo)`: guarda metadata del envio automatico disparado.
 - `SAIT_reenviarPedido($id_pedido)`: reenvia la orden indicada como pedido o cotizacion.
@@ -92,6 +170,41 @@ Metodos:
 - `SAIT_calcularPjeDescuentoItem($cantidad, $total, $precio)`: calcula descuento porcentual.
 - `SAIT_getDirEnvio($order)`: genera cadena `direnvio` para SAIT.
 
+## Entrega Asincrona De Documentos
+
+- `SAIT_WOOCOMMERCE-order-delivery-state.php`: persiste estados `pending`,
+  `sending`, `sent` y `failed`, intentos, timestamps y HTTP mediante `WC_Order`.
+- `SAIT_WOOCOMMERCE-order-delivery-scheduler.php`: desduplica acciones,
+  ejecuta el POST bloqueante y programa hasta tres intentos con backoff.
+
+## `includes/SAIT_WOOCOMMERCE-document-builders.php`
+
+- `SAIT_WOOCOMMERCE_OrderBuilder`: construye pedidos sin ejecutar HTTP.
+- `SAIT_WOOCOMMERCE_QuoteBuilder`: construye cotizaciones sin ejecutar HTTP.
+- Ambos comparten partidas, cliente, observaciones y direccion de envio.
+
+## `includes/SAIT_WOOCOMMERCE-document-service.php`
+
+- `build_order()` y `build_quote()`: resuelven dependencias y construyen sin POST.
+- `send_document()`: envia un payload ya construido mediante el cliente SAIT.
+- `send_order()` y `send_quote()`: coordinan ambas operaciones.
+- Expone los filtros `sait_woocommerce_order_payload`,
+  `sait_woocommerce_quote_payload` y `sait_woocommerce_document_payload`.
+
+## `includes/SAIT_WOOCOMMERCE-product-calculators.php`
+
+- `SAIT_WOOCOMMERCE_PriceCalculator`: aplica precio publico, lista con
+  impuestos y conversion por tipo de cambio sin depender de WordPress.
+- `SAIT_WOOCOMMERCE_StockCalculator`: selecciona un almacen o suma varios y
+  distingue una existencia cero valida de una respuesta sin coincidencias.
+
+## Resolucion Y Sincronizacion De Productos
+
+- `SAIT_WOOCOMMERCE-product-resolver.php`: busca un producto por mapeo válido
+  y usa el SKU como fallback.
+- `SAIT_WOOCOMMERCE-product-sync-service.php`: consulta SAIT, aplica los
+  calculadores, actualiza el producto y guarda metadatos uniformes.
+
 ## `includes/SAIT_WOOCOMMERCE-order-admin.php`
 
 Clase `SAIT_WOOCOMMERCE_OrderAdmin`.
@@ -99,19 +212,17 @@ Clase `SAIT_WOOCOMMERCE_OrderAdmin`.
 Responsabilidades:
 
 - Agrega el boton `Reenviar pedido a SAIT` en la pantalla de edicion de pedidos.
+- Muestra estado de entrega, intentos, ultimo intento y HTTP sin exponer el cuerpo del error.
 - Procesa el `admin_post` `sait_reenviar_pedido_admin`.
 - Valida permisos y nonce antes de reenviar.
 - Usa `SAIT_WOOCOMMERCE_Orders::SAIT_reenviarPedido()` para reutilizar el flujo manual existente.
 - Muestra aviso administrativo con el resultado del reenvio.
 
-## `includes/SAIT_WOOCOMMERCE-cart.php`
+## `includes/SAIT_WOOCOMMERCE-frontend-compat.php`
 
-Funciones:
-
-- `calcularpreciosCarrito($cart)`: consulta SAITNube y reemplaza precio de productos en carrito si hay promocion.
-- `display_discounted_price_in_cart($price, $cart_item, $cart_item_key)`: muestra precio con tachado del regular.
-- `sait_minimo_total_carrito()`: agrega error si subtotal no cumple minimo.
-- `sait_bloquear_botones_checkout()`: imprime JS para bloquear botones si subtotal no cumple minimo.
+Conserva las funciones históricas del selector, existencias, promociones y
+mínimo como adaptadores. El comportamiento y los hooks residen en las clases de
+`includes/frontend/`.
 
 ## `includes/SAIT_WOOCOMMERCE-options.php`
 
@@ -125,6 +236,17 @@ Responsabilidades:
 - Sanitiza valores.
 - Renderiza inputs y radios.
 - Renderiza la seccion administrativa de sincronizacion de precios cuando la clase esta disponible.
+
+## `includes/SAIT_WOOCOMMERCE-settings.php`
+
+Clase `SAIT_WOOCOMMERCE_Settings`.
+
+- Conserva `opciones_sait` como nombre unico de almacenamiento.
+- Centraliza valores predeterminados y lecturas de claves historicas.
+- Normaliza banderas y listas de almacenes.
+- Sanitiza por lista cerrada los campos aceptados por Settings API.
+- Define el mapa exacto entre fuente de categoria, atributo `MODART`, tabla de
+  `sait_claves` y clave del evento de catalogo.
 
 ## `includes/SAIT_WOOCOMMERCE-art-sync.php`
 

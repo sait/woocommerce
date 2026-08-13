@@ -11,9 +11,10 @@ El plugin vive en `sait-woocommerce/`.
 - `SAIT_WOOCOMMERCE.php` es el punto de entrada del plugin.
 - `includes/SAIT_WOOCOMMERCE-process-events.php` procesa eventos XML enviados por SAIT.
 - `includes/SAIT_WOOCOMMERCE-orders.php` transforma ordenes de WooCommerce en documentos SAIT.
-- `includes/SAIT_UTILS.php` concentra utilidades compartidas, llamadas a SAITNube, tabla de claves, existencias y parte de UI frontend.
+- `includes/SAIT_UTILS.php` conserva utilidades compartidas y adaptadores de integración con SAITNube.
 - `includes/SAIT_WOOCOMMERCE-options.php` define la pagina de configuracion.
-- `includes/SAIT_WOOCOMMERCE-cart.php` recalcula precios/promociones en carrito y bloquea checkout si no se cumple un minimo.
+- `includes/frontend/` separa selector de sucursal, promociones, existencias y mínimo de carrito.
+- `templates/` contiene la presentación PHP de los módulos frontend.
 - `assets/` contiene CSS/JS del modal de seleccion de sucursal.
 
 ## Integracion SAIT -> WooCommerce
@@ -48,16 +49,13 @@ Segun `SAITNube_TipoDoc`, genera:
 - `P`: pedido a `/api/v3/pedidos`.
 - Otro valor: cotizacion a `/api/v3/cotizaciones`.
 
-Los envios se hacen con `SAIT_UTILS::SAIT_PostNube()`, normalmente sin esperar respuesta (`blocking = false`).
+Los envíos se programan mediante Action Scheduler, con alternativa WP-Cron, y
+el servicio centralizado registra estados e intentos antes de confirmar la
+respuesta de SAITNube.
 
 ## Estado General
 
-El plugin ya tiene README con uso basico, pero la logica real esta concentrada en archivos grandes, funciones globales y metodos estaticos. Hay comentarios utiles en algunas zonas, aunque varios no explican las reglas de negocio o el motivo de validaciones importantes.
-
-Para mantenimiento futuro conviene priorizar:
-
-- Documentar reglas de negocio por evento.
-- Normalizar nombres de opciones.
-- Agregar validaciones y preparacion SQL.
-- Separar UI frontend, API SAITNube y logica de sincronizacion.
-- Agregar pruebas o al menos fixtures XML de eventos.
+La versión 2.0.0 separa controladores REST, manejadores de eventos, servicios de
+clientes/documentos/productos, módulos frontend y adaptadores de
+infraestructura. Los contratos, configuración, flujos, extensiones y pruebas se
+documentan bajo `docs/` y `tests/`.

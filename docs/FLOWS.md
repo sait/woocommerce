@@ -47,16 +47,21 @@ Para esos casos no aplicables se usa `200` para confirmar a SAIT que el webhook 
 Archivo: `includes/SAIT_WOOCOMMERCE-process-events.php`
 
 1. Lee `numart` desde `keys`.
-2. Lee campos como `codigo`, `desc`, `linea`, `modelo`, `statusweb`, `obs`.
+2. Lee campos como `codigo`, `desc`, `linea`, `familia`, `categoria`, `numdep`,
+   `modelo`, `statusweb`, `obs`.
 3. Si `statusweb` viene vacio, responde `statusweb null`.
-4. Busca categoria por tabla `lineas` en `sait_claves`.
+4. Busca categoria en `sait_claves` usando la fuente configurada; si la opcion
+   no existe usa `linea` y la tabla `lineas`. Con `none`, conserva las
+   categorias actuales.
 5. Busca producto mapeado en `sait_claves` con tabla `arts`.
 6. Si `statusweb` es `0`, manda el producto a papelera si existe.
 7. Si ya existe mapeo:
    - Restaura de papelera.
    - Actualiza nombre, SKU, GTIN/codigo global, categoria, descripcion corta y descripcion.
    - Si stock actual es cero o vacio, consulta existencia SAIT y actualiza stock.
-8. Si no existe mapeo:
+8. Si no existe mapeo, primero busca el SKU. Por omision lo relaciona y
+   actualiza; un complemento puede indicar `ignore` para dejarlo intacto.
+9. Si tampoco existe por SKU:
    - Crea `WC_Product_Simple`.
    - Lo deja en `draft`.
    - Activa manejo de stock.
@@ -141,6 +146,29 @@ Archivo: `includes/SAIT_WOOCOMMERCE-orders.php`
 9. Aplica funcion personalizada si la bandera esta activa.
 10. Envia a SAITNube.
 
+## Cliente HTTP SAIT
+
+Todas las llamadas salientes pasan por `SAIT_WOOCOMMERCE_SaitClient`.
+
+- GET usa timeout de 5 segundos y puede reintentar una vez ante `WP_Error` o
+  JSON invalido.
+- Los estados HTTP no exitosos no se reintentan automaticamente.
+- POST usa timeout de 45 segundos y no se reintenta para evitar documentos
+  duplicados.
+- `SAIT_GetNube()` y `SAIT_PostNube()` permanecen como adaptadores temporales
+  para el codigo legado.
+- Las pruebas sustituyen el cliente o interceptan `https://sait-api.invalid`;
+  no requieren endpoints ni credenciales reales.
+
+## Logging Operativo
+
+Los registros se consultan en `WooCommerce -> Estado -> Registros` usando la
+fuente `sait-woocommerce`.
+
+El contexto puede incluir evento, ID de orden, SKU, intento, operacion y estado
+HTTP. No se registran API keys, tokens, correos, nombres, direcciones, partidas
+completas ni cuerpos HTTP.
+
 La metadata indica que WooCommerce disparo el envio automatico; no confirma que SAITNube lo haya recibido, porque el POST se hace sin esperar respuesta.
 
 El endpoint manual `reenviar-pedido-sait/{idpedido}` no usa este bloqueo, para permitir recuperacion cuando SAITNube/API no estuvo disponible. Ese reenvio espera respuesta de SAITNube y guarda metadata del ultimo resultado:
@@ -205,14 +233,19 @@ Si `SAITNube_Sucursal_enabled === "1"`:
 - Se agregan CSS/JS del modal.
 - Se agrega boton en menu `primary`.
 - Se imprime modal en `wp_footer`.
-- La seleccion se guarda en user meta `sucursal_seleccionada` por AJAX.
+- Para usuarios autenticados, la selección se guarda en user meta
+  `sucursal_seleccionada` por AJAX.
+- Para visitantes, se guarda en la sesión de WooCommerce y se solicita su
+  cookie de sesión; nunca se escribe el user ID `0`.
 
-El AJAX tambien esta habilitado para usuarios no logueados, pero usa `get_current_user_id()`. En visitantes anonimos esto normalmente sera `0`, por lo que puede no persistir por usuario real.
+Promociones de catálogo y carrito leen la sucursal desde la misma fuente.
 
 ## Precios Promocionales Y Carrito
 
-`SAIT_WOOCOMMERCE-cart.php` recalcula precios en el hook `woocommerce_before_calculate_totals` si `SAITNube_Promo_enabled === "1"`.
+`SAIT_WOOCOMMERCE_Promotions` recalcula precios en el hook
+`woocommerce_before_calculate_totals` si `SAITNube_Promo_enabled === "1"`.
 
-`SAIT_UTILS.php` tambien cambia el HTML de precios en catalogo/producto si `SAITNube_PromoGlobal_enabled === "1"`.
+El mismo módulo cambia el HTML de precios en catálogo/producto si
+`SAITNube_PromoGlobal_enabled === "1"`.
 
 Ambas rutas consultan SAITNube para obtener unidad y calcular precios.
