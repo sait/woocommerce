@@ -63,6 +63,26 @@ Opciones adicionales:
 | `SAITNube_PedidoDirenvio_enabled` | Envia direccion de envio a SAIT. |
 | `SAITNube_FuncionPersonalizadaPedido_enabled` | Ejecuta personalizacion del documento antes de enviarlo a SAIT. |
 
+## Calculo De Existencias
+
+Cuando está activa la existencia por múltiples almacenes, el plugin suma
+solamente los almacenes configurados en `SAITNube_ExistAlm`. Cada existencia
+negativa recibida desde SAIT se considera `0` antes de realizar la suma:
+
+```text
+Almacen 1:  5 -> aporta 5
+Almacen 2: -3 -> aporta 0
+Total efectivo: 5
+```
+
+La existencia efectiva guardada en WooCommerce y mostrada en la tabla de
+sucursales nunca es negativa. Esta regla se aplica a eventos de existencias y
+a las sincronizaciones manuales de artículos.
+
+El complemento de Papelía usa el mismo criterio para el stock remoto. Cuando
+la existencia efectiva es `0`, el producto se considera agotado y no puede
+agregarse ni aumentarse en el carrito.
+
 ## Endpoints REST
 
 Las rutas se registran bajo `/wp-json/saitplugin/v1`.

@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.2] - 13/AGO/2026
+
+### fixed
+- Las existencias negativas de cada almacén SAIT ahora se consideran `0` antes de calcular el total configurado.
+- Los eventos y las sincronizaciones manuales ya no guardan existencias negativas en WooCommerce.
+- La tabla de existencias por sucursal muestra `0` cuando SAIT devuelve una cantidad negativa.
+- El complemento de Papelía marca como agotados y bloquea en el carrito los productos cuya existencia remota efectiva es `0`.
+
 ## [2.0.0] - 04/AGO/2026
 
 ### added

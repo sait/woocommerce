@@ -12,7 +12,9 @@ Incluye:
 - selección de sucursal para la tarifa `local_pickup:4`;
 - persistencia de sucursal y faltantes mediante metadatos compatibles con HPOS;
 - validación AJAX de existencias por sucursal con nonce;
-- stock total remoto y límites al agregar o actualizar el carrito;
+- stock total remoto que omite existencias negativas por almacén;
+- productos agotados y bloqueo al agregar o actualizar el carrito cuando la
+  existencia remota efectiva es `0`;
 - información de sucursal en administración y correo al administrador.
 
 Los almacenes disponibles se toman de `SAITNube_ExistAlm`. Por compatibilidad

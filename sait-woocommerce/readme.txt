@@ -14,7 +14,7 @@ SAIT WooCommerce recibe eventos XML de SAITNube para crear o actualizar
 productos, precios, existencias, categorías y clientes. También construye y
 envía pedidos o cotizaciones de WooCommerce a la API v3 de SAITNube.
 
-La versión 2.0.0 requiere configuración válida de URL, API key y token de
+Desde la versión 2.0.0 se requiere configuración válida de URL, API key y token de
 webhook. Las personalizaciones específicas de empresas deben instalarse como
 plugins complementarios independientes.
 
@@ -27,6 +27,12 @@ plugins complementarios independientes.
 5. Confirma el webhook y realiza un pedido de prueba antes de producción.
 
 == Changelog ==
+
+= 2.0.2 =
+
+* Considera como cero la existencia negativa de cada almacén antes de sumar el total configurado.
+* Evita guardar o mostrar existencias negativas en WooCommerce.
+* Actualiza la sincronización de productos para persistir correctamente una existencia efectiva de cero.
 
 = 2.0.0 =
 
