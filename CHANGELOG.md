@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.8] - 25/AGO/2026
+
+### fixed
+- Las promociones del carrito se guardan por partida en la orden. Los documentos enviados a SAIT incluyen el precio base histórico y el porcentaje de descuento efectivo en `pjedesc1`.
+
 ## [2.0.7] - 25/AGO/2026
 
 ### fixed

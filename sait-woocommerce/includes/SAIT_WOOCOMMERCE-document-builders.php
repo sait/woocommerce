@@ -75,18 +75,18 @@ abstract class SAIT_WOOCOMMERCE_DocumentBuilder
 			$article->cant = $item->get_quantity();
 			$article->numart = $product->get_sku();
 			$article->unidad = isset($units[$item_id]) ? $units[$item_id] : '';
-			$unit_price = self::order_item_unit_price($item);
+			$pricing = self::order_item_pricing($item);
 
 			/*
 			 * La orden conserva el importe acordado al momento del checkout. No
 			 * se debe volver a consultar el precio regular del producto: puede
 			 * haber cambiado desde entonces y no contiene promociones ni cupones.
-			 * Enviamos el precio final en ambos campos para que SAIT no recalcule
-			 * la partida con su lista de precios actual.
+			 * Cuando la promoción se guardó en la partida se envía su precio base
+			 * y el descuento efectivo; de lo contrario se conserva el precio final.
 			 */
-			$article->preciopub = $unit_price;
-			$article->precio = $unit_price;
-			$article->pjedesc1 = 0.0;
+			$article->preciopub = $pricing['base_price'];
+			$article->precio = $pricing['base_price'];
+			$article->pjedesc1 = $pricing['discount_percentage'];
 			$items[] = $article;
 		}
 
@@ -110,6 +110,34 @@ abstract class SAIT_WOOCOMMERCE_DocumentBuilder
 		}
 
 		return (float) $item->get_total() / $quantity;
+	}
+
+	/**
+	 * Determina el precio base y el descuento que deben llegar a SAIT.
+	 *
+	 * @param WC_Order_Item_Product $item Partida de producto.
+	 * @return array{base_price:float,discount_percentage:float}
+	 */
+	private static function order_item_pricing($item)
+	{
+		$unit_price = self::order_item_unit_price($item);
+		$promotion_base_price = (float) $item->get_meta('_sait_promo_base_price', true);
+
+		if ($promotion_base_price > $unit_price && $unit_price >= 0) {
+			return array(
+				'base_price' => $promotion_base_price,
+				'discount_percentage' => self::discount_percentage(
+					$item->get_quantity(),
+					(float) $item->get_total(),
+					$promotion_base_price
+				),
+			);
+		}
+
+		return array(
+			'base_price' => $unit_price,
+			'discount_percentage' => 0.0,
+		);
 	}
 
 	/**

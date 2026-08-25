@@ -175,6 +175,22 @@ sait_frontend_assert_true(
 	has_action('woocommerce_before_calculate_totals', array($promotions, 'apply_cart_prices')) === 10,
 	'Promociones debe registrar el precio del carrito.'
 );
+sait_frontend_assert_true(
+	has_action('woocommerce_checkout_create_order_line_item', array($promotions, 'store_order_item_promotion')) === 10,
+	'Promociones debe conservar sus datos en la partida de la orden.'
+);
+$promotion_order_item = new WC_Order_Item_Product();
+$promotions->store_order_item_promotion(
+	$promotion_order_item,
+	'fixture',
+	array('sait_promo_base_price' => 116.0, 'sait_pjedesc' => 10.0),
+	null
+);
+sait_frontend_assert_true(
+	(float) $promotion_order_item->get_meta('_sait_promo_base_price') === 116.0
+	&& (float) $promotion_order_item->get_meta('_sait_pjedesc') === 10.0,
+	'La promoción debe persistirse como metadata de la partida.'
+);
 
 $minimum_settings = new SAIT_Test_Frontend_Settings(array('SAITNube_MinimoCarrito_Enabled' => true));
 $minimum = new SAIT_WOOCOMMERCE_CartMinimum($minimum_settings, $plugin_file);

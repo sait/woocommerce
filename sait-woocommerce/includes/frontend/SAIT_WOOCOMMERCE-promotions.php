@@ -30,6 +30,7 @@ class SAIT_WOOCOMMERCE_Promotions
 		if ($this->settings->is_enabled('SAITNube_Promo_enabled')) {
 			add_action('woocommerce_before_calculate_totals', array($this, 'apply_cart_prices'));
 			add_filter('woocommerce_cart_item_price', array($this, 'display_cart_item_price'), 10, 3);
+			add_action('woocommerce_checkout_create_order_line_item', array($this, 'store_order_item_promotion'), 10, 4);
 		}
 	}
 
@@ -89,9 +90,11 @@ class SAIT_WOOCOMMERCE_Promotions
 			return;
 		}
 
-		foreach ($cart->get_cart() as $cart_item) {
+		foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
 			$product = $cart_item['data'];
 			$original_price = (float) $product->get_regular_price();
+			unset($cart->cart_contents[$cart_item_key]['sait_promo_base_price']);
+			unset($cart->cart_contents[$cart_item_key]['sait_pjedesc']);
 			$calculated = $this->price_service()->get_price($product, $cart_item['quantity']);
 			if (!$calculated) {
 				$product->set_price($original_price);
@@ -108,8 +111,41 @@ class SAIT_WOOCOMMERCE_Promotions
 
 			if (round($discounted_price, 2) < $original_price) {
 				$product->set_price($discounted_price);
+				$cart->cart_contents[$cart_item_key]['sait_promo_base_price'] = $original_price;
+				$cart->cart_contents[$cart_item_key]['sait_pjedesc'] = round(
+					(($original_price - $discounted_price) / $original_price) * 100,
+					2
+				);
 			}
 		}
+	}
+
+	/**
+	 * Conserva en la partida el contexto de la promoción calculada en carrito.
+	 *
+	 * @param WC_Order_Item_Product $item Partida que WooCommerce agregará a la orden.
+	 * @param string                $cart_item_key Identificador de la partida en el carrito.
+	 * @param array                 $values Datos de la partida en el carrito.
+	 * @param WC_Order              $order Orden en creación.
+	 * @return void
+	 */
+	public function store_order_item_promotion($item, $cart_item_key, $values, $order)
+	{
+		if (
+			empty($values['sait_promo_base_price'])
+			|| !isset($values['sait_pjedesc'])
+		) {
+			return;
+		}
+
+		$base_price = (float) $values['sait_promo_base_price'];
+		$discount = (float) $values['sait_pjedesc'];
+		if ($base_price <= 0 || $discount <= 0) {
+			return;
+		}
+
+		$item->add_meta_data('_sait_promo_base_price', $base_price, true);
+		$item->add_meta_data('_sait_pjedesc', $discount, true);
 	}
 
 	/**
