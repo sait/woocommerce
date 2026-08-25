@@ -138,7 +138,7 @@ function sait_document_create_order($product, $email, $customer_id = 0, $total =
 	return $order;
 }
 
-function sait_document_assert_common_payload($payload, $order_id, $expected_discount = 10.0)
+function sait_document_assert_common_payload($payload, $order_id, $expected_unit_price = 104.4, $expected_discount = 0.0)
 {
 	sait_document_assert_same('WO' . $order_id, $payload['numdoc'], 'Numero de documento.');
 	sait_document_assert_same(' 1', $payload['numalm'], 'Almacen del documento.');
@@ -155,8 +155,9 @@ function sait_document_assert_common_payload($payload, $order_id, $expected_disc
 	sait_document_assert_same(2, $item['cant'], 'Cantidad del articulo.');
 	sait_document_assert_same('FIX-ART-001', $item['numart'], 'SKU del articulo.');
 	sait_document_assert_same('PZA', $item['unidad'], 'Unidad simulada.');
-	sait_document_assert_same(116.0, (float) $item['preciopub'], 'Precio publico.');
-	sait_document_assert_same((float) $expected_discount, (float) $item['pjedesc1'], 'Descuento calculado.');
+	sait_document_assert_same((float) $expected_unit_price, (float) $item['preciopub'], 'Precio final guardado en la orden.');
+	sait_document_assert_same((float) $expected_unit_price, (float) $item['precio'], 'Precio SAIT final guardado en la orden.');
+	sait_document_assert_same((float) $expected_discount, (float) $item['pjedesc1'], 'Descuento enviado a SAIT.');
 }
 
 sait_document_clean_data();
@@ -182,6 +183,11 @@ SAIT_UTILS::SAIT_insertClaves('arts', 'FIX-ART-001', $product_id);
 $mapped_user_id = wc_create_new_customer('mapeado.documento@example.test');
 SAIT_UTILS::SAIT_insertClaves('clientes', '123', $mapped_user_id);
 $mapped_order = sait_document_create_order($product, 'mapeado.documento@example.test', $mapped_user_id);
+$mapped_order_items = $mapped_order->get_items();
+$mapped_item = reset($mapped_order_items);
+$mapped_item->add_meta_data('_sait_promo_base_price', 116.0, true);
+$mapped_item->add_meta_data('_sait_pjedesc', 10.0, true);
+$mapped_item->save();
 
 delete_option('sait_test_request_counts');
 $builder_customer = array('numcli' => '  123', 'numcliev' => '', 'clievent' => null);
@@ -196,6 +202,17 @@ $built_order = json_decode(wp_json_encode($order_builder->build(
 sait_document_assert_same('20251113', $built_order['fentrega'], 'Fecha determinista del builder.');
 sait_document_assert_same('PZA', $built_order['items'][0]['unidad'], 'Unidad recibida por el builder.');
 sait_document_assert_same(array(), get_option('sait_test_request_counts', array()), 'El builder no debe hacer HTTP.');
+
+$product->set_regular_price(250);
+$product->save();
+$built_after_product_change = json_decode(wp_json_encode($order_builder->build(
+	$mapped_order,
+	'1',
+	array(key($mapped_items) => 'PZA'),
+	$builder_customer
+)), true);
+sait_document_assert_same(116.0, (float) $built_after_product_change['items'][0]['precio'], 'El precio base promocional debe ser el guardado en la orden, aunque cambie el producto.');
+sait_document_assert_same(10.0, (float) $built_after_product_change['items'][0]['pjedesc1'], 'El descuento promocional debe enviarse a SAIT.');
 
 delete_option('sait_test_request_counts');
 $service_document = SAIT_WOOCOMMERCE()->document_service()->build_order($mapped_order, '1');
@@ -227,7 +244,7 @@ sait_document_assert_same(201, wp_remote_retrieve_response_code($mapped_response
 $mapped_request = sait_document_last_request();
 sait_document_assert_same('/api/v3/pedidos', $mapped_request['path'], 'Endpoint de pedido.');
 $mapped_payload = $mapped_request['body'];
-sait_document_assert_common_payload($mapped_payload, $mapped_order->get_id());
+sait_document_assert_common_payload($mapped_payload, $mapped_order->get_id(), 116.0, 10.0);
 sait_document_assert_same('  123', $mapped_payload['numcli'], 'Cliente mapeado.');
 sait_document_assert_same('', $mapped_payload['numcliev'], 'Cliente mapeado sin numcliev.');
 sait_document_assert_true(!isset($mapped_payload['clievent']), 'Cliente mapeado no debe enviar clievent.');
@@ -301,7 +318,7 @@ sait_document_assert_same(201, wp_remote_retrieve_response_code($quote_response)
 $quote_request = sait_document_last_request();
 sait_document_assert_same('/api/v3/cotizaciones', $quote_request['path'], 'Endpoint de cotizacion.');
 $quote_payload = $quote_request['body'];
-sait_document_assert_common_payload($quote_payload, $quote_order->get_id(), 0.0);
+sait_document_assert_common_payload($quote_payload, $quote_order->get_id(), 116.0);
 sait_document_assert_true(isset($quote_payload['fecha']), 'Cotizacion debe incluir fecha.');
 sait_document_assert_true(isset($quote_payload['hora']), 'Cotizacion debe incluir hora.');
 sait_document_assert_same('cotizacion-' . $quote_order->get_id(), $quote_payload['filtro_fixture'], 'Filtro de cotizacion.');

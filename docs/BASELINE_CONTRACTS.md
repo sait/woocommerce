@@ -228,7 +228,11 @@ Campos opcionales:
 - `clievent`
 
 Cada item incluye `cant`, `numart`, `unidad`, `preciopub`, `precio` y
-`pjedesc1`. La unidad se consulta en SAITNube con hasta tres intentos.
+`pjedesc1`. Al crear una orden con promoción, la partida guarda
+`_sait_promo_base_price` y `_sait_pjedesc`; el documento usa el primero como
+precio base y calcula `pjedesc1` contra el total histórico de la partida. Sin
+esa metadata, usa el precio unitario final y `pjedesc1 = 0`. La unidad se
+consulta en SAITNube con hasta tres intentos.
 
 ### Resolucion Actual Del Cliente
 
