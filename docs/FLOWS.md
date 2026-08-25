@@ -139,10 +139,13 @@ Archivo: `includes/SAIT_WOOCOMMERCE-orders.php`
 6. Para cada item:
    - Obtiene SKU como `numart`.
    - Consulta unidad en `/api/v3/articulos/{sku}`.
-   - Si la partida guarda una promoción, usa su precio base como `preciopub` y
-     `precio`, y envía en `pjedesc1` el descuento efectivo contra el total
-     histórico de la partida.
-   - Sin metadata promocional, usa el precio unitario final y `pjedesc1 = 0`.
+   - Si la partida guarda `_sait_promo_base_price` y `_sait_pjedesc`, usa esos
+     valores históricos sin consultar el producto actual y envía ambos campos
+     `pjedesc` (contrato Go) y `pjedesc1` (alias legacy, Go lo ignora).
+     Para órdenes legacy con `base` pero sin `pjedesc` histórico, calcula
+     el porcentaje contra `get_total()/qty`.
+   - Sin metadata promocional, usa el precio unitario final histórico
+     (`get_total()/qty`) y `pjedesc=0`.
 7. Busca cliente SAIT por mapeo o por email.
 8. Si no hay cliente, agrega objeto de cliente eventual.
 9. Aplica funcion personalizada si la bandera esta activa.

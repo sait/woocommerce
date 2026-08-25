@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.9] - 26/AGO/2026
+
+### fixed
+- Los documentos a SAIT envían `pjedesc` (contrato Go `Pedido`/`ValidateItems`) y mantienen `pjedesc1` como alias legacy. El precio y descuento se leen solo de la partida histórica `_sait_promo_base_price` / `_sait_pjedesc` sin recalcular desde el producto, para que SAIT muestre el % en la partida.
+
 ## [2.0.8] - 25/AGO/2026
 
 ### fixed

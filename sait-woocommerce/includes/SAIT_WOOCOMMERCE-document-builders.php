@@ -82,10 +82,13 @@ abstract class SAIT_WOOCOMMERCE_DocumentBuilder
 			 * se debe volver a consultar el precio regular del producto: puede
 			 * haber cambiado desde entonces y no contiene promociones ni cupones.
 			 * Cuando la promoción se guardó en la partida se envía su precio base
-			 * y el descuento efectivo; de lo contrario se conserva el precio final.
+			 * histórico y el descuento efectivo; de lo contrario se conserva el
+			 * precio final. Se envían ambos campos pjedesc (contrato SAIT Go) y
+			 * pjedesc1 (compatibilidad legacy): Go ignora campos desconocidos.
 			 */
 			$article->preciopub = $pricing['base_price'];
 			$article->precio = $pricing['base_price'];
+			$article->pjedesc = $pricing['discount_percentage'];
 			$article->pjedesc1 = $pricing['discount_percentage'];
 			$items[] = $article;
 		}
@@ -115,6 +118,11 @@ abstract class SAIT_WOOCOMMERCE_DocumentBuilder
 	/**
 	 * Determina el precio base y el descuento que deben llegar a SAIT.
 	 *
+	 * Usa el precio y descuento históricos guardados en la partida del pedido,
+	 * sin recalcular desde el producto actual. Para órdenes legacy sin
+	 * _sait_pjedesc se conserva el fallback por cómputo contra el total
+	 * histórico de la partida.
+	 *
 	 * @param WC_Order_Item_Product $item Partida de producto.
 	 * @return array{base_price:float,discount_percentage:float}
 	 */
@@ -122,6 +130,14 @@ abstract class SAIT_WOOCOMMERCE_DocumentBuilder
 	{
 		$unit_price = self::order_item_unit_price($item);
 		$promotion_base_price = (float) $item->get_meta('_sait_promo_base_price', true);
+		$promotion_discount = (float) $item->get_meta('_sait_pjedesc', true);
+
+		if ($promotion_base_price > 0 && $promotion_discount > 0 && $promotion_base_price > $unit_price) {
+			return array(
+				'base_price' => $promotion_base_price,
+				'discount_percentage' => $promotion_discount,
+			);
+		}
 
 		if ($promotion_base_price > $unit_price && $unit_price >= 0) {
 			return array(

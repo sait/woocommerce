@@ -157,7 +157,8 @@ function sait_document_assert_common_payload($payload, $order_id, $expected_unit
 	sait_document_assert_same('PZA', $item['unidad'], 'Unidad simulada.');
 	sait_document_assert_same((float) $expected_unit_price, (float) $item['preciopub'], 'Precio final guardado en la orden.');
 	sait_document_assert_same((float) $expected_unit_price, (float) $item['precio'], 'Precio SAIT final guardado en la orden.');
-	sait_document_assert_same((float) $expected_discount, (float) $item['pjedesc1'], 'Descuento enviado a SAIT.');
+	sait_document_assert_same((float) $expected_discount, (float) $item['pjedesc'], 'Descuento SAIT pjedesc.');
+	sait_document_assert_same((float) $expected_discount, (float) $item['pjedesc1'], 'Descuento SAIT pjedesc1 alias.');
 }
 
 sait_document_clean_data();
@@ -212,7 +213,8 @@ $built_after_product_change = json_decode(wp_json_encode($order_builder->build(
 	$builder_customer
 )), true);
 sait_document_assert_same(116.0, (float) $built_after_product_change['items'][0]['precio'], 'El precio base promocional debe ser el guardado en la orden, aunque cambie el producto.');
-sait_document_assert_same(10.0, (float) $built_after_product_change['items'][0]['pjedesc1'], 'El descuento promocional debe enviarse a SAIT.');
+sait_document_assert_same(10.0, (float) $built_after_product_change['items'][0]['pjedesc'], 'El pjedesc histórico debe enviarse a SAIT.');
+sait_document_assert_same(10.0, (float) $built_after_product_change['items'][0]['pjedesc1'], 'El pjedesc1 alias debe enviarse a SAIT.');
 
 delete_option('sait_test_request_counts');
 $service_document = SAIT_WOOCOMMERCE()->document_service()->build_order($mapped_order, '1');
