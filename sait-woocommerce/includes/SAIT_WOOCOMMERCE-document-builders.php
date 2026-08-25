@@ -75,17 +75,41 @@ abstract class SAIT_WOOCOMMERCE_DocumentBuilder
 			$article->cant = $item->get_quantity();
 			$article->numart = $product->get_sku();
 			$article->unidad = isset($units[$item_id]) ? $units[$item_id] : '';
-			$article->preciopub = (float) $product->get_regular_price();
-			$article->precio = (float) $product->get_regular_price();
-			$article->pjedesc1 = self::discount_percentage(
-				$article->cant,
-				(float) $item->get_total(),
-				$article->preciopub
-			);
+			$unit_price = self::order_item_unit_price($item);
+
+			/*
+			 * La orden conserva el importe acordado al momento del checkout. No
+			 * se debe volver a consultar el precio regular del producto: puede
+			 * haber cambiado desde entonces y no contiene promociones ni cupones.
+			 * Enviamos el precio final en ambos campos para que SAIT no recalcule
+			 * la partida con su lista de precios actual.
+			 */
+			$article->preciopub = $unit_price;
+			$article->precio = $unit_price;
+			$article->pjedesc1 = 0.0;
 			$items[] = $article;
 		}
 
 		return $items;
+	}
+
+	/**
+	 * Obtiene el precio unitario final almacenado en una partida de WooCommerce.
+	 *
+	 * get_total() ya incluye descuentos, promociones y cupones prorrateados, y
+	 * no depende del precio vigente del producto al momento de reenviar la orden.
+	 *
+	 * @param WC_Order_Item_Product $item Partida de producto.
+	 * @return float
+	 */
+	private static function order_item_unit_price($item)
+	{
+		$quantity = (float) $item->get_quantity();
+		if ($quantity <= 0) {
+			return 0.0;
+		}
+
+		return (float) $item->get_total() / $quantity;
 	}
 
 	/**

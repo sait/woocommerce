@@ -228,7 +228,10 @@ Campos opcionales:
 - `clievent`
 
 Cada item incluye `cant`, `numart`, `unidad`, `preciopub`, `precio` y
-`pjedesc1`. La unidad se consulta en SAITNube con hasta tres intentos.
+`pjedesc1`. `preciopub` y `precio` toman el precio unitario final guardado en
+la partida de WooCommerce; `pjedesc1` se envía en cero para que SAIT conserve
+promociones, cupones y precios aplicados al crear la orden. La unidad se
+consulta en SAITNube con hasta tres intentos.
 
 ### Resolucion Actual Del Cliente
 

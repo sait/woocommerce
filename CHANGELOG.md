@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.7] - 25/AGO/2026
+
+### fixed
+- Los pedidos y cotizaciones envían a SAIT el precio unitario final almacenado en cada partida de WooCommerce, sin recalcularlo desde el precio regular vigente ni aplicar un descuento adicional. Así se conservan promociones, cupones y precios históricos al reenviar una orden.
+
 ## [2.0.6] - 13/AGO/2026
 
 ### added

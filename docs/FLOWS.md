@@ -139,8 +139,9 @@ Archivo: `includes/SAIT_WOOCOMMERCE-orders.php`
 6. Para cada item:
    - Obtiene SKU como `numart`.
    - Consulta unidad en `/api/v3/articulos/{sku}`.
-   - Usa precio regular como `preciopub` y `precio`.
-   - Calcula descuento con total del item.
+   - Usa el precio unitario final almacenado en la partida como `preciopub` y `precio`.
+   - No recalcula descuentos: envia `pjedesc1 = 0` para conservar promociones,
+     cupones y precios vigentes al crear la orden.
 7. Busca cliente SAIT por mapeo o por email.
 8. Si no hay cliente, agrega objeto de cliente eventual.
 9. Aplica funcion personalizada si la bandera esta activa.
