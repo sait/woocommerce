@@ -227,12 +227,15 @@ Campos opcionales:
 - `direnvio`
 - `clievent`
 
-Cada item incluye `cant`, `numart`, `unidad`, `preciopub`, `precio` y
-`pjedesc1`. Al crear una orden con promoción, la partida guarda
-`_sait_promo_base_price` y `_sait_pjedesc`; el documento usa el primero como
-precio base y calcula `pjedesc1` contra el total histórico de la partida. Sin
-esa metadata, usa el precio unitario final y `pjedesc1 = 0`. La unidad se
-consulta en SAITNube con hasta tres intentos.
+Cada item incluye `cant`, `numart`, `unidad`, `preciopub`, `precio`,
+`pjedesc` (contrato Go `Pedido`/`ValidateItems: pjedesc, precio) y `pjedesc1`
+como alias legacy (Go ignora campos desconocidos). Al crear una orden con
+promoción, la partida guarda `_sait_promo_base_price` y `_sait_pjedesc`; el
+documento usa esos valores históricos sin consultar el producto actual. Para
+órdenes legacy sin `_sait_pjedesc` calcula `pjedesc`/`pjedesc1` contra el total
+histórico de la partida. Sin metadata promocional, usa el precio unitario
+final (`get_total()/qty`) y `pjedesc=0`. La unidad se consulta en SAITNube con
+hasta tres intentos.
 
 ### Resolucion Actual Del Cliente
 

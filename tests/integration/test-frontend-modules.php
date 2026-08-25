@@ -180,17 +180,20 @@ sait_frontend_assert_true(
 	'Promociones debe conservar sus datos en la partida de la orden.'
 );
 $promotion_order_item = new WC_Order_Item_Product();
-$promotions->store_order_item_promotion(
+$promotion_order = wc_create_order();
+do_action(
+	'woocommerce_checkout_create_order_line_item',
 	$promotion_order_item,
 	'fixture',
 	array('sait_promo_base_price' => 116.0, 'sait_pjedesc' => 10.0),
-	null
+	$promotion_order
 );
 sait_frontend_assert_true(
 	(float) $promotion_order_item->get_meta('_sait_promo_base_price') === 116.0
 	&& (float) $promotion_order_item->get_meta('_sait_pjedesc') === 10.0,
 	'La promoción debe persistirse como metadata de la partida.'
 );
+$promotion_order->delete(true);
 
 $minimum_settings = new SAIT_Test_Frontend_Settings(array('SAITNube_MinimoCarrito_Enabled' => true));
 $minimum = new SAIT_WOOCOMMERCE_CartMinimum($minimum_settings, $plugin_file);
