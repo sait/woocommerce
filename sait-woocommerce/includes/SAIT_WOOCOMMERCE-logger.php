@@ -125,6 +125,7 @@ class SAIT_WOOCOMMERCE_Logger
 			'duration_ms',
 			'response_bytes',
 			'delay_seconds',
+			'rows',
 		);
 		$text_keys = array(
 			'event',

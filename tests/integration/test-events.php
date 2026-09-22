@@ -188,6 +188,59 @@ foreach ($category_cases as $case) {
 	sait_test_assert_true($term && !is_wp_error($term), 'No se creo el termino de ' . $case[0]);
 }
 
+global $wpdb;
+$orphan_id = 900000613;
+if (get_post($orphan_id)) {
+	throw new RuntimeException('El id de prueba del lookup huerfano ya existe.');
+}
+$wpdb->delete($wpdb->wc_product_meta_lookup, array('product_id' => $orphan_id), array('%d'));
+$wpdb->insert(
+	$wpdb->wc_product_meta_lookup,
+	array('product_id' => $orphan_id, 'sku' => 'FIX-ORPHAN-001'),
+	array('%d', '%s')
+);
+$previous_request_uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null;
+$_SERVER['REQUEST_URI'] = '/' . trailingslashit(rest_get_url_prefix()) . 'saitplugin/v1/saitevents';
+$orphan_xml = simplexml_load_file(WP_CONTENT_DIR . '/sait-test-fixtures/events/modart-active.xml');
+$orphan_xml->action[0]->keys[0]['numart'] = 'FIX-ORPHAN-001';
+$orphan_response = sait_test_send_xml($orphan_xml);
+if ($previous_request_uri === null) {
+	unset($_SERVER['REQUEST_URI']);
+} else {
+	$_SERVER['REQUEST_URI'] = $previous_request_uri;
+}
+sait_test_assert_same('ART ADD', $orphan_response->get_data(), 'MODART debe crear aunque el SKU este huerfano en lookup.');
+$orphan_product_id = wc_get_product_id_by_sku('FIX-ORPHAN-001');
+sait_test_assert_true((bool) $orphan_product_id, 'MODART no creo el producto con SKU huerfano.');
+sait_test_assert_same(
+	0,
+	(int) $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT COUNT(*) FROM {$wpdb->wc_product_meta_lookup} WHERE product_id = %d",
+			$orphan_id
+		)
+	),
+	'La fila huerfana debe eliminarse.'
+);
+wc_get_product($orphan_product_id)->delete(true);
+$wpdb->delete(
+	$wpdb->prefix . 'sait_claves',
+	array('tabla' => 'arts', 'clave' => 'FIX-ORPHAN-001'),
+	array('%s', '%s')
+);
+
+$live_product = new WC_Product_Simple();
+$live_product->set_name('Lookup vivo');
+$live_product->set_sku('FIX-LOOKUP-LIVE');
+$live_product_id = $live_product->save();
+sait_test_assert_same(
+	0,
+	SAIT_WOOCOMMERCE()->product_resolver()->release_orphan_sku('FIX-LOOKUP-LIVE'),
+	'No debe borrar el lookup de un producto existente.'
+);
+sait_test_assert_same($live_product_id, wc_get_product_id_by_sku('FIX-LOOKUP-LIVE'), 'El SKU vivo debe conservarse.');
+wc_get_product($live_product_id)->delete(true);
+
 $preexisting = new WC_Product_Simple();
 $preexisting->set_name('Producto preexistente Fixture');
 $preexisting->set_sku('FIX-ART-001');

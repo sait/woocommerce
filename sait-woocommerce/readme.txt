@@ -2,7 +2,7 @@
 Contributors: sait
 Requires at least: 6.6
 Requires PHP: 7.4
-Stable tag: 2.0.9
+Stable tag: 2.0.10
 WC requires at least: 9.3
 WC tested up to: 9.3
 
@@ -27,6 +27,10 @@ plugins complementarios independientes.
 5. Confirma el webhook y realiza un pedido de prueba antes de producción.
 
 == Changelog ==
+
+= 2.0.10 =
+
+* MODART crea el producto aunque el SKU haya quedado huérfano en la tabla de búsqueda de WooCommerce, sin tumbar el REST.
 
 = 2.0.9 =
 
