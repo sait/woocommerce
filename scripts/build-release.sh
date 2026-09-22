@@ -31,6 +31,7 @@ fi
 
 output_dir="dist"
 core_zip="$output_dir/sait-woocommerce-$core_version.zip"
+core_plain_zip="$output_dir/sait-woocommerce.zip"
 papelia_zip="$output_dir/sait-woocommerce-papelia-$papelia_version.zip"
 fysson_zip="$output_dir/sait-woocommerce-fysson-$fysson_version.zip"
 
@@ -53,6 +54,7 @@ needs_build() { # $1 directorio del paquete en el repo, $2 ZIP esperado
 
 git archive --format=zip --prefix=sait-woocommerce/ --output="$core_zip" HEAD:sait-woocommerce
 sh scripts/inspect-release.sh "$core_zip" sait-woocommerce "$core_version" SAIT_WOOCOMMERCE.php
+cp "$core_zip" "$core_plain_zip"
 
 if needs_build personalizados/sait-woocommerce-papelia "$papelia_zip"; then
 	git archive --format=zip --prefix=sait-woocommerce-papelia/ --output="$papelia_zip" HEAD:personalizados/sait-woocommerce-papelia
@@ -70,11 +72,12 @@ fi
 
 (
 	cd "$output_dir"
-	sha256sum "$(basename "$core_zip")" "$(basename "$papelia_zip")" "$(basename "$fysson_zip")" > SHA256SUMS
+	sha256sum "$(basename "$core_zip")" "$(basename "$core_plain_zip")" "$(basename "$papelia_zip")" "$(basename "$fysson_zip")" > SHA256SUMS
 )
 
 echo "Paquetes creados en $output_dir/:"
 echo "- $(basename "$core_zip")"
+echo "- $(basename "$core_plain_zip")"
 echo "- $(basename "$papelia_zip")"
 echo "- $(basename "$fysson_zip")"
 echo '- SHA256SUMS'
