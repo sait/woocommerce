@@ -95,7 +95,10 @@ Las reglas específicas se distribuyen separadas del núcleo:
 
 Cada complemento se puede activar solamente en la instalación correspondiente.
 El script `scripts/build-release.sh` lee las versiones declaradas y genera los
-tres ZIP sin exigir cambiar números dentro del script.
+tres ZIP sin exigir cambiar números dentro del script. El núcleo siempre se
+empaqueta; los complementos solo se reconstruyen si su directorio cambió en
+git desde el último commit que actualizó `dist/`; en caso contrario se conserva
+el ZIP existente.
 
 ## Endpoints REST
 
