@@ -161,7 +161,7 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 			$product->set_stock_quantity($stock_result['stock']);
 		}
 
-		$product_id = $product->save();
+		$product_id = self::save_new_product($product, $numart);
 		
 		// Guardar la nueva clave si se creó el producto
 		if ($product_id) {
@@ -170,5 +170,52 @@ class SAIT_WOOCOMMERCE_ProductEventHandler
 		}
 		
 		return SAIT_UTILS::SAIT_response(200, "ART NO CREADO");
+	}
+
+	/**
+	 * Crea el producto y reintenta una vez si el SKU quedo huerfano en lookup.
+	 *
+	 * @param WC_Product $product Producto nuevo.
+	 * @param string     $numart SKU SAIT.
+	 * @return int
+	 */
+	private static function save_new_product($product, $numart)
+	{
+		$resolver = SAIT_WOOCOMMERCE()->product_resolver();
+		$released = $resolver->release_orphan_sku($numart);
+		if ($released > 0) {
+			SAIT_WOOCOMMERCE()->logger()->warning(
+				'Se elimino un SKU huerfano de la tabla de busqueda antes de crear el producto.',
+				array('event' => 'MODART', 'sku' => $numart, 'rows' => $released)
+			);
+		}
+
+		try {
+			return (int) $product->save();
+		} catch (Throwable $exception) {
+			$released = $resolver->release_orphan_sku($numart);
+			SAIT_WOOCOMMERCE()->logger()->warning(
+				'No se pudo crear el producto por un SKU presente en la tabla de busqueda.',
+				array(
+					'event' => 'MODART',
+					'sku' => $numart,
+					'error_code' => get_class($exception),
+					'rows' => $released,
+				)
+			);
+			if ($released < 1) {
+				return 0;
+			}
+		}
+
+		try {
+			return (int) $product->save();
+		} catch (Throwable $exception) {
+			SAIT_WOOCOMMERCE()->logger()->error(
+				'El reintento de alta MODART fallo.',
+				array('event' => 'MODART', 'sku' => $numart, 'error_code' => get_class($exception))
+			);
+			return 0;
+		}
 	}
 }

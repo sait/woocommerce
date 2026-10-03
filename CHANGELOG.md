@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.10] - 22/SEP/2026
+
+### fixed
+- MODART elimina el SKU huérfano de `wp_wc_product_meta_lookup` antes de crear el producto y reintenta el alta una vez. Así no falla con fatal cuando el post ya no existe y WooCommerce sigue bloqueando el SKU.
+
 ## [2.0.9] - 26/AGO/2026
 
 ### fixed

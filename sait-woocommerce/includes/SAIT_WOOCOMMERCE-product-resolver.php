@@ -39,4 +39,35 @@ class SAIT_WOOCOMMERCE_ProductResolver
 			'source'  => $product ? 'sku' : 'none',
 		);
 	}
+
+	/**
+	 * Borra filas de lookup cuyo SKU ya no tiene post.
+	 *
+	 * WooCommerce rechaza el alta REST si el SKU sigue en wc_product_meta_lookup,
+	 * aunque wc_get_product_id_by_sku no encuentre el producto.
+	 *
+	 * @param string $numart Numero de articulo SAIT.
+	 * @return int Filas eliminadas.
+	 */
+	public function release_orphan_sku($numart)
+	{
+		global $wpdb;
+
+		$numart = trim((string) $numart);
+		if ($numart === '' || empty($wpdb->wc_product_meta_lookup)) {
+			return 0;
+		}
+
+		$deleted = $wpdb->query(
+			$wpdb->prepare(
+				"DELETE lookup FROM {$wpdb->wc_product_meta_lookup} AS lookup
+				LEFT JOIN {$wpdb->posts} AS posts ON posts.ID = lookup.product_id
+				WHERE lookup.sku = %s
+				AND posts.ID IS NULL",
+				$numart
+			)
+		);
+
+		return $deleted ? (int) $deleted : 0;
+	}
 }
